@@ -776,7 +776,42 @@ const brushPresets = {
     'texture-bark': { size: 40, opacity: 74, hardness: 68, flow: 72, spacing: 17, smoothing: 4, angle: 45, angleJitter: 35, scatterX: 15, scatterY: 15 },
     'texture-stone': { size: 48, opacity: 82, hardness: 72, flow: 78, spacing: 16, smoothing: 5, angle: 0, angleJitter: 40, scatterX: 16, scatterY: 16 },
     'texture-fabric': { size: 36, opacity: 80, hardness: 56, flow: 70, spacing: 13, smoothing: 8, angle: 0, angleJitter: 25, scatterX: 10, scatterY: 10 },
-    'texture-grain': { size: 32, opacity: 72, hardness: 62, flow: 68, spacing: 14, smoothing: 9, angle: 0, angleJitter: 28, scatterX: 12, scatterY: 12 }
+    'texture-grain': { size: 32, opacity: 72, hardness: 62, flow: 68, spacing: 14, smoothing: 9, angle: 0, angleJitter: 28, scatterX: 12, scatterY: 12 },
+    
+    // ENHANCED PAINTER/KRITA-STYLE BRUSHES - Using new advanced features (20)
+    // Natural Media with Bristles
+    'bristle-oil-round': { size: 30, opacity: 90, hardness: 55, flow: 80, spacing: 10, smoothing: 8, angle: 0, angleJitter: 12, scatterX: 4, scatterY: 4 },
+    'bristle-oil-flat': { size: 40, opacity: 92, hardness: 60, flow: 85, spacing: 12, smoothing: 6, angle: 0, angleJitter: 8, scatterX: 3, scatterY: 3 },
+    'bristle-acrylic-round': { size: 28, opacity: 88, hardness: 58, flow: 82, spacing: 9, smoothing: 7, angle: 0, angleJitter: 10, scatterX: 3, scatterY: 3 },
+    'bristle-acrylic-flat': { size: 38, opacity: 90, hardness: 62, flow: 84, spacing: 11, smoothing: 5, angle: 0, angleJitter: 7, scatterX: 2, scatterY: 2 },
+    
+    // Color Mixing Brushes
+    'mixer-color-pickup': { size: 35, opacity: 75, hardness: 50, flow: 65, spacing: 8, smoothing: 15, angle: 0, angleJitter: 5, scatterX: 3, scatterY: 3 },
+    'wet-blend-natural': { size: 45, opacity: 70, hardness: 40, flow: 60, spacing: 7, smoothing: 18, angle: 0, angleJitter: 8, scatterX: 4, scatterY: 4 },
+    'glazing-transparent': { size: 60, opacity: 40, hardness: 25, flow: 35, spacing: 10, smoothing: 20, angle: 0, angleJitter: 5, scatterX: 3, scatterY: 3 },
+    
+    // Dual Brush Effects
+    'dual-texture-soft': { size: 40, opacity: 80, hardness: 45, flow: 70, spacing: 12, smoothing: 12, angle: 0, angleJitter: 15, scatterX: 6, scatterY: 6 },
+    'dual-texture-hard': { size: 35, opacity: 85, hardness: 70, flow: 75, spacing: 10, smoothing: 8, angle: 0, angleJitter: 12, scatterX: 5, scatterY: 5 },
+    
+    // Expressive Brushes with Color Dynamics
+    'impressionist-dab': { size: 25, opacity: 85, hardness: 65, flow: 80, spacing: 18, smoothing: 5, angle: 0, angleJitter: 45, scatterX: 15, scatterY: 15 },
+    'expressionist-stroke': { size: 35, opacity: 90, hardness: 60, flow: 85, spacing: 15, smoothing: 3, angle: 0, angleJitter: 60, scatterX: 20, scatterY: 12 },
+    'pointillist-dot': { size: 15, opacity: 95, hardness: 80, flow: 95, spacing: 30, smoothing: 2, angle: 0, angleJitter: 180, scatterX: 25, scatterY: 25 },
+    
+    // Advanced Watercolor
+    'watercolor-blooming': { size: 55, opacity: 35, hardness: 8, flow: 28, spacing: 6, smoothing: 22, angle: 0, angleJitter: 15, scatterX: 20, scatterY: 20 },
+    'watercolor-granulation': { size: 45, opacity: 50, hardness: 20, flow: 40, spacing: 10, smoothing: 15, angle: 0, angleJitter: 10, scatterX: 15, scatterY: 15 },
+    
+    // Specialty Brushes
+    'sumi-ink-brush': { size: 25, opacity: 95, hardness: 75, flow: 90, spacing: 8, smoothing: 25, angle: 0, angleJitter: 5, scatterX: 2, scatterY: 2 },
+    'chinese-calligraphy': { size: 30, opacity: 100, hardness: 85, flow: 95, spacing: 10, smoothing: 20, angle: 45, angleJitter: 3, scatterX: 1, scatterY: 1 },
+    'ink-wash': { size: 50, opacity: 60, hardness: 30, flow: 50, spacing: 12, smoothing: 18, angle: 0, angleJitter: 12, scatterX: 10, scatterY: 10 },
+    
+    // High-Performance Brushes
+    'quick-sketch': { size: 18, opacity: 80, hardness: 70, flow: 85, spacing: 12, smoothing: 15, angle: 0, angleJitter: 20, scatterX: 5, scatterY: 5 },
+    'rapid-paint': { size: 40, opacity: 85, hardness: 60, flow: 80, spacing: 15, smoothing: 10, angle: 0, angleJitter: 15, scatterX: 8, scatterY: 8 },
+    'speed-liner': { size: 12, opacity: 100, hardness: 95, flow: 100, spacing: 8, smoothing: 35, angle: 0, angleJitter: 0, scatterX: 0, scatterY: 0 }
 };
 
 // Canvas Elements - will be initialized in init()
@@ -1026,6 +1061,7 @@ function setupBrushPresets() {
         'metallic': ['metallic-gold', 'metallic-silver', 'metallic-copper', 'pearlescent', 'iridescent', 'impasto-thick', 'glazing-medium', 'dry-media', 'sponge-natural', 'stipple'],
         'mixer': ['mixer-wet', 'mixer-dry', 'blender-soft', 'blender-hard', 'smudge-soft', 'smudge-hard', 'finger-paint', 'color-sampler', 'paint-mixer', 'palette-scraper'],
         'texture': ['texture-canvas', 'texture-linen', 'texture-paper', 'texture-burlap', 'texture-concrete', 'texture-wood', 'texture-bark', 'texture-stone', 'texture-fabric', 'texture-grain'],
+        'enhanced': ['bristle-oil-round', 'bristle-oil-flat', 'bristle-acrylic-round', 'bristle-acrylic-flat', 'mixer-color-pickup', 'wet-blend-natural', 'glazing-transparent', 'dual-texture-soft', 'dual-texture-hard', 'impressionist-dab', 'expressionist-stroke', 'pointillist-dot', 'watercolor-blooming', 'watercolor-granulation', 'sumi-ink-brush', 'chinese-calligraphy', 'ink-wash', 'quick-sketch', 'rapid-paint', 'speed-liner'],
         'imported': [] // Will be populated dynamically
     };
     
