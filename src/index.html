@@ -1461,6 +1461,33 @@
                                 <option value="luminosity">Luminosity</option>
                             </select>
                         </div>
+                        
+                        <!-- Phase 5: Layer Mask Controls -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Layer Mask:</label>
+                            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                <button class="filter-btn" id="add-layer-mask-btn" style="flex: 1;">Add Mask</button>
+                                <button class="filter-btn" id="toggle-layer-mask-btn" style="flex: 1;">Enable/Disable</button>
+                                <button class="filter-btn" id="remove-layer-mask-btn" style="flex: 1;">Remove</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Phase 5: Clipping Mask Control -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label>
+                                <input type="checkbox" id="clipping-mask-checkbox">
+                                Clip to Layer Below
+                            </label>
+                        </div>
+                        
+                        <!-- Phase 5: Layer Styles Control -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label>
+                                <input type="checkbox" id="layer-styles-checkbox">
+                                Enable Layer Styles
+                            </label>
+                            <button class="filter-btn" id="layer-styles-settings-btn" style="margin-top: 5px; width: 100%;">Layer Styles Settings...</button>
+                        </div>
                     </div>
                     <div id="layers-list"></div>
                 </div>
