@@ -8575,7 +8575,7 @@ function applySketchStyle(imageData, options = {}) {
 // Gouache Style - Opaque, matte paint with bold colors
 function applyGouacheStyle(imageData, options = {}) {
     const opacity = options.opacity || 0.9;
-    const colorBoldness = options.colorBoldness || 1.3;
+    const colorBoldness = options.colorBoldness || 1.3; // 130% boldness for vibrant gouache colors
     const brushStrokes = options.brushStrokes || 0.6;
     
     const width = imageData.width;
