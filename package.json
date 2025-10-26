@@ -1,0 +1,28 @@
+{
+  "name": "artemis",
+  "version": "1.0.0",
+  "description": "ARTemis - Professional digital painting application with advanced tools - works standalone in browser or as Electron app",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:browser": "echo 'Open src/index.html directly in your browser' && exit 0",
+    "test": "echo \"Tests will be added\" && exit 0"
+  },
+  "keywords": [
+    "digital-painting",
+    "art",
+    "graphics",
+    "drawing",
+    "painting",
+    "browser-app",
+    "standalone"
+  ],
+  "author": "",
+  "license": "MIT",
+  "optionalDependencies": {
+    "electron": "^27.0.0"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.0"
+  }
+}
