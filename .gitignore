@@ -1,25 +1,6 @@
-# C++ Build artifacts
-build/
-cmake-build-*/
-*.o
-*.obj
-*.exe
-*.out
-*.app
-
-# Libraries
-*.so
-*.dylib
-*.dll
-*.a
-*.lib
-
-# CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
+# Node.js dependencies (for optional Electron mode)
+node_modules/
+package-lock.json
 
 # IDE specific
 .vscode/
@@ -29,6 +10,17 @@ compile_commands.json
 *~
 .DS_Store
 
-# Generated files
+# Logs
 *.log
+
+# OS files
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
 *.autosave
+
+# Build/distribution (if applicable)
+dist/
+build/
