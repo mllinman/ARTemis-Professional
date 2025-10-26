@@ -513,6 +513,130 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Dual Brush System Section (Phase 1) -->
+                    <div class="setting-section">
+                        <div class="setting-section-header">
+                            <span class="setting-section-title">Dual Brush System</span>
+                            <span class="setting-section-icon">▼</span>
+                        </div>
+                        <div class="setting-section-content">
+                            <div class="setting-group">
+                                <label>
+                                    <input type="checkbox" id="dual-brush-enabled">
+                                    Enable Dual Brush
+                                </label>
+                            </div>
+                            <div id="dual-brush-settings" class="sub-settings hidden">
+                                <div class="setting-group">
+                                    <label>Mode:</label>
+                                    <select id="dual-brush-mode" class="brush-select">
+                                        <option value="multiply">Multiply</option>
+                                        <option value="subtract">Subtract</option>
+                                        <option value="average">Average</option>
+                                        <option value="overlay">Overlay</option>
+                                    </select>
+                                </div>
+                                <div class="setting-group">
+                                    <label>Secondary Size: <span id="dual-brush-size-value">50</span>%</label>
+                                    <input type="range" id="dual-brush-size" min="10" max="200" value="50" class="slider">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Secondary Spacing: <span id="dual-brush-spacing-value">25</span>%</label>
+                                    <input type="range" id="dual-brush-spacing" min="1" max="100" value="25" class="slider">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Secondary Scatter: <span id="dual-brush-scatter-value">0</span>%</label>
+                                    <input type="range" id="dual-brush-scatter" min="0" max="100" value="0" class="slider">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Texture & Pattern System Section (Phase 2) -->
+                    <div class="setting-section">
+                        <div class="setting-section-header">
+                            <span class="setting-section-title">Texture & Pattern Overlay</span>
+                            <span class="setting-section-icon">▼</span>
+                        </div>
+                        <div class="setting-section-content">
+                            <div class="setting-group">
+                                <label>
+                                    <input type="checkbox" id="texture-enabled">
+                                    Enable Pattern Overlay
+                                </label>
+                            </div>
+                            <div id="texture-settings" class="sub-settings hidden">
+                                <div class="setting-group">
+                                    <label>Pattern Opacity: <span id="texture-opacity-value">50</span>%</label>
+                                    <input type="range" id="texture-opacity" min="0" max="100" value="50" class="slider">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Pattern Scale: <span id="texture-scale-value">100</span>%</label>
+                                    <input type="range" id="texture-scale" min="10" max="400" value="100" class="slider">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Pattern Rotation: <span id="texture-rotation-value">0</span>°</label>
+                                    <input type="range" id="texture-rotation" min="0" max="360" value="0" class="slider">
+                                </div>
+                                <div class="setting-group">
+                                    <button class="secondary-btn" id="load-texture-btn">Load Custom Texture...</button>
+                                </div>
+                                <div class="setting-group" id="texture-preview-container" style="display: none;">
+                                    <label>Current Texture:</label>
+                                    <canvas id="texture-preview" width="100" height="100" style="border: 1px solid #444; border-radius: 4px;"></canvas>
+                                    <button class="secondary-btn" id="clear-texture-btn">Clear Texture</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Texture Library Section (Phase 2) -->
+                    <div class="setting-section">
+                        <div class="setting-section-header">
+                            <span class="setting-section-title">Texture Library</span>
+                            <span class="setting-section-icon">▼</span>
+                        </div>
+                        <div class="setting-section-content">
+                            <div class="setting-group">
+                                <label>Built-in Textures:</label>
+                                <select id="texture-library-select" class="brush-select">
+                                    <option value="">-- Select Texture --</option>
+                                    <optgroup label="Canvas & Paper">
+                                        <option value="canvas-fine">Canvas Fine</option>
+                                        <option value="canvas-medium">Canvas Medium</option>
+                                        <option value="canvas-rough">Canvas Rough</option>
+                                        <option value="paper-smooth">Paper Smooth</option>
+                                        <option value="paper-rough">Paper Rough</option>
+                                        <option value="watercolor-paper">Watercolor Paper</option>
+                                    </optgroup>
+                                    <optgroup label="Natural Materials">
+                                        <option value="wood-grain">Wood Grain</option>
+                                        <option value="stone">Stone</option>
+                                        <option value="concrete">Concrete</option>
+                                        <option value="bark">Tree Bark</option>
+                                        <option value="linen">Linen</option>
+                                        <option value="burlap">Burlap</option>
+                                    </optgroup>
+                                    <optgroup label="Artistic">
+                                        <option value="grain">Grain</option>
+                                        <option value="noise">Noise</option>
+                                        <option value="dots">Dots</option>
+                                        <option value="crosshatch">Cross-hatch</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label>
+                                    <input type="checkbox" id="texture-library-preview">
+                                    Show Preview Gallery
+                                </label>
+                                <div id="texture-library-gallery" class="texture-gallery hidden" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px;">
+                                    <!-- Texture previews will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Color Picker Section -->
                     <div class="setting-section">
