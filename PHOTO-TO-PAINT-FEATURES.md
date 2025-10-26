@@ -249,15 +249,172 @@ While no specific shortcuts are assigned to Photo-to-Paint, you can:
 
 ---
 
+## New Styles (Recently Added)
+
+### 8. Pastel Style
+
+Creates soft, muted colors with a chalk-like texture, perfect for gentle and artistic portraits.
+
+**Parameters:**
+- **Softness** (0-100%): How soft and blurred the colors are. Higher values create a dreamier effect.
+- **Chalkiness** (0-100%): Amount of chalk texture noise. Higher values add more visible chalk grain.
+- **Color Vibrancy** (0-100%): Vibrancy of the pastel colors. Lower values create more muted pastels.
+
+**Best For:** Soft portraits, dreamy landscapes, gentle illustrations
+
+**Recommended Settings:**
+- Soft Portrait: Softness 80%, Chalkiness 50%, Vibrancy 70%
+- Landscape: Softness 70%, Chalkiness 60%, Vibrancy 80%
+
+---
+
+### 9. Sketch Style
+
+Transforms photos into pencil sketches with hatching and realistic line work.
+
+**Parameters:**
+- **Line Intensity** (0-100%): Darkness of the sketch lines. Higher values create bolder lines.
+- **Shading** (0-100%): Amount of hatching for shading. Higher values add more cross-hatching.
+- **Detail** (0-100%): Level of detail in the sketch. Higher values capture more fine details.
+
+**Best For:** Artistic portraits, architectural drawings, concept sketches
+
+**Recommended Settings:**
+- Portrait Sketch: Line 80%, Shading 60%, Detail 70%
+- Architectural: Line 90%, Shading 40%, Detail 90%
+
+---
+
+### 10. Gouache Style
+
+Creates opaque, matte paint with bold colors and visible brush strokes, mimicking traditional gouache painting.
+
+**Parameters:**
+- **Opacity** (0-100%): Paint opacity. Higher values create more opaque, matte finish.
+- **Color Boldness** (50-200%): Boldness and saturation of colors. Higher values create more vibrant gouache colors.
+- **Brush Strokes** (0-100%): Visibility of brush strokes. Higher values show more directional brush work.
+
+**Best For:** Poster art, illustration, bold graphic designs
+
+**Recommended Settings:**
+- Poster Art: Opacity 95%, Boldness 150%, Brush Strokes 70%
+- Illustration: Opacity 90%, Boldness 130%, Brush Strokes 60%
+
+---
+
+## New Features
+
+### Real-time Preview Mode (Non-destructive) ✨
+
+The Photo-to-Paint system now includes a real-time preview mode that lets you see the effect before committing to it!
+
+**How to Use:**
+1. Select your desired style and adjust parameters
+2. Click **"👁️ Preview (Non-destructive)"** button
+3. The effect is applied temporarily - your original image is preserved
+4. Click **"✓ Accept Preview"** to keep the effect, or **"✗ Cancel Preview"** to restore original
+5. You can adjust parameters and preview again without losing your original image
+
+**Benefits:**
+- Non-destructive workflow - original image is always safe
+- Experiment freely with different settings
+- No need to undo - just cancel the preview
+- Perfect for finding the right settings before committing
+
+---
+
+### Custom Presets System 💾
+
+Save your favorite style settings as presets for quick reuse!
+
+**How to Use:**
+1. Configure a style with your preferred settings
+2. Click **"💾 Save"** button
+3. Enter a name for your preset (e.g., "Portrait Oil - Soft")
+4. The preset is saved to localStorage
+5. Select from the **"Preset"** dropdown to load saved settings
+6. Click **"🗑️ Delete"** to remove unwanted presets
+
+**Benefits:**
+- Quick access to your favorite style configurations
+- Consistent results across multiple images
+- Share presets by exporting (stored in browser localStorage)
+- Build your own preset library
+
+**Preset Ideas:**
+- "Soft Portrait Oil" - gentle oil paint for portraits
+- "Bold Comic Book" - high contrast comic style
+- "Dreamy Watercolor" - soft, ethereal watercolor
+- "Classic Anime" - standard 3-cel anime look
+
+---
+
+### Batch Processing 📚
+
+Apply the same style to multiple layers at once!
+
+**How to Use:**
+1. Configure your desired style and settings
+2. Click **"📚 Batch Process All Layers"** button
+3. Confirm the action
+4. The style is applied to all layers in your document
+
+**Benefits:**
+- Save time when processing multiple layers
+- Consistent styling across all layers
+- Perfect for applying effects to complex compositions
+- Single undo/redo for entire batch operation
+
+**Use Cases:**
+- Apply watercolor effect to all elements in a scene
+- Convert all photo layers to sketch style
+- Uniform styling for animation frames
+
+---
+
+### Style Blending 🎨
+
+Mix two different styles together for unique artistic effects!
+
+**How to Use:**
+1. Select and configure your first style
+2. Click **"🎨 Blend Two Styles"** button
+3. Enter the name of the second style to blend (e.g., "watercolor")
+4. Enter blend ratio (0-1, where 0.5 is 50/50 mix)
+5. The two styles are blended together on your layer
+
+**Benefits:**
+- Create unique hybrid effects
+- Combine complementary styles
+- Fine-tune the blend ratio for perfect results
+- Endless creative possibilities
+
+**Creative Combinations:**
+- Oil + Watercolor (50/50) - Impressionist look
+- Comic + Sketch (60/40) - Graphic novel style
+- Pastel + Watercolor (70/30) - Soft, dreamy art
+- Gouache + Acrylic (50/50) - Bold, modern poster
+- Anime + Cartoon (40/60) - Stylized animation
+
+**Blend Ratio Guide:**
+- 0.9 = 90% first style, 10% second style
+- 0.7 = 70% first style, 30% second style
+- 0.5 = Equal mix of both styles
+- 0.3 = 30% first style, 70% second style
+
+---
+
 ## Future Enhancements
 
-Planned improvements for Photo-to-Paint system:
-- Real-time preview mode (non-destructive)
-- Custom presets for each style
-- Batch processing for multiple layers
-- Style blending/mixing options
-- Additional styles (Pastel, Sketch, Gouache)
-- Mask support for selective application
+Completed improvements for Photo-to-Paint system:
+- ✅ Real-time preview mode (non-destructive)
+- ✅ Custom presets for each style
+- ✅ Batch processing for multiple layers
+- ✅ Style blending/mixing options
+- ✅ Additional styles (Pastel, Sketch, Gouache)
+
+Still planned:
+- Mask support for selective application (coming soon)
 
 ---
 

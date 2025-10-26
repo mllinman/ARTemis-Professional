@@ -947,6 +947,9 @@
                                     <option value="cartoon">Cartoon</option>
                                     <option value="anime">Anime</option>
                                     <option value="concept-art">Concept Art</option>
+                                    <option value="pastel">Pastel</option>
+                                    <option value="sketch">Sketch</option>
+                                    <option value="gouache">Gouache</option>
                                 </select>
                             </div>
                             
@@ -1026,13 +1029,77 @@
                                 </select>
                             </div>
                             
-                            <button id="apply-photo-paint-btn" class="filter-btn" style="margin-top: 10px; width: 100%; font-weight: bold;">
-                                Apply Style
+                            <!-- Pastel Settings -->
+                            <div id="pastel-settings" class="photo-paint-settings" style="display: none;">
+                                <label>Softness: <span id="pastel-soft-val">70</span>%</label>
+                                <input type="range" id="pastel-soft" min="0" max="100" value="70" class="slider">
+                                <label>Chalkiness: <span id="pastel-chalk-val">60</span>%</label>
+                                <input type="range" id="pastel-chalk" min="0" max="100" value="60" class="slider">
+                                <label>Color Vibrancy: <span id="pastel-vibrant-val">80</span>%</label>
+                                <input type="range" id="pastel-vibrant" min="0" max="100" value="80" class="slider">
+                            </div>
+                            
+                            <!-- Sketch Settings -->
+                            <div id="sketch-settings" class="photo-paint-settings" style="display: none;">
+                                <label>Line Intensity: <span id="sketch-line-val">80</span>%</label>
+                                <input type="range" id="sketch-line" min="0" max="100" value="80" class="slider">
+                                <label>Shading: <span id="sketch-shade-val">60</span>%</label>
+                                <input type="range" id="sketch-shade" min="0" max="100" value="60" class="slider">
+                                <label>Detail: <span id="sketch-detail-val">70</span>%</label>
+                                <input type="range" id="sketch-detail" min="0" max="100" value="70" class="slider">
+                            </div>
+                            
+                            <!-- Gouache Settings -->
+                            <div id="gouache-settings" class="photo-paint-settings" style="display: none;">
+                                <label>Opacity: <span id="gouache-opacity-val">90</span>%</label>
+                                <input type="range" id="gouache-opacity" min="0" max="100" value="90" class="slider">
+                                <label>Color Boldness: <span id="gouache-bold-val">130</span>%</label>
+                                <input type="range" id="gouache-bold" min="50" max="200" value="130" class="slider">
+                                <label>Brush Strokes: <span id="gouache-brush-val">60</span>%</label>
+                                <input type="range" id="gouache-brush" min="0" max="100" value="60" class="slider">
+                            </div>
+                            
+                            <!-- Preset Management -->
+                            <div class="setting-group" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                                <label>Preset:</label>
+                                <select id="photo-paint-preset" class="setting-input">
+                                    <option value="">-- Select Preset --</option>
+                                </select>
+                                <button id="save-photo-preset-btn" class="filter-btn" style="margin-top: 5px; width: 48%; display: inline-block;">
+                                    💾 Save
+                                </button>
+                                <button id="delete-photo-preset-btn" class="filter-btn" style="margin-top: 5px; width: 48%; display: inline-block; margin-left: 4%;">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                            
+                            <!-- Main Actions -->
+                            <button id="preview-photo-paint-btn" class="filter-btn" style="margin-top: 10px; width: 100%; font-weight: bold; background: #4a7c59;">
+                                👁️ Preview (Non-destructive)
                             </button>
                             
-                            <button id="preview-photo-paint-btn" class="filter-btn" style="margin-top: 5px; width: 100%;">
-                                Preview (Non-destructive)
+                            <button id="apply-photo-paint-btn" class="filter-btn" style="margin-top: 5px; width: 100%; font-weight: bold;">
+                                ✓ Apply Style
                             </button>
+                            
+                            <button id="cancel-photo-preview-btn" class="filter-btn" style="margin-top: 5px; width: 48%; display: inline-block; display: none;">
+                                ✗ Cancel Preview
+                            </button>
+                            
+                            <button id="accept-photo-preview-btn" class="filter-btn" style="margin-top: 5px; width: 48%; display: inline-block; margin-left: 4%; display: none;">
+                                ✓ Accept Preview
+                            </button>
+                            
+                            <!-- Advanced Options -->
+                            <div class="setting-group" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                                <label style="font-size: 11px; opacity: 0.8;">Advanced Options:</label>
+                                <button id="batch-photo-paint-btn" class="filter-btn" style="margin-top: 5px; width: 100%;">
+                                    📚 Batch Process All Layers
+                                </button>
+                                <button id="blend-photo-paint-btn" class="filter-btn" style="margin-top: 5px; width: 100%;">
+                                    🎨 Blend Two Styles
+                                </button>
+                            </div>
                         </div>
                     </div>
 
