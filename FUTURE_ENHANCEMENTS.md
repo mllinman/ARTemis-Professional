@@ -84,7 +84,7 @@ Features that would be nice to have but are not essential for core functionality
 - [x] Special blend modes ✅ COMPLETED
   - Difference
   - Exclusion
-- [ ] Advanced color blend modes
+- [x] Advanced color blend modes ✅ COMPLETED
   - Hue
   - Saturation
   - Color
@@ -237,14 +237,21 @@ Features that would be nice to have but are not essential for core functionality
   - Custom gradient stops (3+colors)
   - Gradient presets
   - Gradient editor
-- [x] Advanced color picker ✅ COMPLETED
-  - HSV/HSL color wheels
+- [x] Advanced color picker ✅ COMPLETED (Enhanced Coolorus-style)
+  - HSV/HSL/RGB/LAB/CMYK color spaces
+  - Interactive 280x280px high-resolution color wheel
+  - Real-time adjustment sliders with gradient backgrounds
   - Color harmony rules (Complementary, Analogous, Triadic, Tetradic, Split-Complementary)
   - Color palette generator (8 predefined palettes)
   - Color mixer with adjustable ratio
+  - Foreground/Background color management with swap (X) and reset (D)
+  - Gamut Lock with hue, saturation, and value range constraints
+  - Color History (20 recent colors with one-click selection)
+  - Palette Management system (create, import/export, persistent storage)
 - [x] Color swatches ✅ COMPLETED
   - Custom swatch collections (8 predefined palettes: Basic, Pastel, Earth Tones, Vibrant, Monochrome, Sunset, Ocean, Forest)
   - Clickable swatches for quick color selection
+  - Right-click to remove colors from palette
 
 ### Advanced Selection Tools
 **Priority: High**
@@ -566,7 +573,7 @@ Want to help implement these features?
 
 ---
 
-**Last Updated:** January 2025  
+**Last Updated:** October 2025  
 **Status:** Living Document - Will be updated as features are implemented
 
 ---
@@ -574,8 +581,11 @@ Want to help implement these features?
 ## 🎉 Summary
 
 ARTemis has already achieved:
-- ✅ 100+ professional brush presets
-- ✅ Advanced brush engine with flow, spacing, smoothing
+- ✅ 178+ professional brush presets across 17 categories
+- ✅ Advanced brush engine with flow, spacing, smoothing, color dynamics
+- ✅ Advanced Color Wheel (Coolorus-style) with 5 color spaces
+- ✅ Gamut Lock, Color History, and Palette Management
+- ✅ Advanced blend modes (Hue, Saturation, Color, Luminosity)
 - ✅ Workspace management
 - ✅ Vector shape library
 - ✅ Layer system with thumbnails
