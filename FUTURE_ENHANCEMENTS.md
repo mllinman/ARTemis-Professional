@@ -31,14 +31,15 @@ Features that would be nice to have but are not essential for core functionality
 - [x] Image-based brush tips ✅ COMPLETED
   - Import custom textures
   - Stamp/clone functionality
-- [ ] Dual brush system
+- [x] Dual brush system ✅ COMPLETED
   - Mix two brushes for complex effects
-  - Blend mode controls for dual brushes
+  - Blend mode controls for dual brushes (multiply, subtract, average, overlay)
+  - Secondary brush size, spacing, and scatter controls
 - [x] Brush tip rotation ✅ COMPLETED (via angle controls)
   - Manual rotation control
   - Angle jitter for variation
 
-**Impact:** Would enable users to create truly unique brushes and match traditional media more closely.
+**Impact:** ✅ Completed - Users can now create truly unique brushes and match traditional media more closely with the dual brush system.
 
 ---
 
@@ -47,20 +48,20 @@ Features that would be nice to have but are not essential for core functionality
 ### Texture Integration
 **Priority: Medium**
 
-- [ ] Pattern overlays for brush strokes
-  - Import pattern files
-  - Pattern scale and rotation
-  - Pattern opacity control
-- [ ] Paper textures
+- [x] Pattern overlays for brush strokes ✅ COMPLETED
+  - Import pattern files (custom texture upload)
+  - Pattern scale and rotation (0-360°)
+  - Pattern opacity control (0-100%)
+- [x] Paper textures ✅ COMPLETED (via Canvas Texture feature)
   - Canvas grain simulation
   - Different paper types (smooth, rough, watercolor)
   - Texture intensity slider
-- [ ] Texture library
-  - Built-in texture collection
+- [x] Texture library ✅ COMPLETED
+  - Built-in texture collection (16 procedural textures)
   - User-defined texture import
-  - Texture preview system
+  - Texture preview system with gallery view
 
-**Impact:** Would add realistic traditional media textures to digital paintings.
+**Impact:** ✅ Completed - Realistic traditional media textures are now available for digital paintings through the texture library and pattern overlay system.
 
 ---
 
