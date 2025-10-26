@@ -274,7 +274,7 @@ const state = {
         targetY: 0,        // Target position Y (pointer position)
         positionX: 0,      // Simulated position X
         positionY: 0,      // Simulated position Y
-    }
+    },
     history: [],
     historyIndex: -1,
     isPanning: false,
