@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARTemis - Professional Digital Painting</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="advanced-colorwheel.css">
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Stripe -->
@@ -657,6 +658,10 @@
                                         Color Wheel
                                     </label>
                                     <label style="display: block; margin: 4px 0;">
+                                        <input type="radio" name="color-mode" value="advanced-wheel">
+                                        🎨 Advanced Color Wheel (Coolorus-style)
+                                    </label>
+                                    <label style="display: block; margin: 4px 0;">
                                         <input type="radio" name="color-mode" value="mixer">
                                         Color Mixer
                                     </label>
@@ -664,6 +669,11 @@
                                         <input type="radio" name="color-mode" value="palette">
                                         Color Palettes
                                     </label>
+                                </div>
+                                
+                                <!-- Advanced Color Wheel Container (New) -->
+                                <div id="advanced-color-wheel-container" style="display: none;">
+                                    <!-- Will be populated by AdvancedColorWheel class -->
                                 </div>
                                 
                                 <!-- Color Wheel Canvas (Default) -->
@@ -1873,6 +1883,7 @@
 
     <script src="auth.js"></script>
     <script src="subscription-ui.js"></script>
+    <script src="advanced-colorwheel.js"></script>
     <script src="renderer.js"></script>
 </body>
 </html>
