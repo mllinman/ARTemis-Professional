@@ -190,7 +190,7 @@ const state = {
         scatterX: 0,         // Horizontal scatter
         scatterY: 0,         // Vertical scatter
         mixMode: 'normal',   // Blending mode
-        // NEW: Advanced brush dynamics
+        // Advanced brush dynamics
         velocitySize: 0,     // Velocity affects size (0-100%)
         velocityOpacity: 0,  // Velocity affects opacity (0-100%)
         velocitySpacing: 0,  // Velocity affects spacing (0-100%)
@@ -201,7 +201,50 @@ const state = {
         textureEnabled: false, // Pattern overlay on strokes
         textureScale: 100,   // Texture scale percentage
         textureOpacity: 100, // Texture opacity
-        texturePattern: null // Pattern image data
+        texturePattern: null, // Pattern image data
+        // ENHANCED: Advanced features for Painter/Krita-level control
+        // Color Dynamics
+        hueJitter: 0,        // Random hue variation (0-180 degrees)
+        saturationJitter: 0, // Random saturation variation (0-100%)
+        brightnessJitter: 0, // Random brightness variation (0-100%)
+        colorMixing: 0,      // Pick up color from canvas (0-100%)
+        // Dual Brush System
+        dualBrushEnabled: false,
+        dualBrushMode: 'multiply', // 'multiply', 'subtract', 'average', 'overlay'
+        dualBrushSize: 50,   // Secondary brush size percentage
+        dualBrushSpacing: 25, // Secondary brush spacing
+        dualBrushScatter: 0, // Secondary brush scatter
+        // Texture & Bristle Dynamics
+        bristleCount: 1,     // Number of bristles (1-50)
+        bristleLength: 0,    // Bristle length variation (0-100%)
+        bristleStiffness: 100, // Bristle stiffness (0-100%)
+        // Pressure Curve Customization
+        pressureCurve: 'linear', // 'linear', 'ease-in', 'ease-out', 'ease-in-out', 'custom'
+        pressureCurvePoints: [0, 0.25, 0.5, 0.75, 1], // Custom curve control points
+        // Size & Opacity Dynamics
+        sizeJitter: 0,       // Random size variation (0-100%)
+        opacityJitter: 0,    // Random opacity variation (0-100%)
+        minSize: 0,          // Minimum size percentage (0-100%)
+        minOpacity: 0,       // Minimum opacity percentage (0-100%)
+        // Blending & Color Pickup
+        wetMixing: 0,        // Wet paint mixing simulation (0-100%)
+        dilution: 0,         // Paint dilution with medium (0-100%)
+        persistence: 100,    // How long paint stays wet (0-100%)
+        bleedDistance: 0,    // How far paint bleeds (0-50 pixels)
+        // Stroke Prediction & Smoothing
+        predictionEnabled: true, // Enable stroke prediction for smoother lines
+        predictionAmount: 0, // How far ahead to predict (0-100ms)
+        catchupEnabled: true, // Gradually catch up to actual position
+        catchupSpeed: 80,    // Speed of catchup (0-100%)
+        // Pen/Tablet Advanced Support
+        penRotationEnabled: false, // Use pen barrel rotation
+        penRotationJitter: 0, // Add jitter to pen rotation (0-180)
+        hoverPreview: true,  // Show brush preview on hover
+        touchRejection: true, // Reject palm touches
+        pressureCalibration: 1.0, // Pressure multiplier for calibration
+        // Adaptive Quality
+        adaptiveQuality: true, // Reduce quality for fast strokes
+        qualityThreshold: 1.0, // Velocity threshold for quality reduction (px/ms)
     },
     color: '#000000',
     layers: [],
@@ -733,7 +776,42 @@ const brushPresets = {
     'texture-bark': { size: 40, opacity: 74, hardness: 68, flow: 72, spacing: 17, smoothing: 4, angle: 45, angleJitter: 35, scatterX: 15, scatterY: 15 },
     'texture-stone': { size: 48, opacity: 82, hardness: 72, flow: 78, spacing: 16, smoothing: 5, angle: 0, angleJitter: 40, scatterX: 16, scatterY: 16 },
     'texture-fabric': { size: 36, opacity: 80, hardness: 56, flow: 70, spacing: 13, smoothing: 8, angle: 0, angleJitter: 25, scatterX: 10, scatterY: 10 },
-    'texture-grain': { size: 32, opacity: 72, hardness: 62, flow: 68, spacing: 14, smoothing: 9, angle: 0, angleJitter: 28, scatterX: 12, scatterY: 12 }
+    'texture-grain': { size: 32, opacity: 72, hardness: 62, flow: 68, spacing: 14, smoothing: 9, angle: 0, angleJitter: 28, scatterX: 12, scatterY: 12 },
+    
+    // ENHANCED PAINTER/KRITA-STYLE BRUSHES - Using new advanced features (20)
+    // Natural Media with Bristles
+    'bristle-oil-round': { size: 30, opacity: 90, hardness: 55, flow: 80, spacing: 10, smoothing: 8, angle: 0, angleJitter: 12, scatterX: 4, scatterY: 4 },
+    'bristle-oil-flat': { size: 40, opacity: 92, hardness: 60, flow: 85, spacing: 12, smoothing: 6, angle: 0, angleJitter: 8, scatterX: 3, scatterY: 3 },
+    'bristle-acrylic-round': { size: 28, opacity: 88, hardness: 58, flow: 82, spacing: 9, smoothing: 7, angle: 0, angleJitter: 10, scatterX: 3, scatterY: 3 },
+    'bristle-acrylic-flat': { size: 38, opacity: 90, hardness: 62, flow: 84, spacing: 11, smoothing: 5, angle: 0, angleJitter: 7, scatterX: 2, scatterY: 2 },
+    
+    // Color Mixing Brushes
+    'mixer-color-pickup': { size: 35, opacity: 75, hardness: 50, flow: 65, spacing: 8, smoothing: 15, angle: 0, angleJitter: 5, scatterX: 3, scatterY: 3 },
+    'wet-blend-natural': { size: 45, opacity: 70, hardness: 40, flow: 60, spacing: 7, smoothing: 18, angle: 0, angleJitter: 8, scatterX: 4, scatterY: 4 },
+    'glazing-transparent': { size: 60, opacity: 40, hardness: 25, flow: 35, spacing: 10, smoothing: 20, angle: 0, angleJitter: 5, scatterX: 3, scatterY: 3 },
+    
+    // Dual Brush Effects
+    'dual-texture-soft': { size: 40, opacity: 80, hardness: 45, flow: 70, spacing: 12, smoothing: 12, angle: 0, angleJitter: 15, scatterX: 6, scatterY: 6 },
+    'dual-texture-hard': { size: 35, opacity: 85, hardness: 70, flow: 75, spacing: 10, smoothing: 8, angle: 0, angleJitter: 12, scatterX: 5, scatterY: 5 },
+    
+    // Expressive Brushes with Color Dynamics
+    'impressionist-dab': { size: 25, opacity: 85, hardness: 65, flow: 80, spacing: 18, smoothing: 5, angle: 0, angleJitter: 45, scatterX: 15, scatterY: 15 },
+    'expressionist-stroke': { size: 35, opacity: 90, hardness: 60, flow: 85, spacing: 15, smoothing: 3, angle: 0, angleJitter: 60, scatterX: 20, scatterY: 12 },
+    'pointillist-dot': { size: 15, opacity: 95, hardness: 80, flow: 95, spacing: 30, smoothing: 2, angle: 0, angleJitter: 180, scatterX: 25, scatterY: 25 },
+    
+    // Advanced Watercolor
+    'watercolor-blooming': { size: 55, opacity: 35, hardness: 8, flow: 28, spacing: 6, smoothing: 22, angle: 0, angleJitter: 15, scatterX: 20, scatterY: 20 },
+    'watercolor-granulation': { size: 45, opacity: 50, hardness: 20, flow: 40, spacing: 10, smoothing: 15, angle: 0, angleJitter: 10, scatterX: 15, scatterY: 15 },
+    
+    // Specialty Brushes
+    'sumi-ink-brush': { size: 25, opacity: 95, hardness: 75, flow: 90, spacing: 8, smoothing: 25, angle: 0, angleJitter: 5, scatterX: 2, scatterY: 2 },
+    'chinese-calligraphy': { size: 30, opacity: 100, hardness: 85, flow: 95, spacing: 10, smoothing: 20, angle: 45, angleJitter: 3, scatterX: 1, scatterY: 1 },
+    'ink-wash': { size: 50, opacity: 60, hardness: 30, flow: 50, spacing: 12, smoothing: 18, angle: 0, angleJitter: 12, scatterX: 10, scatterY: 10 },
+    
+    // High-Performance Brushes
+    'quick-sketch': { size: 18, opacity: 80, hardness: 70, flow: 85, spacing: 12, smoothing: 15, angle: 0, angleJitter: 20, scatterX: 5, scatterY: 5 },
+    'rapid-paint': { size: 40, opacity: 85, hardness: 60, flow: 80, spacing: 15, smoothing: 10, angle: 0, angleJitter: 15, scatterX: 8, scatterY: 8 },
+    'speed-liner': { size: 12, opacity: 100, hardness: 95, flow: 100, spacing: 8, smoothing: 35, angle: 0, angleJitter: 0, scatterX: 0, scatterY: 0 }
 };
 
 // Canvas Elements - will be initialized in init()
@@ -983,6 +1061,7 @@ function setupBrushPresets() {
         'metallic': ['metallic-gold', 'metallic-silver', 'metallic-copper', 'pearlescent', 'iridescent', 'impasto-thick', 'glazing-medium', 'dry-media', 'sponge-natural', 'stipple'],
         'mixer': ['mixer-wet', 'mixer-dry', 'blender-soft', 'blender-hard', 'smudge-soft', 'smudge-hard', 'finger-paint', 'color-sampler', 'paint-mixer', 'palette-scraper'],
         'texture': ['texture-canvas', 'texture-linen', 'texture-paper', 'texture-burlap', 'texture-concrete', 'texture-wood', 'texture-bark', 'texture-stone', 'texture-fabric', 'texture-grain'],
+        'enhanced': ['bristle-oil-round', 'bristle-oil-flat', 'bristle-acrylic-round', 'bristle-acrylic-flat', 'mixer-color-pickup', 'wet-blend-natural', 'glazing-transparent', 'dual-texture-soft', 'dual-texture-hard', 'impressionist-dab', 'expressionist-stroke', 'pointillist-dot', 'watercolor-blooming', 'watercolor-granulation', 'sumi-ink-brush', 'chinese-calligraphy', 'ink-wash', 'quick-sketch', 'rapid-paint', 'speed-liner'],
         'imported': [] // Will be populated dynamically
     };
     
@@ -3895,6 +3974,10 @@ function drawDot(x, y, pressure, angle = 0) {
 
 function drawDotInternal(x, y, pressure, angle = 0) {
     const ctx = drawCtx;
+    
+    // Apply pressure curve customization
+    pressure = applyPressureCurve(pressure);
+    
     const size = calculateBrushSize(pressure);
     const opacity = calculateBrushOpacity(pressure);
     
@@ -3903,6 +3986,12 @@ function drawDotInternal(x, y, pressure, angle = 0) {
     const scatterY = (Math.random() - 0.5) * state.brush.scatterY * size / 100;
     x += scatterX;
     y += scatterY;
+    
+    // ENHANCED: Draw bristles if enabled
+    if (state.brush.bristleCount > 1) {
+        drawBristles(ctx, x, y, size, opacity, pressure, angle);
+        return;
+    }
     
     ctx.save();
     
@@ -3916,14 +4005,37 @@ function drawDotInternal(x, y, pressure, angle = 0) {
     const flow = state.brush.flow / 100;
     ctx.globalAlpha = opacity * flow;
     
-    // Wet Palette Blending
+    // ENHANCED: Color mixing and dynamics
     let drawColor = state.color;
+    
+    // Color mixing from canvas (like Corel Painter's color pickup)
+    if (state.brush.colorMixing > 0 && state.tool === 'brush' && state.activeLayer) {
+        drawColor = mixColorFromCanvas(x, y, size, drawColor, state.brush.colorMixing / 100);
+    }
+    
+    // Wet Palette Blending
     if (state.wetPalette.enabled && state.tool === 'brush') {
         drawColor = applyWetPaletteBlending(x, y, size, pressure);
     }
     
-    // Calculate brush angle with jitter
-    const brushAngle = (state.brush.angle + (Math.random() - 0.5) * state.brush.angleJitter) * Math.PI / 180;
+    // ENHANCED: Apply color dynamics (hue/saturation/brightness jitter)
+    if (state.brush.hueJitter > 0 || state.brush.saturationJitter > 0 || state.brush.brightnessJitter > 0) {
+        drawColor = applyColorJitter(drawColor);
+    }
+    
+    // Calculate brush angle with jitter and pen rotation
+    let brushAngle = (state.brush.angle + (Math.random() - 0.5) * state.brush.angleJitter) * Math.PI / 180;
+    
+    // ENHANCED: Use pen rotation if enabled
+    if (state.brush.penRotationEnabled && state.twist !== undefined && state.twist !== 0) {
+        const penAngle = state.twist + (Math.random() - 0.5) * state.brush.penRotationJitter;
+        brushAngle = penAngle * Math.PI / 180;
+    }
+    
+    // Use drawing angle for rotation mode
+    if (state.brush.rotationMode === 'drawing-angle' && angle !== 0) {
+        brushAngle = angle;
+    }
     
     // Translate and rotate for angled brush
     ctx.translate(x, y);
@@ -3935,8 +4047,13 @@ function drawDotInternal(x, y, pressure, angle = 0) {
         state.color = drawColor;
     }
     
-    // Draw brush tip based on shape
-    drawBrushTip(ctx, size);
+    // ENHANCED: Draw dual brush if enabled
+    if (state.brush.dualBrushEnabled) {
+        drawDualBrush(ctx, size);
+    } else {
+        // Draw brush tip based on shape
+        drawBrushTip(ctx, size);
+    }
     
     // Restore original color
     state.color = originalColor;
@@ -3944,6 +4061,11 @@ function drawDotInternal(x, y, pressure, angle = 0) {
     // Track wet paint for bleeding
     if (state.wetPalette.enabled && state.tool === 'brush') {
         trackWetPaint(x, y, size, drawColor);
+    }
+    
+    // ENHANCED: Apply wet mixing and bleeding
+    if (state.brush.wetMixing > 0 || state.brush.bleedDistance > 0) {
+        applyWetMixingEffect(x, y, size, drawColor, pressure);
     }
     
     ctx.restore();
@@ -4492,15 +4614,342 @@ function drawLine(x1, y1, x2, y2, pressure) {
     }
 }
 
+// ENHANCED: Apply pressure curve customization
+function applyPressureCurve(pressure) {
+    // Apply pressure calibration first
+    pressure = Math.min(1, pressure * state.brush.pressureCalibration);
+    
+    switch (state.brush.pressureCurve) {
+        case 'linear':
+            return pressure;
+        case 'ease-in':
+            return pressure * pressure;
+        case 'ease-out':
+            return 1 - (1 - pressure) * (1 - pressure);
+        case 'ease-in-out':
+            return pressure < 0.5 
+                ? 2 * pressure * pressure 
+                : 1 - Math.pow(-2 * pressure + 2, 2) / 2;
+        case 'custom':
+            // Use custom curve points for interpolation
+            return interpolatePressureCurve(pressure);
+        default:
+            return pressure;
+    }
+}
+
+// Interpolate custom pressure curve
+function interpolatePressureCurve(pressure) {
+    const points = state.brush.pressureCurvePoints;
+    if (!points || points.length < 2) return pressure;
+    
+    const index = pressure * (points.length - 1);
+    const i = Math.floor(index);
+    const fraction = index - i;
+    
+    if (i >= points.length - 1) return points[points.length - 1];
+    
+    return points[i] * (1 - fraction) + points[i + 1] * fraction;
+}
+
+// ENHANCED: Color mixing from canvas (Painter-style color pickup)
+function mixColorFromCanvas(x, y, size, brushColor, mixAmount) {
+    if (!state.activeLayer) return brushColor;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const sampleRadius = Math.max(1, size / 4);
+    
+    try {
+        const imageData = ctx.getImageData(
+            Math.floor(x - sampleRadius), 
+            Math.floor(y - sampleRadius), 
+            Math.ceil(sampleRadius * 2), 
+            Math.ceil(sampleRadius * 2)
+        );
+        
+        let r = 0, g = 0, b = 0, count = 0;
+        const data = imageData.data;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 0) {  // Only count non-transparent pixels
+                r += data[i];
+                g += data[i + 1];
+                b += data[i + 2];
+                count++;
+            }
+        }
+        
+        if (count > 0) {
+            r = Math.floor(r / count);
+            g = Math.floor(g / count);
+            b = Math.floor(b / count);
+            
+            // Parse brush color
+            const brushRGB = hexToRgb(brushColor);
+            
+            // Mix colors
+            r = Math.floor(brushRGB.r * (1 - mixAmount) + r * mixAmount);
+            g = Math.floor(brushRGB.g * (1 - mixAmount) + g * mixAmount);
+            b = Math.floor(brushRGB.b * (1 - mixAmount) + b * mixAmount);
+            
+            return rgbToHex(r, g, b);
+        }
+    } catch (e) {
+        // Out of bounds or other error, return original color
+    }
+    
+    return brushColor;
+}
+
+// ENHANCED: Apply color jitter (hue/saturation/brightness variation)
+function applyColorJitter(color) {
+    const rgb = hexToRgb(color);
+    const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    
+    // Apply hue jitter (-180 to +180 degrees)
+    if (state.brush.hueJitter > 0) {
+        const hueShift = (Math.random() - 0.5) * state.brush.hueJitter;
+        hsv.h = (hsv.h + hueShift + 360) % 360;
+    }
+    
+    // Apply saturation jitter
+    if (state.brush.saturationJitter > 0) {
+        const satShift = (Math.random() - 0.5) * state.brush.saturationJitter / 50;
+        hsv.s = Math.max(0, Math.min(1, hsv.s + satShift));
+    }
+    
+    // Apply brightness jitter
+    if (state.brush.brightnessJitter > 0) {
+        const valShift = (Math.random() - 0.5) * state.brush.brightnessJitter / 50;
+        hsv.v = Math.max(0, Math.min(1, hsv.v + valShift));
+    }
+    
+    const newRgb = hsvToRgb(hsv.h, hsv.s, hsv.v);
+    return rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+}
+
+// ENHANCED: Draw bristles for natural media simulation
+function drawBristles(ctx, x, y, size, opacity, pressure, angle) {
+    const bristleCount = Math.floor(state.brush.bristleCount);
+    const bristleLength = state.brush.bristleLength / 100;
+    const stiffness = state.brush.bristleStiffness / 100;
+    
+    for (let i = 0; i < bristleCount; i++) {
+        ctx.save();
+        
+        // Calculate bristle offset from center
+        const offsetAngle = (i / bristleCount) * Math.PI * 2;
+        const maxSpread = size * 0.3;
+        const spread = maxSpread * (1 - stiffness);
+        const offsetX = Math.cos(offsetAngle) * spread;
+        const offsetY = Math.sin(offsetAngle) * spread;
+        
+        // Bristle splay based on pressure (less pressure = more splay)
+        const splayFactor = 1 + (1 - pressure) * bristleLength;
+        const bristleX = x + offsetX * splayFactor;
+        const bristleY = y + offsetY * splayFactor;
+        
+        // Each bristle is slightly smaller and more transparent
+        const bristleSize = size / Math.sqrt(bristleCount);
+        const bristleOpacity = opacity / Math.sqrt(bristleCount);
+        
+        ctx.globalAlpha = bristleOpacity;
+        ctx.globalCompositeOperation = state.tool === 'eraser' ? 'destination-out' : 'source-over';
+        
+        // Draw bristle as small circle
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bristleSize / 2);
+        const fillColor = state.tool === 'eraser' ? '#ffffff' : state.color;
+        gradient.addColorStop(0, fillColor);
+        gradient.addColorStop(0.7, fillColor);
+        gradient.addColorStop(1, fillColor + '00');
+        
+        ctx.translate(bristleX, bristleY);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, bristleSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    }
+}
+
+// ENHANCED: Dual brush system
+function drawDualBrush(ctx, size) {
+    // Draw primary brush
+    drawBrushTip(ctx, size);
+    
+    // Draw secondary brush with different properties
+    const secondarySize = size * (state.brush.dualBrushSize / 100);
+    const scatter = state.brush.dualBrushScatter / 100;
+    
+    ctx.save();
+    
+    // Apply scatter to secondary brush
+    const scatterX = (Math.random() - 0.5) * scatter * size;
+    const scatterY = (Math.random() - 0.5) * scatter * size;
+    ctx.translate(scatterX, scatterY);
+    
+    // Apply blend mode
+    switch (state.brush.dualBrushMode) {
+        case 'multiply':
+            ctx.globalCompositeOperation = 'multiply';
+            break;
+        case 'subtract':
+            ctx.globalCompositeOperation = 'difference';
+            break;
+        case 'overlay':
+            ctx.globalCompositeOperation = 'overlay';
+            break;
+        case 'average':
+            ctx.globalAlpha *= 0.5;
+            break;
+    }
+    
+    drawBrushTip(ctx, secondarySize);
+    
+    ctx.restore();
+}
+
+// ENHANCED: Wet mixing effect
+function applyWetMixingEffect(x, y, size, color, pressure) {
+    if (!state.activeLayer || state.tool === 'eraser') return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const mixAmount = state.brush.wetMixing / 100;
+    const bleedDist = state.brush.bleedDistance;
+    
+    if (mixAmount === 0 && bleedDist === 0) return;
+    
+    // Simple wet mixing: blend with nearby pixels
+    try {
+        const radius = Math.max(1, size / 2);
+        const imageData = ctx.getImageData(
+            Math.floor(x - radius), 
+            Math.floor(y - radius), 
+            Math.ceil(radius * 2), 
+            Math.ceil(radius * 2)
+        );
+        
+        // Apply simple blur for bleeding effect
+        if (bleedDist > 0) {
+            const blurred = applySimpleBlur(imageData, bleedDist / 10);
+            ctx.putImageData(blurred, Math.floor(x - radius), Math.floor(y - radius));
+        }
+    } catch (e) {
+        // Out of bounds, ignore
+    }
+}
+
+// Simple blur for bleeding
+function applySimpleBlur(imageData, strength) {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const output = new Uint8ClampedArray(data);
+    
+    const kernel = Math.max(1, Math.floor(strength));
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let r = 0, g = 0, b = 0, a = 0, count = 0;
+            
+            for (let ky = -kernel; ky <= kernel; ky++) {
+                for (let kx = -kernel; kx <= kernel; kx++) {
+                    const px = x + kx;
+                    const py = y + ky;
+                    
+                    if (px >= 0 && px < width && py >= 0 && py < height) {
+                        const idx = (py * width + px) * 4;
+                        r += data[idx];
+                        g += data[idx + 1];
+                        b += data[idx + 2];
+                        a += data[idx + 3];
+                        count++;
+                    }
+                }
+            }
+            
+            const idx = (y * width + x) * 4;
+            output[idx] = r / count;
+            output[idx + 1] = g / count;
+            output[idx + 2] = b / count;
+            output[idx + 3] = a / count;
+        }
+    }
+    
+    return new ImageData(output, width, height);
+}
+
+// Color conversion utilities
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    
+    let h = 0;
+    if (max !== min) {
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    
+    return { h: h * 360, s: s, v: v };
+}
+
+function hsvToRgb(h, s, v) {
+    h = h / 60;
+    const c = v * s;
+    const x = c * (1 - Math.abs(h % 2 - 1));
+    const m = v - c;
+    
+    let r = 0, g = 0, b = 0;
+    if (h >= 0 && h < 1) { r = c; g = x; b = 0; }
+    else if (h >= 1 && h < 2) { r = x; g = c; b = 0; }
+    else if (h >= 2 && h < 3) { r = 0; g = c; b = x; }
+    else if (h >= 3 && h < 4) { r = 0; g = x; b = c; }
+    else if (h >= 4 && h < 5) { r = x; g = 0; b = c; }
+    else if (h >= 5 && h < 6) { r = c; g = 0; b = x; }
+    
+    return {
+        r: Math.round((r + m) * 255),
+        g: Math.round((g + m) * 255),
+        b: Math.round((b + m) * 255)
+    };
+}
+
 function calculateBrushSize(pressure) {
     let size = state.brush.size;
     
-    // Pressure affects size
-    if (state.brush.pressureSize) {
-        size = size * (0.3 + pressure * 0.7);
+    // Apply size jitter
+    if (state.brush.sizeJitter > 0) {
+        const jitter = 1 + (Math.random() - 0.5) * state.brush.sizeJitter / 50;
+        size *= jitter;
     }
     
-    // NEW: Velocity affects size
+    // Pressure affects size
+    if (state.brush.pressureSize) {
+        const minSize = state.brush.minSize / 100;
+        size = size * (minSize + pressure * (1 - minSize));
+    }
+    
+    // Velocity affects size
     if (state.brush.velocitySize > 0) {
         // Normalize velocity (typical range 0-2 pixels/ms)
         const normalizedVelocity = Math.min(1, state.velocity / 2);
@@ -4508,25 +4957,37 @@ function calculateBrushSize(pressure) {
         size *= velocityFactor;
     }
     
-    // NEW: Tilt affects size
+    // Tilt affects size
     if (state.brush.tiltSize > 0) {
         const tiltMagnitude = Math.sqrt(state.tiltX * state.tiltX + state.tiltY * state.tiltY);
         const tiltFactor = 1 + (tiltMagnitude * state.brush.tiltSize / 100);
         size *= tiltFactor;
     }
     
-    return size;
+    // Adaptive quality: reduce size slightly for very fast strokes
+    if (state.brush.adaptiveQuality && state.velocity > state.brush.qualityThreshold) {
+        size *= 0.95;
+    }
+    
+    return Math.max(1, size);
 }
 
 function calculateBrushOpacity(pressure) {
     let opacity = state.brush.opacity / 100;
     
-    // Pressure affects opacity
-    if (state.brush.pressureOpacity) {
-        opacity = opacity * (0.3 + pressure * 0.7);
+    // Apply opacity jitter
+    if (state.brush.opacityJitter > 0) {
+        const jitter = 1 + (Math.random() - 0.5) * state.brush.opacityJitter / 50;
+        opacity *= jitter;
     }
     
-    // NEW: Velocity affects opacity
+    // Pressure affects opacity
+    if (state.brush.pressureOpacity) {
+        const minOpacity = state.brush.minOpacity / 100;
+        opacity = opacity * (minOpacity + pressure * (1 - minOpacity));
+    }
+    
+    // Velocity affects opacity
     if (state.brush.velocityOpacity > 0) {
         // Normalize velocity (typical range 0-2 pixels/ms)
         const normalizedVelocity = Math.min(1, state.velocity / 2);
@@ -4534,14 +4995,14 @@ function calculateBrushOpacity(pressure) {
         opacity *= velocityFactor;
     }
     
-    // NEW: Tilt affects opacity  
+    // Tilt affects opacity  
     if (state.brush.tiltOpacity > 0) {
         const tiltMagnitude = Math.sqrt(state.tiltX * state.tiltX + state.tiltY * state.tiltY);
         const tiltFactor = 1 + (tiltMagnitude * state.brush.tiltOpacity / 100);
         opacity *= tiltFactor;
     }
     
-    return Math.min(1, opacity);
+    return Math.max(0, Math.min(1, opacity));
 }
 
 function commitDrawing() {

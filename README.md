@@ -33,9 +33,20 @@ ARTemis offers flexible pricing to suit your needs:
 
 ### ⭐ Professional Features
 
+🎨 **NEW: Advanced Brush Engine!**
+ARTemis now features a professional-grade brush engine with capabilities comparable to industry-leading applications:
+- **178+ Professional Brushes** across 17 categories
+- **Color Dynamics** - Hue, saturation, brightness variation
+- **Bristle Simulation** - Natural media with 1-50 bristles
+- **Dual Brush System** - Complex textures with blend modes
+- **Canvas Color Mixing** - Pick up colors like real paint
+- **Full Device Support** - Wacom, XP-Pen, Huion, tablets, touch, and mouse
+
+**[📖 Read the Complete Advanced Brush Engine Guide](ADVANCED-BRUSH-ENGINE.md)**
+
 ARTemis includes a comprehensive set of professional digital painting features!
 
-**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)**
+**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)**
 
 #### Core Features:
 1. **Wrap-Around Mode** - Create seamless patterns and textures
@@ -88,34 +99,51 @@ ARTemis includes a comprehensive set of professional digital painting features!
     - Real-time preview with seamless tiling
 
 ### 🎨 Professional Painting Tools
-- **Advanced Brush Engine** - Professional-grade brush system
+- **⭐ ENHANCED: Advanced Brush Engine** - Industry-leading brush system (Painter/Krita-level)
   - **Core Settings:** Size, opacity, hardness with full pressure sensitivity
   - **Flow Control:** Build-up/layering for natural paint application
   - **Spacing:** Adjustable brush dab spacing (1-100%)
   - **3 Smoothing Modes:** Basic (responsive), Weighted (balanced), Stabilizer (smooth lag)
   - **Rotation:** Brush angle (0-360°) with random jitter (0-180°)
   - **Scatter:** X/Y scattering for texture effects (0-100%)
-  - **NEW: Velocity Dynamics** ⭐ - Speed affects brush size and opacity
-  - **NEW: Tilt Sensitivity** ⭐ - Pen tilt affects size, angle, and opacity (full pen display support)
-  - **158 Professional Presets:** 16 categories including Basic, Airbrush, Charcoal, Ink, Watercolor, Oil, Acrylic, Digital, Concept Art, Special Effects, Professional Grade, Natural Media, Graphite Pencils, Metallic & Special, Mixer & Blending, and Texture Brushes ⭐ NEW
-- **NEW: Metallic & Special Effects Brushes** ⭐ (10 brushes)
+  - **Velocity Dynamics** ⭐ - Speed affects brush size and opacity
+  - **Tilt Sensitivity** ⭐ - Pen tilt affects size, angle, and opacity (full pen display support)
+  - **⭐ NEW: Pressure Curves** - 5 curve types (linear, ease-in, ease-out, ease-in-out, custom)
+  - **⭐ NEW: Color Dynamics** - Hue, saturation, brightness jitter for natural variation
+  - **⭐ NEW: Color Mixing** - Pick up colors from canvas like Corel Painter
+  - **⭐ NEW: Bristle Dynamics** - 1-50 bristles with length & stiffness control
+  - **⭐ NEW: Dual Brush System** - Combine two brushes with 4 blend modes
+  - **⭐ NEW: Wet Mixing** - Realistic watercolor bleeding and wet-on-wet
+  - **⭐ NEW: Advanced Tablet Support** - Full Wacom, XP-Pen, Huion support with pen rotation
+  - **⭐ NEW: Stroke Prediction** - Eliminate input lag for wireless tablets
+  - **⭐ NEW: Adaptive Quality** - Auto-optimize for fast strokes
+  - **178+ Professional Presets:** 17 categories including Enhanced Advanced Brushes ⭐ NEW
+- **⭐ NEW: Enhanced Advanced Brushes** (20 brushes)
+  - **Bristle Brushes** - Oil & acrylic with natural bristle simulation
+  - **Color Mixing Brushes** - Canvas color pickup, wet blending, glazing
+  - **Dual Texture Brushes** - Soft & hard with texture overlays
+  - **Expressive Brushes** - Impressionist, expressionist, pointillist
+  - **Advanced Watercolor** - Blooming, granulation effects
+  - **Asian Ink Painting** - Sumi ink, Chinese calligraphy, ink wash
+  - **High-Performance** - Quick sketch, rapid paint, speed liner
+- **Metallic & Special Effects Brushes** ⭐ (10 brushes)
   - **Metallic Paints** - Gold, Silver, Copper with shimmer effects
   - **Pearlescent & Iridescent** - Special effect brushes for magical looks
   - **Impasto Thick** - Heavy paint application with visible texture
   - **Glazing Medium** - Transparent layering for depth
   - **Dry Media, Sponge, Stipple** - Natural media effects
-- **NEW: Mixer & Blending Brushes** ⭐ (10 brushes)
+- **Mixer & Blending Brushes** ⭐ (10 brushes)
   - **Wet/Dry Mixers** - Real paint mixing simulation
   - **Soft/Hard Blenders** - Smooth color transitions
   - **Finger Paint** - Natural smudging and blending
   - **Color Sampler & Paint Mixer** - Advanced color interaction
   - **Palette Scraper** - Thick paint manipulation
-- **NEW: Texture Brushes** ⭐ (10 brushes)
+- **Texture Brushes** ⭐ (10 brushes)
   - **Canvas & Linen** - Authentic fabric textures
   - **Wood & Stone** - Natural material simulation
   - **Paper & Fabric** - Various surface textures
   - **Concrete, Bark, Burlap, Grain** - Specialty textures
-- **Professional Grade Tools** ⭐ NEW - Studio-quality brushes that replicate real art supplies
+- **Professional Grade Tools** (10 brushes) - Studio-quality brushes that replicate real art supplies
   - **2B Graphite Pencil** - Perfectly matches real graphite texture and flow
   - **Nib Pens** - Fine, Medium, and Bold nibs for comic inking (matches FW rich black acrylic inks)
   - **Paasche-Style Airbrush** - Accurate spray pattern and flow control
@@ -393,19 +421,29 @@ Each layer is implemented as a separate HTML5 canvas, providing:
 - Thumbnail generation
 
 ### Brush Engine
-The brush engine features:
-- Pressure-sensitive size and opacity
+The advanced brush engine features:
+- Pressure-sensitive size and opacity with custom curves
+- 5 pressure curve types (linear, ease-in, ease-out, ease-in-out, custom)
 - Configurable hardness for soft/hard edges
 - Three different smoothing algorithms (Basic, Weighted, Stabilizer)
-- Smooth stroke interpolation
-- Efficient rendering
-- 110+ professional brush presets including studio-grade tools
+- Smooth stroke interpolation with prediction
+- Color dynamics (hue, saturation, brightness jitter)
+- Canvas color mixing (Painter-style pickup)
+- Bristle dynamics (1-50 bristles with length & stiffness)
+- Dual brush system with 4 blend modes
+- Wet mixing and bleeding for watercolor effects
+- Full Wacom, XP-Pen, Huion tablet support
+- Pen rotation, tilt, and pressure support
+- Adaptive quality for performance
+- Efficient rendering with texture caching
+- 178+ professional brush presets across 17 categories
 
 ## Documentation
 
 ### User Documentation
-- **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization ⭐ NEW
-- **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the advanced brush system
+- **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
+- **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization
+- **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the brush system basics
 - **[LAYER-ORGANIZATION-FEATURES.md](LAYER-ORGANIZATION-FEATURES.md)** - Layer types, ordering, and flattening guide
 - **[UI-IMPROVEMENTS.md](UI-IMPROVEMENTS.md)** - Modern UI features documentation
 - **[USAGE.md](USAGE.md)** - General usage guide
