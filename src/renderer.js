@@ -3654,6 +3654,19 @@ function compositeAllLayers() {
         
         if (!layer.visible || !layer.canvas) continue;
         
+        // Check if we need a temporary canvas for this layer
+        const needsTempCanvas = (layer.maskEnabled && layer.mask) || 
+                               layer.clippingMask || 
+                               (layer.layerStyles && layer.layerStyles.enabled);
+        
+        if (!needsTempCanvas && !layer.isAdjustmentLayer) {
+            // Simple case: just draw the layer directly
+            mainCtx.globalAlpha = layer.opacity;
+            mainCtx.globalCompositeOperation = layer.blendMode || 'normal';
+            mainCtx.drawImage(layer.canvas, 0, 0);
+            continue;
+        }
+        
         // Create a temporary canvas for this layer (for masks and styles)
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = mainCanvas.width;
@@ -4139,7 +4152,7 @@ function applyLayerStyles(canvas, styles) {
         
         bevelCtx.putImageData(bevelData, 0, 0);
         ctx.drawImage(bevelCanvas, 0, 0);
-        return; // Bevel replaces the original content
+        // Don't return - let original content be drawn below
     }
     
     // Draw original content on top
@@ -12557,6 +12570,9 @@ function showLayerStylesDialog() {
     
     const styles = state.activeLayer.layerStyles;
     
+    // Save original styles for cancel operation
+    const originalStyles = JSON.parse(JSON.stringify(styles));
+    
     // Create dialog HTML
     const dialogHTML = `
         <div class="dialog-overlay" id="layer-styles-dialog">
@@ -12715,6 +12731,8 @@ function showLayerStylesDialog() {
     });
     
     document.getElementById('layer-styles-cancel').addEventListener('click', () => {
+        // Restore original styles
+        state.activeLayer.layerStyles = originalStyles;
         document.getElementById('layer-styles-dialog').remove();
         compositeAllLayers();
     });
