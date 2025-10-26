@@ -120,12 +120,13 @@ Features that would be nice to have but are not essential for core functionality
   - Custom pressure response curves
   - Multiple curve presets (5 types: linear, ease-in, ease-out, ease-in-out, custom)
   - Independent curves for size/opacity/flow
-- [ ] Dynamic brush physics
-  - Drag simulation
-  - Mass/weight simulation
-  - Spring dynamics for natural movement
+- [x] Dynamic brush physics ✅ COMPLETED
+  - Drag simulation for natural deceleration
+  - Mass/weight simulation for momentum-based movement
+  - Spring dynamics for smooth, natural movement
+  - Real-time physics calculations with configurable parameters
 
-**Impact:** Most features completed - Brush strokes are highly expressive with velocity, tilt, and rotation dynamics.
+**Impact:** ✅ Completed - Brush strokes are highly expressive with velocity, tilt, rotation dynamics, and realistic physics simulation.
 
 ---
 

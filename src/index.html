@@ -490,6 +490,34 @@
                                 <label>Tilt → Angle: <span id="brush-tilt-angle-value">0</span>%</label>
                                 <input type="range" id="brush-tilt-angle" min="0" max="100" value="0" class="slider">
                             </div>
+                            
+                            <!-- PHYSICS: Dynamic Brush Physics -->
+                            <div class="setting-group">
+                                <label>
+                                    <input type="checkbox" id="brush-physics-enabled">
+                                    Enable Brush Physics
+                                </label>
+                            </div>
+                            <div class="setting-group">
+                                <label>Drag: <span id="brush-drag-value">0</span>%</label>
+                                <input type="range" id="brush-drag" min="0" max="100" value="0" class="slider">
+                                <small>Air resistance - reduces brush speed</small>
+                            </div>
+                            <div class="setting-group">
+                                <label>Mass: <span id="brush-mass-value">50</span></label>
+                                <input type="range" id="brush-mass" min="1" max="100" value="50" class="slider">
+                                <small>Brush weight - affects momentum</small>
+                            </div>
+                            <div class="setting-group">
+                                <label>Spring Tension: <span id="brush-spring-tension-value">50</span>%</label>
+                                <input type="range" id="brush-spring-tension" min="0" max="100" value="50" class="slider">
+                                <small>Pull strength toward pointer</small>
+                            </div>
+                            <div class="setting-group">
+                                <label>Spring Damping: <span id="brush-spring-damping-value">50</span>%</label>
+                                <input type="range" id="brush-spring-damping" min="0" max="100" value="50" class="slider">
+                                <small>Reduces oscillation/bounce</small>
+                            </div>
                         </div>
                     </div>
 
