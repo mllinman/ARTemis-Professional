@@ -2324,9 +2324,13 @@ function setupColorPicker() {
 function setupColorModeSwitch() {
     const modeRadios = document.querySelectorAll('input[name="color-mode"]');
     const colorWheelContainer = document.getElementById('color-wheel-container');
+    const advancedColorWheelContainer = document.getElementById('advanced-color-wheel-container');
     const colorMixerSection = document.getElementById('color-mixer-section');
     const colorPalettesSection = document.getElementById('color-palettes-section');
     const colorHarmoniesSection = document.getElementById('color-harmonies-section');
+    
+    // Initialize advanced color wheel instance (lazy loading)
+    let advancedColorWheel = null;
     
     // Default to wheel mode (basic picker removed)
     let lastMode = localStorage.getItem('lastColorMode') || 'wheel';
@@ -2341,6 +2345,7 @@ function setupColorModeSwitch() {
     function switchColorMode(mode) {
         // Hide all color mode sections
         colorWheelContainer.style.display = 'none';
+        if (advancedColorWheelContainer) advancedColorWheelContainer.style.display = 'none';
         colorMixerSection.style.display = 'none';
         colorPalettesSection.style.display = 'none';
         colorHarmoniesSection.style.display = 'none';
@@ -2350,6 +2355,15 @@ function setupColorModeSwitch() {
             case 'wheel':
                 colorWheelContainer.style.display = 'block';
                 colorHarmoniesSection.style.display = 'block';
+                break;
+            case 'advanced-wheel':
+                if (advancedColorWheelContainer) {
+                    advancedColorWheelContainer.style.display = 'block';
+                    // Initialize advanced color wheel if not already done
+                    if (!advancedColorWheel && typeof AdvancedColorWheel !== 'undefined') {
+                        advancedColorWheel = new AdvancedColorWheel('advanced-color-wheel-container');
+                    }
+                }
                 break;
             case 'mixer':
                 colorMixerSection.style.display = 'block';
