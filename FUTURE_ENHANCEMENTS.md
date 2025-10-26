@@ -89,11 +89,14 @@ Features that would be nice to have but are not essential for core functionality
   - Saturation
   - Color
   - Luminosity
-- [ ] Custom blend formulas
-  - User-definable blend equations
-  - Blend mode presets
+- [x] Custom blend formulas ✅ COMPLETED
+  - User-definable blend equations with JavaScript
+  - Blend mode presets (6 built-in examples)
+  - Save/load custom blend modes
+  - LocalStorage persistence
+  - Edit and delete custom blend modes
 
-**Impact:** Professional-grade compositing capabilities matching Photoshop/Krita.
+**Impact:** ✅ Completed - Professional-grade compositing capabilities matching Photoshop/Krita, with added flexibility to create custom blend formulas.
 
 ---
 
