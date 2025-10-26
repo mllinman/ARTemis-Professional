@@ -33,11 +33,20 @@ ARTemis offers flexible pricing to suit your needs:
 
 ### ⭐ Professional Features
 
-🎨 **NEW: Advanced Brush Engine!** - ARTemis now features a Corel Painter and Krita-level brush engine with 178+ professional brushes, color dynamics, bristle simulation, dual brush system, canvas color mixing, and full support for Wacom, XP-Pen, and all tablet devices! **[📖 Read the Advanced Brush Engine Guide](ADVANCED-BRUSH-ENGINE.md)**
+🎨 **NEW: Advanced Brush Engine!**
+ARTemis now features a professional-grade brush engine with capabilities comparable to industry-leading applications:
+- **178+ Professional Brushes** across 17 categories
+- **Color Dynamics** - Hue, saturation, brightness variation
+- **Bristle Simulation** - Natural media with 1-50 bristles
+- **Dual Brush System** - Complex textures with blend modes
+- **Canvas Color Mixing** - Pick up colors like real paint
+- **Full Device Support** - Wacom, XP-Pen, Huion, tablets, touch, and mouse
+
+**[📖 Read the Complete Advanced Brush Engine Guide](ADVANCED-BRUSH-ENGINE.md)**
 
 ARTemis includes a comprehensive set of professional digital painting features!
 
-**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)** ⭐ NEW
+**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)**
 
 #### Core Features:
 1. **Wrap-Around Mode** - Create seamless patterns and textures
@@ -134,7 +143,7 @@ ARTemis includes a comprehensive set of professional digital painting features!
   - **Wood & Stone** - Natural material simulation
   - **Paper & Fabric** - Various surface textures
   - **Concrete, Bark, Burlap, Grain** - Specialty textures
-- **Professional Grade Tools** ⭐ - Studio-quality brushes that replicate real art supplies
+- **Professional Grade Tools** (10 brushes) - Studio-quality brushes that replicate real art supplies
   - **2B Graphite Pencil** - Perfectly matches real graphite texture and flow
   - **Nib Pens** - Fine, Medium, and Bold nibs for comic inking (matches FW rich black acrylic inks)
   - **Paasche-Style Airbrush** - Accurate spray pattern and flow control
@@ -432,7 +441,7 @@ The advanced brush engine features:
 ## Documentation
 
 ### User Documentation
-- **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support ⭐ NEW
+- **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
 - **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization
 - **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the brush system basics
 - **[LAYER-ORGANIZATION-FEATURES.md](LAYER-ORGANIZATION-FEATURES.md)** - Layer types, ordering, and flattening guide
