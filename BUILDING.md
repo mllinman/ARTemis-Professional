@@ -1,220 +1,147 @@
-# Building ARTemis-Professional
+# Running ARTemis-Professional
 
-This document provides detailed instructions for building ARTemis-Professional on different platforms.
+ARTemis-Professional is a web-based application that runs directly in your browser. No compilation or build process is required!
 
 ## Prerequisites
 
-### All Platforms
-- CMake 3.10 or higher
-- C++17 compatible compiler
-- Git (for cloning the repository)
+### Standalone Browser Mode (Recommended)
+- Any modern web browser:
+  - Chrome/Chromium 80+
+  - Edge 80+
+  - Firefox 75+
+  - Safari 13.1+
+- No additional dependencies required!
 
-### Platform-Specific Requirements
-
-#### Linux
-- GCC 7+ or Clang 5+
-- SDL2 development libraries
-
-#### macOS
-- Xcode Command Line Tools or Clang
-- SDL2 (via Homebrew or from source)
-
-#### Windows
-- Visual Studio 2017 or later (with C++ support)
-- SDL2 development libraries
-
-## Installing Dependencies
-
-### Ubuntu/Debian Linux
-
-```bash
-sudo apt-get update
-sudo apt-get install build-essential cmake libsdl2-dev git
-```
-
-### Fedora/Red Hat Linux
-
-```bash
-sudo dnf install gcc-c++ cmake SDL2-devel git
-```
-
-### macOS
-
-Using Homebrew:
-```bash
-brew install cmake sdl2
-```
-
-Ensure Xcode Command Line Tools are installed:
-```bash
-xcode-select --install
-```
-
-### Windows
-
-1. Download and install CMake from https://cmake.org/download/
-2. Download SDL2 development libraries from https://www.libsdl.org/download-2.0.php
-   - For Visual Studio, download the "SDL2-devel-2.x.x-VC.zip"
-   - Extract to a known location (e.g., C:\SDL2)
-3. Install Visual Studio 2017 or later with C++ support
-
-## Building from Source
-
-### Linux/macOS
-
-```bash
-# Clone the repository
-git clone https://github.com/mllinman/ARTemis-Professional.git
-cd ARTemis-Professional
-
-# Create build directory
-mkdir build
-cd build
-
-# Configure with CMake
-cmake ..
-
-# Build
-make -j$(nproc)
-
-# Optionally install system-wide
-sudo make install
-```
-
-### Windows with Visual Studio
-
-```bash
-# Clone the repository
-git clone https://github.com/mllinman/ARTemis-Professional.git
-cd ARTemis-Professional
-
-# Create build directory
-mkdir build
-cd build
-
-# Configure with CMake (adjust SDL2 path as needed)
-cmake .. -DSDL2_DIR="C:\SDL2\cmake"
-
-# Build
-cmake --build . --config Release
-
-# The executable will be in build\Release\artemis.exe
-```
-
-### Windows with MinGW
-
-```bash
-# Clone the repository
-git clone https://github.com/mllinman/ARTemis-Professional.git
-cd ARTemis-Professional
-
-# Create build directory
-mkdir build
-cd build
-
-# Configure with CMake
-cmake .. -G "MinGW Makefiles"
-
-# Build
-mingw32-make
-
-# The executable will be in build\artemis.exe
-```
+### Optional Desktop Mode (Electron)
+- Node.js 16+ and npm (only for Electron desktop wrapper)
 
 ## Running the Application
 
-### Linux/macOS
+### Method 1: Standalone Browser Mode (No Installation)
+
+This is the simplest way to use ARTemis:
+
+1. Clone or download the repository:
+   ```bash
+   git clone https://github.com/mllinman/ARTemis-Professional.git
+   cd ARTemis-Professional
+   ```
+
+2. Open the application in your browser:
+   - **Option A:** Open `src/index.html` directly in your browser
+   - **Option B:** For authentication features, open `src/login.html` first
+
+3. Start creating immediately! All features work in browser mode.
+
+**Advantages:**
+- ✅ Zero dependencies - no installation needed
+- ✅ Works on any device with a modern browser
+- ✅ All features fully functional
+- ✅ Works on Windows, macOS, Linux, iOS, Android, ChromeOS
+
+### Method 2: Desktop Mode (Optional Electron Wrapper)
+
+For a native desktop experience with OS-level file dialogs:
 
 ```bash
-# From the build directory
-./artemis
+# Install dependencies
+npm install
 
-# Or if installed system-wide
-artemis
+# Run the application
+npm start
 ```
 
-### Windows
+**Desktop app advantages:**
+- Native OS file dialogs
+- Desktop application window
+- OS menu integration
+
+## Deployment Options
+
+### Option 1: Local File Access
+Simply double-click `src/index.html` or open it with your browser.
+
+### Option 2: Local Web Server
+For the best experience, serve the files through a local web server:
 
 ```bash
-# From the build directory
-Release\artemis.exe
+# Using Python 3
+python3 -m http.server 8000
 
-# Or double-click artemis.exe in Windows Explorer
+# Using Node.js http-server
+npx http-server -p 8000
+
+# Then open: http://localhost:8000/src/index.html
 ```
 
-Note: On Windows, you may need to copy SDL2.dll to the same directory as artemis.exe, or add the SDL2 bin directory to your PATH.
+### Option 3: Deploy to Web Hosting
+Upload the entire repository to any web hosting service:
+- GitHub Pages
+- Netlify
+- Vercel
+- Any static hosting provider
 
-## Build Options
+Users can then access it directly through their web browser!
 
-You can customize the build with CMake options:
+## System Requirements
 
-```bash
-# Debug build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+### Browser Mode
+- **Operating System:** Any (Windows, macOS, Linux, iOS, Android, ChromeOS)
+- **Browser:** Modern web browser with HTML5 Canvas support
+- **Memory:** 2GB RAM recommended
+- **Storage:** ~50MB for application files
 
-# Release build with optimizations
-cmake .. -DCMAKE_BUILD_TYPE=Release
+### Optional Desktop Mode
+- **Operating System:** Windows 10+, macOS 10.13+, or Linux
+- **Node.js:** Version 16 or higher
+- **Memory:** 4GB RAM recommended
 
-# Specify custom install prefix
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+## Recommended Hardware
 
-# Use specific C++ compiler
-cmake .. -DCMAKE_CXX_COMPILER=clang++
-```
+For the best experience:
+- Touch-screen monitor or graphics tablet with pressure sensitivity
+- 8GB RAM or more
+- Modern GPU for smooth canvas rendering
 
 ## Troubleshooting
 
-### SDL2 not found
+### Browser Compatibility Issues
 
-If CMake cannot find SDL2, you can manually specify its location:
+If you experience issues:
+1. Ensure you're using a modern browser (Chrome/Edge recommended)
+2. Clear your browser cache
+3. Try opening in an incognito/private window
+4. Check the browser console (F12) for error messages
 
-```bash
-cmake .. -DSDL2_DIR=/path/to/sdl2
-```
+### File Save/Load Issues
 
-### Compiler errors
+The app uses the File System Access API with fallbacks:
+- **Chrome/Edge:** Full file system access support
+- **Firefox/Safari:** Uses download/upload fallback
+- Both methods work, but Chrome/Edge provides a better experience
 
-Ensure you have a C++17 compatible compiler:
-- GCC 7.0+
-- Clang 5.0+
-- Visual Studio 2017+
+### Performance Issues
 
-### Linking errors on Linux
+If the canvas is slow:
+1. Reduce canvas size
+2. Use fewer layers
+3. Close unused browser tabs
+4. Disable browser extensions
+5. Update your graphics drivers
 
-If you get linking errors related to SDL2, try:
+## Development
 
-```bash
-sudo apt-get install libsdl2-2.0-0
-```
+To modify or develop the application:
 
-### macOS Catalina or later security warnings
+1. Edit files in the `src/` directory:
+   - `index.html` - UI structure
+   - `renderer.js` - Core application logic
+   - `styles.css` - Visual styling
 
-If you get security warnings when running the application, you may need to allow it in System Preferences > Security & Privacy.
+2. Refresh your browser to see changes (no build step needed)
 
-## Clean Build
+3. Use browser developer tools (F12) for debugging
 
-To perform a clean build:
+## Security Note
 
-```bash
-# Remove build directory
-rm -rf build
-
-# Create new build directory and rebuild
-mkdir build
-cd build
-cmake ..
-make
-```
-
-## Development Build
-
-For development with debugging symbols:
-
-```bash
-mkdir build-debug
-cd build-debug
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-make
-```
-
-This will create a debug build with symbols for debugging with GDB or LLDB.
+When running locally, some features (like screen-wide eyedropper) may have limitations due to browser security policies. For full functionality, serve the app through a web server rather than opening files directly.
