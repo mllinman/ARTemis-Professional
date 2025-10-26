@@ -201,6 +201,7 @@ const state = {
         textureEnabled: false, // Pattern overlay on strokes
         textureScale: 100,   // Texture scale percentage
         textureOpacity: 100, // Texture opacity
+        textureRotation: 0,  // Texture rotation angle (0-360)
         texturePattern: null, // Pattern image data
         // ENHANCED: Advanced features for Painter/Krita-level control
         // Color Dynamics
@@ -1019,6 +1020,162 @@ function setupBrushSettings() {
         tiltAngleSlider.addEventListener('input', (e) => {
             state.brush.tiltAngle = parseInt(e.target.value);
             tiltAngleValue.textContent = state.brush.tiltAngle;
+        });
+    }
+    
+    // Phase 1: Dual Brush System handlers
+    const dualBrushEnabled = document.getElementById('dual-brush-enabled');
+    const dualBrushSettings = document.getElementById('dual-brush-settings');
+    if (dualBrushEnabled && dualBrushSettings) {
+        dualBrushEnabled.addEventListener('change', (e) => {
+            state.brush.dualBrushEnabled = e.target.checked;
+            dualBrushSettings.classList.toggle('hidden', !e.target.checked);
+        });
+    }
+    
+    const dualBrushMode = document.getElementById('dual-brush-mode');
+    if (dualBrushMode) {
+        dualBrushMode.addEventListener('change', (e) => {
+            state.brush.dualBrushMode = e.target.value;
+        });
+    }
+    
+    const dualBrushSizeSlider = document.getElementById('dual-brush-size');
+    const dualBrushSizeValue = document.getElementById('dual-brush-size-value');
+    if (dualBrushSizeSlider && dualBrushSizeValue) {
+        dualBrushSizeSlider.addEventListener('input', (e) => {
+            state.brush.dualBrushSize = parseInt(e.target.value);
+            dualBrushSizeValue.textContent = state.brush.dualBrushSize;
+        });
+    }
+    
+    const dualBrushSpacingSlider = document.getElementById('dual-brush-spacing');
+    const dualBrushSpacingValue = document.getElementById('dual-brush-spacing-value');
+    if (dualBrushSpacingSlider && dualBrushSpacingValue) {
+        dualBrushSpacingSlider.addEventListener('input', (e) => {
+            state.brush.dualBrushSpacing = parseInt(e.target.value);
+            dualBrushSpacingValue.textContent = state.brush.dualBrushSpacing;
+        });
+    }
+    
+    const dualBrushScatterSlider = document.getElementById('dual-brush-scatter');
+    const dualBrushScatterValue = document.getElementById('dual-brush-scatter-value');
+    if (dualBrushScatterSlider && dualBrushScatterValue) {
+        dualBrushScatterSlider.addEventListener('input', (e) => {
+            state.brush.dualBrushScatter = parseInt(e.target.value);
+            dualBrushScatterValue.textContent = state.brush.dualBrushScatter;
+        });
+    }
+    
+    // Phase 2: Texture & Pattern System handlers
+    const textureEnabled = document.getElementById('texture-enabled');
+    const textureSettings = document.getElementById('texture-settings');
+    if (textureEnabled && textureSettings) {
+        textureEnabled.addEventListener('change', (e) => {
+            state.brush.textureEnabled = e.target.checked;
+            textureSettings.classList.toggle('hidden', !e.target.checked);
+        });
+    }
+    
+    const textureOpacitySlider = document.getElementById('texture-opacity');
+    const textureOpacityValue = document.getElementById('texture-opacity-value');
+    if (textureOpacitySlider && textureOpacityValue) {
+        textureOpacitySlider.addEventListener('input', (e) => {
+            state.brush.textureOpacity = parseInt(e.target.value);
+            textureOpacityValue.textContent = state.brush.textureOpacity;
+        });
+    }
+    
+    const textureScaleSlider = document.getElementById('texture-scale');
+    const textureScaleValue = document.getElementById('texture-scale-value');
+    if (textureScaleSlider && textureScaleValue) {
+        textureScaleSlider.addEventListener('input', (e) => {
+            state.brush.textureScale = parseInt(e.target.value);
+            textureScaleValue.textContent = state.brush.textureScale;
+        });
+    }
+    
+    const textureRotationSlider = document.getElementById('texture-rotation');
+    const textureRotationValue = document.getElementById('texture-rotation-value');
+    if (textureRotationSlider && textureRotationValue) {
+        textureRotationSlider.addEventListener('input', (e) => {
+            state.brush.textureRotation = parseInt(e.target.value);
+            textureRotationValue.textContent = state.brush.textureRotation;
+        });
+    }
+    
+    const loadTextureBtn = document.getElementById('load-texture-btn');
+    if (loadTextureBtn) {
+        loadTextureBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            // Create a canvas to store the texture
+                            const textureCanvas = document.createElement('canvas');
+                            textureCanvas.width = img.width;
+                            textureCanvas.height = img.height;
+                            const textureCtx = textureCanvas.getContext('2d');
+                            textureCtx.drawImage(img, 0, 0);
+                            
+                            // Store texture data in state
+                            state.brush.texturePattern = textureCtx.getImageData(0, 0, img.width, img.height);
+                            
+                            // Show preview
+                            const preview = document.getElementById('texture-preview');
+                            const previewContainer = document.getElementById('texture-preview-container');
+                            if (preview && previewContainer) {
+                                const previewCtx = preview.getContext('2d');
+                                previewCtx.clearRect(0, 0, preview.width, preview.height);
+                                previewCtx.drawImage(img, 0, 0, preview.width, preview.height);
+                                previewContainer.style.display = 'block';
+                            }
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        });
+    }
+    
+    const clearTextureBtn = document.getElementById('clear-texture-btn');
+    if (clearTextureBtn) {
+        clearTextureBtn.addEventListener('click', () => {
+            state.brush.texturePattern = null;
+            const previewContainer = document.getElementById('texture-preview-container');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+        });
+    }
+    
+    // Texture Library handlers
+    const textureLibrarySelect = document.getElementById('texture-library-select');
+    if (textureLibrarySelect) {
+        textureLibrarySelect.addEventListener('change', (e) => {
+            const textureType = e.target.value;
+            if (textureType) {
+                loadBuiltInTexture(textureType);
+            }
+        });
+    }
+    
+    const textureLibraryPreview = document.getElementById('texture-library-preview');
+    const textureLibraryGallery = document.getElementById('texture-library-gallery');
+    if (textureLibraryPreview && textureLibraryGallery) {
+        textureLibraryPreview.addEventListener('change', (e) => {
+            textureLibraryGallery.classList.toggle('hidden', !e.target.checked);
+            if (e.target.checked) {
+                populateTextureGallery();
+            }
         });
     }
 }
@@ -10901,6 +11058,419 @@ function applyCanvasTexture() {
     mainCtx.fillStyle = pattern;
     mainCtx.fillRect(0, 0, state.canvas.width, state.canvas.height);
     mainCtx.restore();
+}
+
+// Phase 2: Load built-in texture from library
+function loadBuiltInTexture(textureType) {
+    const size = 128; // Standard texture size
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    // Generate procedural textures based on type
+    switch(textureType) {
+        case 'canvas-fine':
+            generateCanvasWeaveTexture(ctx, size, 1);
+            break;
+        case 'canvas-medium':
+            generateCanvasWeaveTexture(ctx, size, 2);
+            break;
+        case 'canvas-rough':
+            generateCanvasWeaveTexture(ctx, size, 4);
+            break;
+        case 'paper-smooth':
+            generatePaperTexture(ctx, size, 0.3);
+            break;
+        case 'paper-rough':
+            generatePaperTexture(ctx, size, 0.8);
+            break;
+        case 'watercolor-paper':
+            generateWatercolorPaperTexture(ctx, size);
+            break;
+        case 'wood-grain':
+            generateWoodGrainTexture(ctx, size);
+            break;
+        case 'stone':
+            generateStoneTexture(ctx, size);
+            break;
+        case 'concrete':
+            generateConcreteTexture(ctx, size);
+            break;
+        case 'bark':
+            generateBarkTexture(ctx, size);
+            break;
+        case 'linen':
+            generateLinenTexture(ctx, size);
+            break;
+        case 'burlap':
+            generateBurlapTexture(ctx, size);
+            break;
+        case 'grain':
+            generateGrainTexture(ctx, size);
+            break;
+        case 'noise':
+            generateNoiseTexture(ctx, size);
+            break;
+        case 'dots':
+            generateDotsTexture(ctx, size);
+            break;
+        case 'crosshatch':
+            generateCrosshatchTexture(ctx, size);
+            break;
+        default:
+            return;
+    }
+    
+    // Store the texture
+    state.brush.texturePattern = ctx.getImageData(0, 0, size, size);
+    
+    // Update preview
+    const preview = document.getElementById('texture-preview');
+    const previewContainer = document.getElementById('texture-preview-container');
+    if (preview && previewContainer) {
+        const previewCtx = preview.getContext('2d');
+        previewCtx.clearRect(0, 0, preview.width, preview.height);
+        previewCtx.drawImage(canvas, 0, 0, preview.width, preview.height);
+        previewContainer.style.display = 'block';
+    }
+    
+    // Enable texture overlay
+    const textureEnabled = document.getElementById('texture-enabled');
+    if (textureEnabled && !textureEnabled.checked) {
+        textureEnabled.checked = true;
+        state.brush.textureEnabled = true;
+        const textureSettings = document.getElementById('texture-settings');
+        if (textureSettings) {
+            textureSettings.classList.remove('hidden');
+        }
+    }
+}
+
+// Texture generation helper functions
+function generateCanvasWeaveTexture(ctx, size, scale) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const warp = Math.sin(x * 0.5 * scale) * 0.5 + 0.5;
+            const weft = Math.sin(y * 0.5 * scale) * 0.5 + 0.5;
+            const value = (warp + weft) / 2;
+            const color = 200 + value * 55;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generatePaperTexture(ctx, size, roughness) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noise = (Math.random() - 0.5) * roughness;
+            const color = 240 + noise * 30;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateWatercolorPaperTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noise = Math.random() * 0.3 + 0.7;
+            const grain = Math.sin(x * 0.3) * Math.sin(y * 0.3) * 0.1 + 0.9;
+            const color = 245 * noise * grain;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateWoodGrainTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const grain = Math.sin(y * 0.2) * 20 + Math.random() * 10;
+            const color = 180 + grain;
+            data[idx] = color * 0.7;
+            data[idx + 1] = color * 0.5;
+            data[idx + 2] = color * 0.3;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateStoneTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noise = Math.random() * 0.4 + 0.6;
+            const color = 160 * noise;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateConcreteTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noise = Math.random() * 0.3 + 0.7;
+            const spots = Math.random() < 0.05 ? 0.5 : 1;
+            const color = 200 * noise * spots;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateBarkTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const vertical = Math.sin(x * 0.1) * 30;
+            const noise = Math.random() * 20;
+            const color = 100 + vertical + noise;
+            data[idx] = color * 0.6;
+            data[idx + 1] = color * 0.4;
+            data[idx + 2] = color * 0.2;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateLinenTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const weave = (Math.sin(x * 0.8) + Math.sin(y * 0.8)) * 10;
+            const color = 230 + weave;
+            data[idx] = color;
+            data[idx + 1] = color;
+            data[idx + 2] = color;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateBurlapTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const weave = (Math.sin(x * 0.4) + Math.sin(y * 0.4)) * 15;
+            const noise = Math.random() * 20;
+            const color = 200 + weave + noise;
+            data[idx] = color * 0.9;
+            data[idx + 1] = color * 0.8;
+            data[idx + 2] = color * 0.6;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateGrainTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const grain = Math.random() * 100 + 155;
+            data[idx] = grain;
+            data[idx + 1] = grain;
+            data[idx + 2] = grain;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateNoiseTexture(ctx, size) {
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noise = Math.random() * 255;
+            data[idx] = noise;
+            data[idx + 1] = noise;
+            data[idx + 2] = noise;
+            data[idx + 3] = 255;
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateDotsTexture(ctx, size) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+    const dotSize = 4;
+    const spacing = 12;
+    for (let y = 0; y < size; y += spacing) {
+        for (let x = 0; x < size; x += spacing) {
+            ctx.beginPath();
+            ctx.arc(x + dotSize, y + dotSize, dotSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+function generateCrosshatchTexture(ctx, size) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    const spacing = 8;
+    // Horizontal lines
+    for (let y = 0; y < size; y += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(size, y);
+        ctx.stroke();
+    }
+    // Vertical lines
+    for (let x = 0; x < size; x += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, size);
+        ctx.stroke();
+    }
+}
+
+// Populate texture gallery with previews
+function populateTextureGallery() {
+    const gallery = document.getElementById('texture-library-gallery');
+    if (!gallery) return;
+    
+    gallery.innerHTML = ''; // Clear existing
+    
+    const textures = [
+        'canvas-fine', 'canvas-medium', 'canvas-rough',
+        'paper-smooth', 'paper-rough', 'watercolor-paper',
+        'wood-grain', 'stone', 'concrete',
+        'bark', 'linen', 'burlap',
+        'grain', 'noise', 'dots', 'crosshatch'
+    ];
+    
+    textures.forEach(textureType => {
+        const preview = document.createElement('canvas');
+        preview.width = 60;
+        preview.height = 60;
+        preview.style.cursor = 'pointer';
+        preview.style.border = '1px solid #444';
+        preview.style.borderRadius = '4px';
+        preview.title = textureType;
+        
+        const ctx = preview.getContext('2d');
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 60;
+        tempCanvas.height = 60;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Generate texture at small size for preview
+        switch(textureType) {
+            case 'canvas-fine':
+                generateCanvasWeaveTexture(tempCtx, 60, 1);
+                break;
+            case 'canvas-medium':
+                generateCanvasWeaveTexture(tempCtx, 60, 2);
+                break;
+            case 'canvas-rough':
+                generateCanvasWeaveTexture(tempCtx, 60, 4);
+                break;
+            case 'paper-smooth':
+                generatePaperTexture(tempCtx, 60, 0.3);
+                break;
+            case 'paper-rough':
+                generatePaperTexture(tempCtx, 60, 0.8);
+                break;
+            case 'watercolor-paper':
+                generateWatercolorPaperTexture(tempCtx, 60);
+                break;
+            case 'wood-grain':
+                generateWoodGrainTexture(tempCtx, 60);
+                break;
+            case 'stone':
+                generateStoneTexture(tempCtx, 60);
+                break;
+            case 'concrete':
+                generateConcreteTexture(tempCtx, 60);
+                break;
+            case 'bark':
+                generateBarkTexture(tempCtx, 60);
+                break;
+            case 'linen':
+                generateLinenTexture(tempCtx, 60);
+                break;
+            case 'burlap':
+                generateBurlapTexture(tempCtx, 60);
+                break;
+            case 'grain':
+                generateGrainTexture(tempCtx, 60);
+                break;
+            case 'noise':
+                generateNoiseTexture(tempCtx, 60);
+                break;
+            case 'dots':
+                generateDotsTexture(tempCtx, 60);
+                break;
+            case 'crosshatch':
+                generateCrosshatchTexture(tempCtx, 60);
+                break;
+        }
+        
+        ctx.drawImage(tempCanvas, 0, 0);
+        
+        preview.addEventListener('click', () => {
+            loadBuiltInTexture(textureType);
+            // Update select to match
+            const select = document.getElementById('texture-library-select');
+            if (select) {
+                select.value = textureType;
+            }
+        });
+        
+        gallery.appendChild(preview);
+    });
 }
 
 // Add Lens Blur Filter
