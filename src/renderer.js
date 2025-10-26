@@ -1939,6 +1939,9 @@ function setupNewFeatures() {
         });
     }
     
+    // Phase 3: Custom Blend Mode System
+    setupCustomBlendModes();
+    
     // IPC handlers for file operations
     ipcRenderer.on('brush-texture-loaded', (event, textureData) => {
         const img = new Image();
@@ -3675,9 +3678,40 @@ function compositeAllLayers() {
         
         if (!needsTempCanvas && !layer.isAdjustmentLayer) {
             // Simple case: just draw the layer directly
-            mainCtx.globalAlpha = layer.opacity;
-            mainCtx.globalCompositeOperation = layer.blendMode || 'normal';
-            mainCtx.drawImage(layer.canvas, 0, 0);
+            const blendMode = layer.blendMode || 'normal';
+            
+            // Phase 3: Check if this is a custom blend mode
+            if (blendMode.startsWith('custom-') && customBlendModes[blendMode]) {
+                // Apply custom blend mode using pixel manipulation
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = mainCanvas.width;
+                tempCanvas.height = mainCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Copy current main canvas state
+                tempCtx.drawImage(mainCanvas, 0, 0);
+                
+                // Create source canvas with layer content at correct opacity
+                const sourceCanvas = document.createElement('canvas');
+                sourceCanvas.width = mainCanvas.width;
+                sourceCanvas.height = mainCanvas.height;
+                const sourceCtx = sourceCanvas.getContext('2d');
+                sourceCtx.globalAlpha = layer.opacity;
+                sourceCtx.drawImage(layer.canvas, 0, 0);
+                
+                // Apply custom blend formula
+                applyCustomBlendMode(tempCanvas, sourceCanvas, customBlendModes[blendMode].formula);
+                
+                // Draw blended result
+                mainCtx.globalAlpha = 1.0;
+                mainCtx.globalCompositeOperation = 'source-over';
+                mainCtx.drawImage(tempCanvas, 0, 0);
+            } else {
+                // Standard blend mode
+                mainCtx.globalAlpha = layer.opacity;
+                mainCtx.globalCompositeOperation = blendMode;
+                mainCtx.drawImage(layer.canvas, 0, 0);
+            }
             continue;
         }
         
@@ -3718,9 +3752,40 @@ function compositeAllLayers() {
         }
         
         // Composite to main canvas
-        mainCtx.globalAlpha = layer.opacity;
-        mainCtx.globalCompositeOperation = layer.blendMode || 'normal';
-        mainCtx.drawImage(tempCanvas, 0, 0);
+        const blendMode = layer.blendMode || 'normal';
+        
+        // Phase 3: Check if this is a custom blend mode
+        if (blendMode.startsWith('custom-') && customBlendModes[blendMode]) {
+            // Apply custom blend mode using pixel manipulation
+            const destCanvas = document.createElement('canvas');
+            destCanvas.width = mainCanvas.width;
+            destCanvas.height = mainCanvas.height;
+            const destCtx = destCanvas.getContext('2d');
+            
+            // Copy current main canvas state
+            destCtx.drawImage(mainCanvas, 0, 0);
+            
+            // Create source canvas with layer content at correct opacity
+            const sourceCanvas = document.createElement('canvas');
+            sourceCanvas.width = mainCanvas.width;
+            sourceCanvas.height = mainCanvas.height;
+            const sourceCtx = sourceCanvas.getContext('2d');
+            sourceCtx.globalAlpha = layer.opacity;
+            sourceCtx.drawImage(tempCanvas, 0, 0);
+            
+            // Apply custom blend formula
+            applyCustomBlendMode(destCanvas, sourceCanvas, customBlendModes[blendMode].formula);
+            
+            // Draw blended result
+            mainCtx.globalAlpha = 1.0;
+            mainCtx.globalCompositeOperation = 'source-over';
+            mainCtx.drawImage(destCanvas, 0, 0);
+        } else {
+            // Standard blend mode
+            mainCtx.globalAlpha = layer.opacity;
+            mainCtx.globalCompositeOperation = blendMode;
+            mainCtx.drawImage(tempCanvas, 0, 0);
+        }
     }
     
     mainCtx.restore();
@@ -3875,6 +3940,399 @@ function applyBlendMode(target, source, mode) {
     }
     
     target.putImageData(targetData, 0, 0);
+}
+
+// Phase 3: Custom Blend Mode System
+// Storage for custom blend modes
+let customBlendModes = {};
+
+// Load custom blend modes from localStorage
+function loadCustomBlendModes() {
+    try {
+        const saved = localStorage.getItem('artemis-custom-blend-modes');
+        if (saved) {
+            customBlendModes = JSON.parse(saved);
+            updateBlendModeDropdown();
+        }
+    } catch (e) {
+        console.error('Error loading custom blend modes:', e);
+    }
+}
+
+// Save custom blend modes to localStorage
+function saveCustomBlendModes() {
+    try {
+        localStorage.setItem('artemis-custom-blend-modes', JSON.stringify(customBlendModes));
+    } catch (e) {
+        console.error('Error saving custom blend modes:', e);
+    }
+}
+
+// Update blend mode dropdown with custom modes
+function updateBlendModeDropdown() {
+    const select = document.getElementById('layer-blend-mode');
+    if (!select) return;
+    
+    // Remove all custom blend mode options
+    const options = Array.from(select.options);
+    options.forEach(option => {
+        if (option.value.startsWith('custom-')) {
+            select.removeChild(option);
+        }
+    });
+    
+    // Add current custom blend modes
+    Object.keys(customBlendModes).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = customBlendModes[key].name;
+        select.appendChild(option);
+    });
+}
+
+// Apply custom blend mode using pixel manipulation
+function applyCustomBlendMode(targetCanvas, sourceCanvas, formula) {
+    const targetCtx = targetCanvas.getContext('2d');
+    const sourceCtx = sourceCanvas.getContext('2d');
+    
+    const width = targetCanvas.width;
+    const height = targetCanvas.height;
+    
+    // Get pixel data
+    const dstData = targetCtx.getImageData(0, 0, width, height);
+    const srcData = sourceCtx.getImageData(0, 0, width, height);
+    
+    const dst = dstData.data;
+    const src = srcData.data;
+    
+    // Apply custom blend formula
+    try {
+        // Create the blending function from the formula
+        const blendFunc = new Function('src', 'dst', formula);
+        
+        for (let i = 0; i < dst.length; i += 4) {
+            const srcPixel = {
+                r: src[i],
+                g: src[i + 1],
+                b: src[i + 2],
+                a: src[i + 3]
+            };
+            
+            const dstPixel = {
+                r: dst[i],
+                g: dst[i + 1],
+                b: dst[i + 2],
+                a: dst[i + 3]
+            };
+            
+            // Skip transparent pixels
+            if (srcPixel.a === 0) continue;
+            
+            // Apply blend formula
+            const result = blendFunc(srcPixel, dstPixel);
+            
+            // Clamp values and apply
+            dst[i] = Math.max(0, Math.min(255, result.r || 0));
+            dst[i + 1] = Math.max(0, Math.min(255, result.g || 0));
+            dst[i + 2] = Math.max(0, Math.min(255, result.b || 0));
+            dst[i + 3] = Math.max(0, Math.min(255, result.a !== undefined ? result.a : srcPixel.a));
+        }
+        
+        targetCtx.putImageData(dstData, 0, 0);
+        return true;
+    } catch (e) {
+        console.error('Error applying custom blend mode:', e);
+        return false;
+    }
+}
+
+// Setup custom blend mode UI and event handlers
+function setupCustomBlendModes() {
+    // Load saved custom blend modes
+    loadCustomBlendModes();
+    
+    // Create Custom Blend Mode button
+    const createBtn = document.getElementById('create-custom-blend-btn');
+    if (createBtn) {
+        createBtn.addEventListener('click', () => {
+            showCustomBlendDialog();
+        });
+    }
+    
+    // Manage Custom Blend Modes button
+    const manageBtn = document.getElementById('manage-custom-blends-btn');
+    if (manageBtn) {
+        manageBtn.addEventListener('click', () => {
+            showManageCustomBlendsDialog();
+        });
+    }
+    
+    // Setup custom blend dialog
+    setupCustomBlendDialog();
+    
+    // Setup manage dialog
+    setupManageCustomBlendsDialog();
+}
+
+// Show custom blend mode creation dialog
+function showCustomBlendDialog() {
+    const dialog = document.getElementById('custom-blend-dialog');
+    if (!dialog) return;
+    
+    // Reset form
+    document.getElementById('custom-blend-name').value = '';
+    document.getElementById('custom-blend-formula').value = '';
+    document.getElementById('custom-blend-preset').value = '';
+    
+    dialog.classList.remove('hidden');
+}
+
+// Setup custom blend mode creation dialog handlers
+function setupCustomBlendDialog() {
+    const dialog = document.getElementById('custom-blend-dialog');
+    if (!dialog) return;
+    
+    // Close button
+    const closeBtn = document.getElementById('custom-blend-dialog-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
+    
+    // Cancel button
+    const cancelBtn = document.getElementById('custom-blend-dialog-cancel');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
+    
+    // Preset selector
+    const presetSelect = document.getElementById('custom-blend-preset');
+    if (presetSelect) {
+        presetSelect.addEventListener('change', (e) => {
+            loadCustomBlendPreset(e.target.value);
+        });
+    }
+    
+    // Save button
+    const saveBtn = document.getElementById('custom-blend-dialog-save');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            saveCustomBlendMode();
+        });
+    }
+}
+
+// Load a preset blend formula
+function loadCustomBlendPreset(preset) {
+    const formulaField = document.getElementById('custom-blend-formula');
+    const nameField = document.getElementById('custom-blend-name');
+    if (!formulaField || !nameField) return;
+    
+    const presets = {
+        additive: {
+            name: 'Additive',
+            formula: `return {
+  r: Math.min(255, src.r + dst.r),
+  g: Math.min(255, src.g + dst.g),
+  b: Math.min(255, src.b + dst.b),
+  a: src.a
+};`
+        },
+        average: {
+            name: 'Average',
+            formula: `return {
+  r: (src.r + dst.r) / 2,
+  g: (src.g + dst.g) / 2,
+  b: (src.b + dst.b) / 2,
+  a: src.a
+};`
+        },
+        subtract: {
+            name: 'Subtract',
+            formula: `return {
+  r: Math.max(0, dst.r - src.r),
+  g: Math.max(0, dst.g - src.g),
+  b: Math.max(0, dst.b - src.b),
+  a: src.a
+};`
+        },
+        inverse: {
+            name: 'Inverse',
+            formula: `return {
+  r: 255 - ((255 - src.r) * (255 - dst.r) / 255),
+  g: 255 - ((255 - src.g) * (255 - dst.g) / 255),
+  b: 255 - ((255 - src.b) * (255 - dst.b) / 255),
+  a: src.a
+};`
+        },
+        max: {
+            name: 'Maximum',
+            formula: `return {
+  r: Math.max(src.r, dst.r),
+  g: Math.max(src.g, dst.g),
+  b: Math.max(src.b, dst.b),
+  a: src.a
+};`
+        },
+        min: {
+            name: 'Minimum',
+            formula: `return {
+  r: Math.min(src.r, dst.r),
+  g: Math.min(src.g, dst.g),
+  b: Math.min(src.b, dst.b),
+  a: src.a
+};`
+        }
+    };
+    
+    if (presets[preset]) {
+        nameField.value = presets[preset].name;
+        formulaField.value = presets[preset].formula;
+    }
+}
+
+// Save a custom blend mode
+function saveCustomBlendMode() {
+    const nameField = document.getElementById('custom-blend-name');
+    const formulaField = document.getElementById('custom-blend-formula');
+    
+    if (!nameField || !formulaField) return;
+    
+    const name = nameField.value.trim();
+    const formula = formulaField.value.trim();
+    
+    if (!name) {
+        alert('Please enter a name for the blend mode.');
+        return;
+    }
+    
+    if (!formula) {
+        alert('Please enter a blend formula.');
+        return;
+    }
+    
+    // Test the formula
+    try {
+        const testFunc = new Function('src', 'dst', formula);
+        const testResult = testFunc(
+            { r: 128, g: 128, b: 128, a: 255 },
+            { r: 64, g: 64, b: 64, a: 255 }
+        );
+        
+        if (!testResult || typeof testResult.r !== 'number') {
+            throw new Error('Formula must return an object with r, g, b, a properties');
+        }
+    } catch (e) {
+        alert('Invalid formula: ' + e.message);
+        return;
+    }
+    
+    // Save the blend mode
+    const key = 'custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    customBlendModes[key] = {
+        name: name,
+        formula: formula
+    };
+    
+    saveCustomBlendModes();
+    updateBlendModeDropdown();
+    
+    // Close dialog
+    document.getElementById('custom-blend-dialog').classList.add('hidden');
+    
+    alert('Custom blend mode "' + name + '" saved successfully!');
+}
+
+// Show manage custom blends dialog
+function showManageCustomBlendsDialog() {
+    const dialog = document.getElementById('manage-custom-blends-dialog');
+    const list = document.getElementById('custom-blends-list');
+    
+    if (!dialog || !list) return;
+    
+    // Clear list
+    list.innerHTML = '';
+    
+    // Check if there are any custom blend modes
+    if (Object.keys(customBlendModes).length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No custom blend modes yet. Create one to get started!</p>';
+    } else {
+        // Add each custom blend mode
+        Object.keys(customBlendModes).forEach(key => {
+            const blend = customBlendModes[key];
+            const item = document.createElement('div');
+            item.style.cssText = 'border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 4px;';
+            
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>${blend.name}</strong>
+                    <div>
+                        <button class="filter-btn" data-action="edit" data-key="${key}" style="margin-right: 5px;">Edit</button>
+                        <button class="filter-btn" data-action="delete" data-key="${key}">Delete</button>
+                    </div>
+                </div>
+                <pre style="margin-top: 10px; padding: 5px; background: #222; border-radius: 3px; font-size: 11px; overflow-x: auto;">${blend.formula}</pre>
+            `;
+            
+            list.appendChild(item);
+        });
+        
+        // Add event listeners for buttons
+        list.querySelectorAll('button[data-action]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const action = e.target.getAttribute('data-action');
+                const key = e.target.getAttribute('data-key');
+                
+                if (action === 'delete') {
+                    if (confirm('Are you sure you want to delete this blend mode?')) {
+                        delete customBlendModes[key];
+                        saveCustomBlendModes();
+                        updateBlendModeDropdown();
+                        showManageCustomBlendsDialog(); // Refresh the list
+                    }
+                } else if (action === 'edit') {
+                    // Load the blend mode for editing
+                    const blend = customBlendModes[key];
+                    document.getElementById('custom-blend-name').value = blend.name;
+                    document.getElementById('custom-blend-formula').value = blend.formula;
+                    
+                    // Close manage dialog and show create dialog
+                    dialog.classList.add('hidden');
+                    showCustomBlendDialog();
+                    
+                    // Delete the old one when saving the edited version
+                    delete customBlendModes[key];
+                }
+            });
+        });
+    }
+    
+    dialog.classList.remove('hidden');
+}
+
+// Setup manage custom blends dialog handlers
+function setupManageCustomBlendsDialog() {
+    const dialog = document.getElementById('manage-custom-blends-dialog');
+    if (!dialog) return;
+    
+    // Close button
+    const closeBtn = document.getElementById('manage-custom-blends-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
+    
+    // OK button
+    const okBtn = document.getElementById('manage-custom-blends-ok');
+    if (okBtn) {
+        okBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
 }
 
 // Adjustment Layers

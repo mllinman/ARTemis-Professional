@@ -1472,6 +1472,15 @@
                             </select>
                         </div>
                         
+                        <!-- Phase 3: Custom Blend Mode Controls -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Custom Blend Modes:</label>
+                            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                <button class="filter-btn" id="create-custom-blend-btn" style="flex: 1;">Create Custom</button>
+                                <button class="filter-btn" id="manage-custom-blends-btn" style="flex: 1;">Manage</button>
+                            </div>
+                        </div>
+                        
                         <!-- Phase 5: Layer Mask Controls -->
                         <div class="setting-group" style="margin-top: 10px;">
                             <label style="font-weight: bold;">Layer Mask:</label>
@@ -1871,6 +1880,77 @@
             <div class="dialog-footer">
                 <button class="dialog-btn secondary" id="shortcut-customization-cancel">Cancel</button>
                 <button class="dialog-btn primary" id="shortcut-customization-save">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 3: Custom Blend Mode Creation Dialog -->
+    <div id="custom-blend-dialog" class="dialog hidden">
+        <div class="dialog-content" style="max-width: 700px;">
+            <div class="dialog-header">
+                <h3>Create Custom Blend Mode</h3>
+                <button class="dialog-close" id="custom-blend-dialog-close">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div class="setting-group">
+                    <label for="custom-blend-name">Blend Mode Name:</label>
+                    <input type="text" id="custom-blend-name" class="brush-input" placeholder="My Custom Blend" />
+                </div>
+                
+                <div class="setting-group" style="margin-top: 15px;">
+                    <label style="font-weight: bold;">Formula Variables:</label>
+                    <p style="font-size: 12px; margin: 5px 0; color: #888;">
+                        Available variables:
+                        <br>• <code>src.r, src.g, src.b, src.a</code> - Source layer pixel values (0-255)
+                        <br>• <code>dst.r, dst.g, dst.b, dst.a</code> - Destination (below) pixel values (0-255)
+                        <br>• Return an object with r, g, b, a properties (0-255)
+                    </p>
+                </div>
+                
+                <div class="setting-group" style="margin-top: 15px;">
+                    <label for="custom-blend-formula">Blend Formula (JavaScript):</label>
+                    <textarea id="custom-blend-formula" class="brush-input" rows="10" style="font-family: monospace; font-size: 12px;" placeholder="return {
+  r: Math.min(255, src.r + dst.r),
+  g: Math.min(255, src.g + dst.g),
+  b: Math.min(255, src.b + dst.b),
+  a: src.a
+};"></textarea>
+                </div>
+                
+                <div class="setting-group" style="margin-top: 15px;">
+                    <label style="font-weight: bold;">Preset Examples:</label>
+                    <select id="custom-blend-preset" class="brush-select">
+                        <option value="">-- Select a preset to load --</option>
+                        <option value="additive">Additive (Add colors)</option>
+                        <option value="average">Average (Mean of colors)</option>
+                        <option value="subtract">Subtract (Remove colors)</option>
+                        <option value="inverse">Inverse (Invert result)</option>
+                        <option value="max">Maximum (Take brighter)</option>
+                        <option value="min">Minimum (Take darker)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn secondary" id="custom-blend-dialog-cancel">Cancel</button>
+                <button class="dialog-btn primary" id="custom-blend-dialog-save">Save Blend Mode</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 3: Custom Blend Mode Management Dialog -->
+    <div id="manage-custom-blends-dialog" class="dialog hidden">
+        <div class="dialog-content" style="max-width: 600px;">
+            <div class="dialog-header">
+                <h3>Manage Custom Blend Modes</h3>
+                <button class="dialog-close" id="manage-custom-blends-close">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div id="custom-blends-list" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Custom blend modes will be listed here -->
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn primary" id="manage-custom-blends-ok">Close</button>
             </div>
         </div>
     </div>
