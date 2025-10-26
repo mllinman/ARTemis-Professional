@@ -102,27 +102,27 @@ Features that would be nice to have but are not essential for core functionality
 ### Dynamic Brush Controls
 **Priority: High**
 
-- [ ] Velocity-based dynamics
+- [x] Velocity-based dynamics ✅ COMPLETED
   - Size affected by stroke speed
   - Opacity affected by velocity
   - Spacing affected by speed
-- [ ] Tilt sensitivity
+- [x] Tilt sensitivity ✅ COMPLETED
   - Support for pen displays with tilt
   - Tilt affects angle
   - Tilt affects size/opacity
-- [ ] Rotation dynamics
+- [x] Rotation dynamics ✅ COMPLETED
   - Rotation from pen rotation (supported devices)
   - Random rotation with intensity control
-- [ ] Advanced pressure curves
+- [x] Advanced pressure curves ✅ COMPLETED
   - Custom pressure response curves
-  - Multiple curve presets
+  - Multiple curve presets (5 types: linear, ease-in, ease-out, ease-in-out, custom)
   - Independent curves for size/opacity/flow
 - [ ] Dynamic brush physics
   - Drag simulation
   - Mass/weight simulation
   - Spring dynamics for natural movement
 
-**Impact:** Would make brush strokes even more expressive and natural-feeling.
+**Impact:** Most features completed - Brush strokes are highly expressive with velocity, tilt, and rotation dynamics.
 
 ---
 
@@ -131,31 +131,31 @@ Features that would be nice to have but are not essential for core functionality
 ### Advanced Layer System
 **Priority: Medium**
 
-- [ ] Layer masks
+- [x] Layer masks ✅ COMPLETED
   - Non-destructive masking
   - Multiple masks per layer
   - Mask editing tools
-- [x] Adjustment layers ✅ COMPLETED (Basic)
+- [x] Adjustment layers ✅ COMPLETED (Enhanced)
   - Non-destructive color adjustments
   - Brightness/Saturation controls
   - Layer-specific adjustments
-- [ ] Advanced adjustment layers
+- [x] Advanced adjustment layers ✅ COMPLETED
   - Levels, curves, hue/saturation
   - More adjustment types
 - [x] Layer groups ✅ COMPLETED (Basic structure exists)
   - Organize layers in folders
   - Group transformations
   - Group blend modes
-- [ ] Clipping masks
+- [x] Clipping masks ✅ COMPLETED
   - Clip layer to layer below
   - Multiple clipping layers
-- [ ] Layer styles/effects
+- [x] Layer styles/effects ✅ COMPLETED
   - Drop shadow
   - Outer glow
   - Stroke/outline
   - Bevel and emboss
 
-**Impact:** Professional layer management matching industry standards.
+**Impact:** ✅ Completed - Professional layer management matching industry standards.
 
 ---
 

@@ -3368,6 +3368,58 @@ function setupLayers() {
             flattenAllLayers();
         }
     });
+    
+    // Phase 5: Layer Mask Controls
+    document.getElementById('add-layer-mask-btn').addEventListener('click', () => {
+        if (state.activeLayer) {
+            addLayerMask();
+            saveState();
+        }
+    });
+    
+    document.getElementById('toggle-layer-mask-btn').addEventListener('click', () => {
+        if (state.activeLayer && state.activeLayer.mask) {
+            toggleLayerMask();
+            saveState();
+        }
+    });
+    
+    document.getElementById('remove-layer-mask-btn').addEventListener('click', () => {
+        if (state.activeLayer && state.activeLayer.mask) {
+            if (confirm('Remove layer mask? This cannot be undone.')) {
+                removeLayerMask();
+                saveState();
+            }
+        }
+    });
+    
+    // Phase 5: Clipping Mask Control
+    const clippingMaskCheckbox = document.getElementById('clipping-mask-checkbox');
+    if (clippingMaskCheckbox) {
+        clippingMaskCheckbox.addEventListener('change', () => {
+            if (state.activeLayer) {
+                toggleClippingMask();
+                saveState();
+            }
+        });
+    }
+    
+    // Phase 5: Layer Styles Control
+    const layerStylesCheckbox = document.getElementById('layer-styles-checkbox');
+    if (layerStylesCheckbox) {
+        layerStylesCheckbox.addEventListener('change', () => {
+            if (state.activeLayer) {
+                toggleLayerStyles();
+                saveState();
+            }
+        });
+    }
+    
+    document.getElementById('layer-styles-settings-btn').addEventListener('click', () => {
+        if (state.activeLayer) {
+            showLayerStylesDialog();
+        }
+    });
 }
 
 function addLayer(name, type = 'paint') {
@@ -3385,7 +3437,20 @@ function addLayer(name, type = 'paint') {
         children: type === 'group' ? [] : null,  // For group layers
         blendMode: 'normal',  // Blend mode support
         isAdjustmentLayer: type === 'adjustment',
-        adjustmentSettings: type === 'adjustment' ? {} : null
+        adjustmentSettings: type === 'adjustment' ? {} : null,
+        // Phase 5: Layer Masks
+        mask: null,  // Layer mask canvas (null if no mask)
+        maskEnabled: false,  // Whether mask is active
+        // Phase 5: Clipping Masks
+        clippingMask: false,  // Clip to layer below
+        // Phase 5: Layer Styles/Effects
+        layerStyles: {
+            enabled: false,
+            dropShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            outerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            stroke: { enabled: false, size: 2, color: '#000000', position: 'outside' }, // inside, center, outside
+            bevelEmboss: { enabled: false, size: 5, depth: 50, angle: 135, highlight: 75, shadow: 75 }
+        }
     };
     
     // Fill Background layer with white
@@ -3583,19 +3648,66 @@ function compositeAllLayers() {
     mainCtx.save();
     mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
     
-    state.layers.forEach(layer => {
-        if (layer.visible && layer.canvas) {
+    // Process layers with clipping masks and layer styles support
+    for (let i = 0; i < state.layers.length; i++) {
+        const layer = state.layers[i];
+        
+        if (!layer.visible || !layer.canvas) continue;
+        
+        // Check if we need a temporary canvas for this layer
+        const needsTempCanvas = (layer.maskEnabled && layer.mask) || 
+                               layer.clippingMask || 
+                               (layer.layerStyles && layer.layerStyles.enabled);
+        
+        if (!needsTempCanvas && !layer.isAdjustmentLayer) {
+            // Simple case: just draw the layer directly
             mainCtx.globalAlpha = layer.opacity;
             mainCtx.globalCompositeOperation = layer.blendMode || 'normal';
-            
-            // Apply adjustment layer effects
-            if (layer.isAdjustmentLayer && layer.adjustmentSettings) {
-                applyAdjustmentLayer(layer);
-            } else {
-                mainCtx.drawImage(layer.canvas, 0, 0);
+            mainCtx.drawImage(layer.canvas, 0, 0);
+            continue;
+        }
+        
+        // Create a temporary canvas for this layer (for masks and styles)
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = mainCanvas.width;
+        tempCanvas.height = mainCanvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Draw the base layer content
+        if (layer.isAdjustmentLayer && layer.adjustmentSettings) {
+            // Apply adjustment layer to all layers below
+            applyAdjustmentLayerEnhanced(layer, tempCtx);
+        } else {
+            tempCtx.drawImage(layer.canvas, 0, 0);
+        }
+        
+        // Apply layer mask if present
+        if (layer.maskEnabled && layer.mask) {
+            tempCtx.globalCompositeOperation = 'destination-in';
+            tempCtx.drawImage(layer.mask, 0, 0);
+            tempCtx.globalCompositeOperation = 'source-over';
+        }
+        
+        // Apply clipping mask (clip to layer below)
+        if (layer.clippingMask && i > 0) {
+            const prevLayer = state.layers[i - 1];
+            if (prevLayer.visible && prevLayer.canvas) {
+                tempCtx.globalCompositeOperation = 'destination-in';
+                tempCtx.drawImage(prevLayer.canvas, 0, 0);
+                tempCtx.globalCompositeOperation = 'source-over';
             }
         }
-    });
+        
+        // Apply layer styles/effects
+        if (layer.layerStyles && layer.layerStyles.enabled) {
+            applyLayerStyles(tempCanvas, layer.layerStyles);
+        }
+        
+        // Composite to main canvas
+        mainCtx.globalAlpha = layer.opacity;
+        mainCtx.globalCompositeOperation = layer.blendMode || 'normal';
+        mainCtx.drawImage(tempCanvas, 0, 0);
+    }
     
     mainCtx.restore();
     
@@ -3785,6 +3897,335 @@ function applyAdjustmentLayer(layer) {
     
     tempCtx.putImageData(imageData, 0, 0);
     mainCtx.drawImage(tempCanvas, 0, 0);
+}
+
+// Phase 5: Enhanced Adjustment Layer with Levels, Curves, and Hue/Saturation
+function applyAdjustmentLayerEnhanced(layer, targetCtx) {
+    // Draw all layers below this adjustment layer first
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = mainCanvas.width;
+    tempCanvas.height = mainCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(mainCanvas, 0, 0);
+    
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    const settings = layer.adjustmentSettings;
+    
+    // Apply brightness
+    if (settings.brightness !== undefined) {
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = Math.min(255, Math.max(0, data[i] + settings.brightness));
+            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + settings.brightness));
+            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + settings.brightness));
+        }
+    }
+    
+    // Apply saturation
+    if (settings.saturation !== undefined) {
+        const sat = settings.saturation / 100;
+        for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            data[i] = gray + sat * (data[i] - gray);
+            data[i + 1] = gray + sat * (data[i + 1] - gray);
+            data[i + 2] = gray + sat * (data[i + 2] - gray);
+        }
+    }
+    
+    // Apply Levels (input black, input white, output black, output white, gamma)
+    if (settings.levels) {
+        const { inputBlack = 0, inputWhite = 255, outputBlack = 0, outputWhite = 255, gamma = 1.0 } = settings.levels;
+        const inputRange = inputWhite - inputBlack;
+        const outputRange = outputWhite - outputBlack;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                let value = data[i + c];
+                // Apply input levels
+                value = Math.max(0, Math.min(255, (value - inputBlack) * (255 / inputRange)));
+                // Apply gamma
+                value = Math.pow(value / 255, 1 / gamma) * 255;
+                // Apply output levels
+                value = outputBlack + (value / 255) * outputRange;
+                data[i + c] = Math.max(0, Math.min(255, value));
+            }
+        }
+    }
+    
+    // Apply Curves (simple curve with control points)
+    if (settings.curves && settings.curves.points) {
+        const curveMap = createCurveMap(settings.curves.points);
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = curveMap[data[i]];
+            data[i + 1] = curveMap[data[i + 1]];
+            data[i + 2] = curveMap[data[i + 2]];
+        }
+    }
+    
+    // Apply Hue/Saturation adjustment
+    if (settings.hue !== undefined || settings.saturationShift !== undefined || settings.lightness !== undefined) {
+        const hueShift = (settings.hue || 0) / 360; // Convert to 0-1 range
+        const satShift = (settings.saturationShift || 0) / 100;
+        const lightShift = (settings.lightness || 0) / 100;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            let [h, s, l] = rgbToHsl(data[i], data[i + 1], data[i + 2]);
+            h = (h + hueShift) % 1;
+            s = Math.max(0, Math.min(1, s + satShift));
+            l = Math.max(0, Math.min(1, l + lightShift));
+            const [r, g, b] = hslToRgb(h, s, l);
+            data[i] = r;
+            data[i + 1] = g;
+            data[i + 2] = b;
+        }
+    }
+    
+    tempCtx.putImageData(imageData, 0, 0);
+    targetCtx.drawImage(tempCanvas, 0, 0);
+}
+
+// Helper function to create curve map from control points
+function createCurveMap(points) {
+    const map = new Array(256);
+    // Sort points by x coordinate
+    const sorted = points.sort((a, b) => a.x - b.x);
+    
+    for (let i = 0; i < 256; i++) {
+        const x = i / 255;
+        let y = x; // Default to linear
+        
+        // Find the two control points to interpolate between
+        for (let j = 0; j < sorted.length - 1; j++) {
+            if (x >= sorted[j].x && x <= sorted[j + 1].x) {
+                const t = (x - sorted[j].x) / (sorted[j + 1].x - sorted[j].x);
+                y = sorted[j].y + t * (sorted[j + 1].y - sorted[j].y);
+                break;
+            }
+        }
+        
+        map[i] = Math.max(0, Math.min(255, Math.round(y * 255)));
+    }
+    
+    return map;
+}
+
+// Phase 5: Apply Layer Styles/Effects (Drop Shadow, Outer Glow, Stroke, Bevel/Emboss)
+function applyLayerStyles(canvas, styles) {
+    if (!styles || !styles.enabled) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Create a backup of the original content
+    const originalCanvas = document.createElement('canvas');
+    originalCanvas.width = width;
+    originalCanvas.height = height;
+    const originalCtx = originalCanvas.getContext('2d');
+    originalCtx.drawImage(canvas, 0, 0);
+    
+    // Clear the canvas to draw effects underneath
+    ctx.clearRect(0, 0, width, height);
+    
+    // Apply Drop Shadow
+    if (styles.dropShadow && styles.dropShadow.enabled) {
+        const ds = styles.dropShadow;
+        ctx.save();
+        ctx.shadowOffsetX = ds.offsetX;
+        ctx.shadowOffsetY = ds.offsetY;
+        ctx.shadowBlur = ds.blur;
+        ctx.shadowColor = ds.color;
+        ctx.globalAlpha = ds.opacity;
+        ctx.drawImage(originalCanvas, 0, 0);
+        ctx.restore();
+    }
+    
+    // Apply Outer Glow
+    if (styles.outerGlow && styles.outerGlow.enabled) {
+        const og = styles.outerGlow;
+        ctx.save();
+        ctx.shadowBlur = og.size;
+        ctx.shadowColor = og.color;
+        ctx.globalAlpha = og.opacity;
+        // Draw multiple times for stronger glow
+        for (let i = 0; i < 3; i++) {
+            ctx.drawImage(originalCanvas, 0, 0);
+        }
+        ctx.restore();
+    }
+    
+    // Apply Stroke
+    if (styles.stroke && styles.stroke.enabled) {
+        const st = styles.stroke;
+        const imageData = originalCtx.getImageData(0, 0, width, height);
+        const strokeCanvas = document.createElement('canvas');
+        strokeCanvas.width = width;
+        strokeCanvas.height = height;
+        const strokeCtx = strokeCanvas.getContext('2d');
+        
+        // Create stroke by dilating the alpha channel
+        const strokeData = strokeCtx.createImageData(width, height);
+        const strokeSize = st.size;
+        
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const idx = (y * width + x) * 4;
+                
+                // Check if any neighboring pixel has alpha
+                let hasAlpha = false;
+                for (let dy = -strokeSize; dy <= strokeSize; dy++) {
+                    for (let dx = -strokeSize; dx <= strokeSize; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const nidx = (ny * width + nx) * 4;
+                            if (imageData.data[nidx + 3] > 0 && Math.sqrt(dx*dx + dy*dy) <= strokeSize) {
+                                hasAlpha = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasAlpha) break;
+                }
+                
+                if (hasAlpha && imageData.data[idx + 3] === 0) {
+                    // Parse stroke color
+                    const color = hexToRgb(st.color);
+                    strokeData.data[idx] = color.r;
+                    strokeData.data[idx + 1] = color.g;
+                    strokeData.data[idx + 2] = color.b;
+                    strokeData.data[idx + 3] = 255;
+                }
+            }
+        }
+        
+        strokeCtx.putImageData(strokeData, 0, 0);
+        ctx.drawImage(strokeCanvas, 0, 0);
+    }
+    
+    // Apply Bevel and Emboss
+    if (styles.bevelEmboss && styles.bevelEmboss.enabled) {
+        const be = styles.bevelEmboss;
+        const imageData = originalCtx.getImageData(0, 0, width, height);
+        const bevelCanvas = document.createElement('canvas');
+        bevelCanvas.width = width;
+        bevelCanvas.height = height;
+        const bevelCtx = bevelCanvas.getContext('2d');
+        bevelCtx.drawImage(originalCanvas, 0, 0);
+        
+        const bevelData = bevelCtx.getImageData(0, 0, width, height);
+        const angle = (be.angle * Math.PI) / 180;
+        const dx = Math.cos(angle);
+        const dy = Math.sin(angle);
+        
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = (y * width + x) * 4;
+                if (imageData.data[idx + 3] > 0) {
+                    // Calculate height map from alpha
+                    const heightThis = imageData.data[idx + 3] / 255;
+                    const heightRight = imageData.data[((y) * width + (x + 1)) * 4 + 3] / 255;
+                    const heightDown = imageData.data[((y + 1) * width + (x)) * 4 + 3] / 255;
+                    
+                    // Calculate normal
+                    const normalX = heightThis - heightRight;
+                    const normalY = heightThis - heightDown;
+                    
+                    // Calculate lighting
+                    const light = (normalX * dx + normalY * dy) * be.depth / 100;
+                    
+                    // Apply highlight and shadow
+                    if (light > 0) {
+                        const highlight = light * be.highlight / 100;
+                        bevelData.data[idx] = Math.min(255, bevelData.data[idx] + highlight * 255);
+                        bevelData.data[idx + 1] = Math.min(255, bevelData.data[idx + 1] + highlight * 255);
+                        bevelData.data[idx + 2] = Math.min(255, bevelData.data[idx + 2] + highlight * 255);
+                    } else {
+                        const shadow = -light * be.shadow / 100;
+                        bevelData.data[idx] = Math.max(0, bevelData.data[idx] - shadow * 255);
+                        bevelData.data[idx + 1] = Math.max(0, bevelData.data[idx + 1] - shadow * 255);
+                        bevelData.data[idx + 2] = Math.max(0, bevelData.data[idx + 2] - shadow * 255);
+                    }
+                }
+            }
+        }
+        
+        bevelCtx.putImageData(bevelData, 0, 0);
+        ctx.drawImage(bevelCanvas, 0, 0);
+        // Don't return - let original content be drawn below
+    }
+    
+    // Draw original content on top
+    ctx.drawImage(originalCanvas, 0, 0);
+}
+
+// Helper function to convert hex color to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+// Phase 5: Layer Mask Functions
+function addLayerMask() {
+    if (!state.activeLayer) return;
+    
+    const maskCanvas = document.createElement('canvas');
+    maskCanvas.width = state.canvas.width;
+    maskCanvas.height = state.canvas.height;
+    
+    // Fill mask with white (fully visible)
+    const ctx = maskCanvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+    
+    state.activeLayer.mask = maskCanvas;
+    state.activeLayer.maskEnabled = true;
+    
+    updateLayersList();
+    compositeAllLayers();
+}
+
+function removeLayerMask() {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    state.activeLayer.mask = null;
+    state.activeLayer.maskEnabled = false;
+    
+    updateLayersList();
+    compositeAllLayers();
+}
+
+function toggleLayerMask() {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    state.activeLayer.maskEnabled = !state.activeLayer.maskEnabled;
+    
+    updateLayersList();
+    compositeAllLayers();
+}
+
+// Phase 5: Clipping Mask Functions
+function toggleClippingMask() {
+    if (!state.activeLayer) return;
+    
+    state.activeLayer.clippingMask = !state.activeLayer.clippingMask;
+    
+    updateLayersList();
+    compositeAllLayers();
+}
+
+// Phase 5: Layer Styles Functions
+function toggleLayerStyles() {
+    if (!state.activeLayer) return;
+    
+    state.activeLayer.layerStyles.enabled = !state.activeLayer.layerStyles.enabled;
+    
+    updateLayersList();
+    compositeAllLayers();
 }
 
 // Canvas Events
@@ -12121,6 +12562,180 @@ function setupBrushRenamingUI() {
     
     // Load custom brush names
     loadCustomBrushNames();
+}
+
+// Phase 5: Layer Styles Dialog
+function showLayerStylesDialog() {
+    if (!state.activeLayer) return;
+    
+    const styles = state.activeLayer.layerStyles;
+    
+    // Save original styles for cancel operation
+    const originalStyles = JSON.parse(JSON.stringify(styles));
+    
+    // Create dialog HTML
+    const dialogHTML = `
+        <div class="dialog-overlay" id="layer-styles-dialog">
+            <div class="dialog-content" style="width: 500px; max-height: 80vh; overflow-y: auto;">
+                <h2>Layer Styles</h2>
+                
+                <!-- Drop Shadow -->
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="style-drop-shadow-enabled" ${styles.dropShadow.enabled ? 'checked' : ''}>
+                        Drop Shadow
+                    </label>
+                    <div style="margin-left: 20px;">
+                        <label>Offset X: <span id="style-shadow-x-value">${styles.dropShadow.offsetX}</span>px</label>
+                        <input type="range" id="style-shadow-x" min="-50" max="50" value="${styles.dropShadow.offsetX}" class="slider">
+                        <label>Offset Y: <span id="style-shadow-y-value">${styles.dropShadow.offsetY}</span>px</label>
+                        <input type="range" id="style-shadow-y" min="-50" max="50" value="${styles.dropShadow.offsetY}" class="slider">
+                        <label>Blur: <span id="style-shadow-blur-value">${styles.dropShadow.blur}</span>px</label>
+                        <input type="range" id="style-shadow-blur" min="0" max="50" value="${styles.dropShadow.blur}" class="slider">
+                        <label>Color:</label>
+                        <input type="color" id="style-shadow-color" value="${styles.dropShadow.color}" class="color-input">
+                        <label>Opacity: <span id="style-shadow-opacity-value">${Math.round(styles.dropShadow.opacity * 100)}</span>%</label>
+                        <input type="range" id="style-shadow-opacity" min="0" max="100" value="${Math.round(styles.dropShadow.opacity * 100)}" class="slider">
+                    </div>
+                </div>
+                
+                <!-- Outer Glow -->
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="style-outer-glow-enabled" ${styles.outerGlow.enabled ? 'checked' : ''}>
+                        Outer Glow
+                    </label>
+                    <div style="margin-left: 20px;">
+                        <label>Size: <span id="style-glow-size-value">${styles.outerGlow.size}</span>px</label>
+                        <input type="range" id="style-glow-size" min="0" max="50" value="${styles.outerGlow.size}" class="slider">
+                        <label>Color:</label>
+                        <input type="color" id="style-glow-color" value="${styles.outerGlow.color}" class="color-input">
+                        <label>Opacity: <span id="style-glow-opacity-value">${Math.round(styles.outerGlow.opacity * 100)}</span>%</label>
+                        <input type="range" id="style-glow-opacity" min="0" max="100" value="${Math.round(styles.outerGlow.opacity * 100)}" class="slider">
+                    </div>
+                </div>
+                
+                <!-- Stroke -->
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="style-stroke-enabled" ${styles.stroke.enabled ? 'checked' : ''}>
+                        Stroke
+                    </label>
+                    <div style="margin-left: 20px;">
+                        <label>Size: <span id="style-stroke-size-value">${styles.stroke.size}</span>px</label>
+                        <input type="range" id="style-stroke-size" min="1" max="20" value="${styles.stroke.size}" class="slider">
+                        <label>Color:</label>
+                        <input type="color" id="style-stroke-color" value="${styles.stroke.color}" class="color-input">
+                    </div>
+                </div>
+                
+                <!-- Bevel and Emboss -->
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="style-bevel-enabled" ${styles.bevelEmboss.enabled ? 'checked' : ''}>
+                        Bevel and Emboss
+                    </label>
+                    <div style="margin-left: 20px;">
+                        <label>Size: <span id="style-bevel-size-value">${styles.bevelEmboss.size}</span>px</label>
+                        <input type="range" id="style-bevel-size" min="1" max="20" value="${styles.bevelEmboss.size}" class="slider">
+                        <label>Depth: <span id="style-bevel-depth-value">${styles.bevelEmboss.depth}</span>%</label>
+                        <input type="range" id="style-bevel-depth" min="0" max="100" value="${styles.bevelEmboss.depth}" class="slider">
+                        <label>Angle: <span id="style-bevel-angle-value">${styles.bevelEmboss.angle}</span>°</label>
+                        <input type="range" id="style-bevel-angle" min="0" max="360" value="${styles.bevelEmboss.angle}" class="slider">
+                        <label>Highlight: <span id="style-bevel-highlight-value">${styles.bevelEmboss.highlight}</span>%</label>
+                        <input type="range" id="style-bevel-highlight" min="0" max="100" value="${styles.bevelEmboss.highlight}" class="slider">
+                        <label>Shadow: <span id="style-bevel-shadow-value">${styles.bevelEmboss.shadow}</span>%</label>
+                        <input type="range" id="style-bevel-shadow" min="0" max="100" value="${styles.bevelEmboss.shadow}" class="slider">
+                    </div>
+                </div>
+                
+                <div class="dialog-buttons">
+                    <button class="btn" id="layer-styles-apply">Apply</button>
+                    <button class="btn" id="layer-styles-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add dialog to DOM
+    const dialogContainer = document.createElement('div');
+    dialogContainer.innerHTML = dialogHTML;
+    document.body.appendChild(dialogContainer.firstElementChild);
+    
+    // Setup event listeners for real-time updates
+    const setupSlider = (sliderId, valueId, property, subProperty, isPercent = false) => {
+        const slider = document.getElementById(sliderId);
+        const valueSpan = document.getElementById(valueId);
+        if (slider && valueSpan) {
+            slider.addEventListener('input', (e) => {
+                const value = isPercent ? parseInt(e.target.value) / 100 : parseInt(e.target.value);
+                valueSpan.textContent = e.target.value;
+                styles[property][subProperty] = value;
+                compositeAllLayers();
+            });
+        }
+    };
+    
+    // Drop Shadow
+    document.getElementById('style-drop-shadow-enabled').addEventListener('change', (e) => {
+        styles.dropShadow.enabled = e.target.checked;
+        compositeAllLayers();
+    });
+    setupSlider('style-shadow-x', 'style-shadow-x-value', 'dropShadow', 'offsetX');
+    setupSlider('style-shadow-y', 'style-shadow-y-value', 'dropShadow', 'offsetY');
+    setupSlider('style-shadow-blur', 'style-shadow-blur-value', 'dropShadow', 'blur');
+    setupSlider('style-shadow-opacity', 'style-shadow-opacity-value', 'dropShadow', 'opacity', true);
+    document.getElementById('style-shadow-color').addEventListener('input', (e) => {
+        styles.dropShadow.color = e.target.value;
+        compositeAllLayers();
+    });
+    
+    // Outer Glow
+    document.getElementById('style-outer-glow-enabled').addEventListener('change', (e) => {
+        styles.outerGlow.enabled = e.target.checked;
+        compositeAllLayers();
+    });
+    setupSlider('style-glow-size', 'style-glow-size-value', 'outerGlow', 'size');
+    setupSlider('style-glow-opacity', 'style-glow-opacity-value', 'outerGlow', 'opacity', true);
+    document.getElementById('style-glow-color').addEventListener('input', (e) => {
+        styles.outerGlow.color = e.target.value;
+        compositeAllLayers();
+    });
+    
+    // Stroke
+    document.getElementById('style-stroke-enabled').addEventListener('change', (e) => {
+        styles.stroke.enabled = e.target.checked;
+        compositeAllLayers();
+    });
+    setupSlider('style-stroke-size', 'style-stroke-size-value', 'stroke', 'size');
+    document.getElementById('style-stroke-color').addEventListener('input', (e) => {
+        styles.stroke.color = e.target.value;
+        compositeAllLayers();
+    });
+    
+    // Bevel and Emboss
+    document.getElementById('style-bevel-enabled').addEventListener('change', (e) => {
+        styles.bevelEmboss.enabled = e.target.checked;
+        compositeAllLayers();
+    });
+    setupSlider('style-bevel-size', 'style-bevel-size-value', 'bevelEmboss', 'size');
+    setupSlider('style-bevel-depth', 'style-bevel-depth-value', 'bevelEmboss', 'depth');
+    setupSlider('style-bevel-angle', 'style-bevel-angle-value', 'bevelEmboss', 'angle');
+    setupSlider('style-bevel-highlight', 'style-bevel-highlight-value', 'bevelEmboss', 'highlight');
+    setupSlider('style-bevel-shadow', 'style-bevel-shadow-value', 'bevelEmboss', 'shadow');
+    
+    // Dialog buttons
+    document.getElementById('layer-styles-apply').addEventListener('click', () => {
+        document.getElementById('layer-styles-dialog').remove();
+        saveState();
+    });
+    
+    document.getElementById('layer-styles-cancel').addEventListener('click', () => {
+        // Restore original styles
+        state.activeLayer.layerStyles = originalStyles;
+        document.getElementById('layer-styles-dialog').remove();
+        compositeAllLayers();
+    });
 }
 
 // Initialize on load
