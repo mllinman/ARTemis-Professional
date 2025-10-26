@@ -1909,6 +1909,75 @@ function setupNewFeatures() {
     setupSliderDisplay('concept-depth', 'concept-depth-val', '%');
     setupSliderDisplay('concept-paint', 'concept-paint-val', '%');
     
+    // Pastel sliders
+    setupSliderDisplay('pastel-soft', 'pastel-soft-val', '%');
+    setupSliderDisplay('pastel-chalk', 'pastel-chalk-val', '%');
+    setupSliderDisplay('pastel-vibrant', 'pastel-vibrant-val', '%');
+    
+    // Sketch sliders
+    setupSliderDisplay('sketch-line', 'sketch-line-val', '%');
+    setupSliderDisplay('sketch-shade', 'sketch-shade-val', '%');
+    setupSliderDisplay('sketch-detail', 'sketch-detail-val', '%');
+    
+    // Gouache sliders
+    setupSliderDisplay('gouache-opacity', 'gouache-opacity-val', '%');
+    setupSliderDisplay('gouache-bold', 'gouache-bold-val', '%');
+    setupSliderDisplay('gouache-brush', 'gouache-brush-val', '%');
+    
+    // Load presets on startup
+    loadPhotoPaintPresets();
+    updatePhotoPaintPresetDropdown();
+    
+    // Preview Photo-to-Paint (non-destructive)
+    if (previewPhotoPaintBtn) {
+        previewPhotoPaintBtn.addEventListener('click', () => {
+            if (!state.activeLayer) {
+                alert('Please select a layer first');
+                return;
+            }
+            
+            const style = photoPaintStyle.value;
+            const options = getPhotoPaintOptions(style);
+            
+            console.log('Previewing photo-to-paint style:', style, options);
+            previewPhotoToPaint(style, options);
+            
+            // Show cancel/accept buttons, hide preview/apply
+            document.getElementById('cancel-photo-preview-btn').style.display = 'inline-block';
+            document.getElementById('accept-photo-preview-btn').style.display = 'inline-block';
+            document.getElementById('preview-photo-paint-btn').style.display = 'none';
+            document.getElementById('apply-photo-paint-btn').style.display = 'none';
+        });
+    }
+    
+    // Cancel preview button
+    const cancelPreviewBtn = document.getElementById('cancel-photo-preview-btn');
+    if (cancelPreviewBtn) {
+        cancelPreviewBtn.addEventListener('click', () => {
+            cancelPhotoPaintPreview();
+            
+            // Restore original buttons
+            document.getElementById('cancel-photo-preview-btn').style.display = 'none';
+            document.getElementById('accept-photo-preview-btn').style.display = 'none';
+            document.getElementById('preview-photo-paint-btn').style.display = 'block';
+            document.getElementById('apply-photo-paint-btn').style.display = 'block';
+        });
+    }
+    
+    // Accept preview button
+    const acceptPreviewBtn = document.getElementById('accept-photo-preview-btn');
+    if (acceptPreviewBtn) {
+        acceptPreviewBtn.addEventListener('click', () => {
+            applyPhotoPaintPreview();
+            
+            // Restore original buttons
+            document.getElementById('cancel-photo-preview-btn').style.display = 'none';
+            document.getElementById('accept-photo-preview-btn').style.display = 'none';
+            document.getElementById('preview-photo-paint-btn').style.display = 'block';
+            document.getElementById('apply-photo-paint-btn').style.display = 'block';
+        });
+    }
+    
     // Apply Photo-to-Paint
     if (applyPhotoPaintBtn) {
         applyPhotoPaintBtn.addEventListener('click', () => {
@@ -1925,10 +1994,192 @@ function setupNewFeatures() {
         });
     }
     
-    // Preview Photo-to-Paint (non-destructive)
-    if (previewPhotoPaintBtn) {
-        previewPhotoPaintBtn.addEventListener('click', () => {
-            alert('Preview feature coming soon! For now, use Apply to see results. Use Ctrl+Z to undo if needed.');
+    // Save preset button
+    const savePhotoPresetBtn = document.getElementById('save-photo-preset-btn');
+    if (savePhotoPresetBtn) {
+        savePhotoPresetBtn.addEventListener('click', () => {
+            const name = prompt('Enter preset name:');
+            if (name) {
+                const style = photoPaintStyle.value;
+                const options = getPhotoPaintOptions(style);
+                photoPaintState.presets[name] = { style, options };
+                savePhotoPaintPresets();
+                updatePhotoPaintPresetDropdown();
+                alert('Preset saved!');
+            }
+        });
+    }
+    
+    // Delete preset button
+    const deletePhotoPresetBtn = document.getElementById('delete-photo-preset-btn');
+    if (deletePhotoPresetBtn) {
+        deletePhotoPresetBtn.addEventListener('click', () => {
+            const presetSelect = document.getElementById('photo-paint-preset');
+            const presetName = presetSelect.value;
+            if (presetName && confirm(`Delete preset "${presetName}"?`)) {
+                delete photoPaintState.presets[presetName];
+                savePhotoPaintPresets();
+                updatePhotoPaintPresetDropdown();
+                alert('Preset deleted!');
+            }
+        });
+    }
+    
+    // Load preset
+    const presetSelect = document.getElementById('photo-paint-preset');
+    if (presetSelect) {
+        presetSelect.addEventListener('change', () => {
+            const presetName = presetSelect.value;
+            if (presetName && photoPaintState.presets[presetName]) {
+                const preset = photoPaintState.presets[presetName];
+                
+                // Set style
+                photoPaintStyle.value = preset.style;
+                photoPaintStyle.dispatchEvent(new Event('change'));
+                
+                // Set options
+                setPhotoPaintOptions(preset.style, preset.options);
+            }
+        });
+    }
+    
+    // Batch process button
+    const batchPhotoPaintBtn = document.getElementById('batch-photo-paint-btn');
+    if (batchPhotoPaintBtn) {
+        batchPhotoPaintBtn.addEventListener('click', () => {
+            if (state.layers.length === 0) {
+                alert('No layers to process');
+                return;
+            }
+            
+            if (!confirm(`Apply style to all ${state.layers.length} layers?`)) {
+                return;
+            }
+            
+            const style = photoPaintStyle.value;
+            const options = getPhotoPaintOptions(style);
+            const layerIndices = state.layers.map((_, i) => i);
+            
+            console.log('Batch processing layers:', layerIndices);
+            batchApplyPhotoToPaint(style, options, layerIndices);
+            alert('Batch processing complete!');
+        });
+    }
+    
+    // Blend styles button
+    const blendPhotoPaintBtn = document.getElementById('blend-photo-paint-btn');
+    if (blendPhotoPaintBtn) {
+        blendPhotoPaintBtn.addEventListener('click', () => {
+            if (!state.activeLayer) {
+                alert('Please select a layer first');
+                return;
+            }
+            
+            // Get first style (current selection)
+            const style1 = photoPaintStyle.value;
+            const options1 = getPhotoPaintOptions(style1);
+            
+            // Prompt for second style
+            const styles = ['oil', 'acrylic', 'watercolor', 'comic', 'cartoon', 'anime', 'concept-art', 'pastel', 'sketch', 'gouache'];
+            const style2 = prompt('Enter second style to blend:\n' + styles.join(', '));
+            if (!style2 || !styles.includes(style2)) {
+                alert('Invalid style');
+                return;
+            }
+            
+            // Use default options for second style
+            const options2 = {};
+            
+            // Get blend ratio
+            const ratio = parseFloat(prompt('Enter blend ratio (0-1, where 0.5 is 50/50):', '0.5'));
+            if (isNaN(ratio) || ratio < 0 || ratio > 1) {
+                alert('Invalid ratio');
+                return;
+            }
+            
+            console.log('Blending styles:', style1, style2, ratio);
+            applyBlendedPhotoToPaint(style1, options1, style2, options2, ratio);
+        });
+    }
+    
+    // Update preset dropdown
+    function updatePhotoPaintPresetDropdown() {
+        const presetSelect = document.getElementById('photo-paint-preset');
+        if (!presetSelect) return;
+        
+        // Clear existing options except first
+        while (presetSelect.options.length > 1) {
+            presetSelect.remove(1);
+        }
+        
+        // Add presets
+        Object.keys(photoPaintState.presets).forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            presetSelect.appendChild(option);
+        });
+    }
+    
+    // Set photo-to-paint options based on style and values
+    function setPhotoPaintOptions(style, options) {
+        switch (style) {
+            case 'oil':
+                if (options.brushSize !== undefined) document.getElementById('oil-brush-size').value = options.brushSize;
+                if (options.detail !== undefined) document.getElementById('oil-detail').value = options.detail * 100;
+                if (options.impasto !== undefined) document.getElementById('oil-impasto').value = options.impasto * 100;
+                if (options.colorIntensity !== undefined) document.getElementById('oil-color').value = options.colorIntensity * 100;
+                break;
+            case 'acrylic':
+                if (options.colorSteps !== undefined) document.getElementById('acrylic-steps').value = options.colorSteps;
+                if (options.edgeThreshold !== undefined) document.getElementById('acrylic-edge').value = options.edgeThreshold;
+                if (options.saturation !== undefined) document.getElementById('acrylic-sat').value = options.saturation * 100;
+                break;
+            case 'watercolor':
+                if (options.wetness !== undefined) document.getElementById('watercolor-wet').value = options.wetness * 100;
+                if (options.bleed !== undefined) document.getElementById('watercolor-bleed').value = options.bleed * 100;
+                if (options.paperTexture !== undefined) document.getElementById('watercolor-paper').value = options.paperTexture * 100;
+                break;
+            case 'comic':
+                if (options.outlineThickness !== undefined) document.getElementById('comic-outline').value = options.outlineThickness;
+                if (options.colorLevels !== undefined) document.getElementById('comic-colors').value = options.colorLevels;
+                if (options.halftone !== undefined) document.getElementById('comic-halftone').value = options.halftone * 100;
+                break;
+            case 'cartoon':
+                if (options.smoothness !== undefined) document.getElementById('cartoon-smooth').value = options.smoothness * 100;
+                if (options.colorSimplification !== undefined) document.getElementById('cartoon-simple').value = options.colorSimplification;
+                if (options.outlineStrength !== undefined) document.getElementById('cartoon-outline').value = options.outlineStrength * 100;
+                break;
+            case 'anime':
+                if (options.celLevels !== undefined) document.getElementById('anime-cel').value = options.celLevels;
+                if (options.edgeThickness !== undefined) document.getElementById('anime-edge').value = options.edgeThickness;
+                if (options.saturation !== undefined) document.getElementById('anime-sat').value = options.saturation * 100;
+                break;
+            case 'concept-art':
+                if (options.atmosphericDepth !== undefined) document.getElementById('concept-depth').value = options.atmosphericDepth * 100;
+                if (options.painterly !== undefined) document.getElementById('concept-paint').value = options.painterly * 100;
+                if (options.colorMood !== undefined) document.getElementById('concept-mood').value = options.colorMood;
+                break;
+            case 'pastel':
+                if (options.softness !== undefined) document.getElementById('pastel-soft').value = options.softness * 100;
+                if (options.chalkiness !== undefined) document.getElementById('pastel-chalk').value = options.chalkiness * 100;
+                if (options.colorVibrancy !== undefined) document.getElementById('pastel-vibrant').value = options.colorVibrancy * 100;
+                break;
+            case 'sketch':
+                if (options.lineIntensity !== undefined) document.getElementById('sketch-line').value = options.lineIntensity * 100;
+                if (options.shading !== undefined) document.getElementById('sketch-shade').value = options.shading * 100;
+                if (options.detail !== undefined) document.getElementById('sketch-detail').value = options.detail * 100;
+                break;
+            case 'gouache':
+                if (options.opacity !== undefined) document.getElementById('gouache-opacity').value = options.opacity * 100;
+                if (options.colorBoldness !== undefined) document.getElementById('gouache-bold').value = options.colorBoldness * 100;
+                if (options.brushStrokes !== undefined) document.getElementById('gouache-brush').value = options.brushStrokes * 100;
+                break;
+        }
+        
+        // Trigger input events to update displays
+        document.querySelectorAll('.photo-paint-settings input[type="range"]').forEach(slider => {
+            slider.dispatchEvent(new Event('input'));
         });
     }
     
@@ -1972,6 +2223,21 @@ function setupNewFeatures() {
                 options.atmosphericDepth = parseFloat(document.getElementById('concept-depth')?.value || 50) / 100;
                 options.painterly = parseFloat(document.getElementById('concept-paint')?.value || 60) / 100;
                 options.colorMood = document.getElementById('concept-mood')?.value || 'neutral';
+                break;
+            case 'pastel':
+                options.softness = parseFloat(document.getElementById('pastel-soft')?.value || 70) / 100;
+                options.chalkiness = parseFloat(document.getElementById('pastel-chalk')?.value || 60) / 100;
+                options.colorVibrancy = parseFloat(document.getElementById('pastel-vibrant')?.value || 80) / 100;
+                break;
+            case 'sketch':
+                options.lineIntensity = parseFloat(document.getElementById('sketch-line')?.value || 80) / 100;
+                options.shading = parseFloat(document.getElementById('sketch-shade')?.value || 60) / 100;
+                options.detail = parseFloat(document.getElementById('sketch-detail')?.value || 70) / 100;
+                break;
+            case 'gouache':
+                options.opacity = parseFloat(document.getElementById('gouache-opacity')?.value || 90) / 100;
+                options.colorBoldness = parseFloat(document.getElementById('gouache-bold')?.value || 130) / 100;
+                options.brushStrokes = parseFloat(document.getElementById('gouache-brush')?.value || 60) / 100;
                 break;
         }
         
@@ -7378,6 +7644,32 @@ function applyFireEffect(imageData, options = {}) {
 // PHOTO-TO-PAINT FILTER SYSTEM
 // ============================================================================
 
+// Global state for photo-to-paint preview
+const photoPaintState = {
+    previewActive: false,
+    previewCanvas: null,
+    originalImageData: null,
+    presets: {}
+};
+
+// Load presets from localStorage on startup
+function loadPhotoPaintPresets() {
+    const stored = localStorage.getItem('photoPaintPresets');
+    if (stored) {
+        try {
+            photoPaintState.presets = JSON.parse(stored);
+        } catch (e) {
+            console.error('Error loading photo-to-paint presets:', e);
+            photoPaintState.presets = {};
+        }
+    }
+}
+
+// Save presets to localStorage
+function savePhotoPaintPresets() {
+    localStorage.setItem('photoPaintPresets', JSON.stringify(photoPaintState.presets));
+}
+
 // Main function to apply photo-to-paint styles
 function applyPhotoToPaint(styleType, options = {}) {
     if (!state.activeLayer) return;
@@ -7407,11 +7699,218 @@ function applyPhotoToPaint(styleType, options = {}) {
         case 'concept-art':
             applyConceptArtStyle(imageData, options);
             break;
+        case 'pastel':
+            applyPastelStyle(imageData, options);
+            break;
+        case 'sketch':
+            applySketchStyle(imageData, options);
+            break;
+        case 'gouache':
+            applyGouacheStyle(imageData, options);
+            break;
     }
     
     ctx.putImageData(imageData, 0, 0);
     compositeAllLayers();
     saveState();
+}
+
+// Preview photo-to-paint style (non-destructive)
+function previewPhotoToPaint(styleType, options = {}) {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    
+    // Store original image data if not already stored
+    if (!photoPaintState.previewActive) {
+        photoPaintState.originalImageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+        photoPaintState.previewActive = true;
+    }
+    
+    // Apply style to a copy
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    
+    switch (styleType) {
+        case 'oil':
+            applyOilPaintStyle(imageData, options);
+            break;
+        case 'acrylic':
+            applyAcrylicStyle(imageData, options);
+            break;
+        case 'watercolor':
+            applyWatercolorStyle(imageData, options);
+            break;
+        case 'comic':
+            applyComicBookStyle(imageData, options);
+            break;
+        case 'cartoon':
+            applyCartoonStyle(imageData, options);
+            break;
+        case 'anime':
+            applyAnimeStyle(imageData, options);
+            break;
+        case 'concept-art':
+            applyConceptArtStyle(imageData, options);
+            break;
+        case 'pastel':
+            applyPastelStyle(imageData, options);
+            break;
+        case 'sketch':
+            applySketchStyle(imageData, options);
+            break;
+        case 'gouache':
+            applyGouacheStyle(imageData, options);
+            break;
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    compositeAllLayers();
+}
+
+// Cancel preview and restore original
+function cancelPhotoPaintPreview() {
+    if (photoPaintState.previewActive && photoPaintState.originalImageData) {
+        const ctx = state.activeLayer.canvas.getContext('2d');
+        ctx.putImageData(photoPaintState.originalImageData, 0, 0);
+        compositeAllLayers();
+        photoPaintState.previewActive = false;
+        photoPaintState.originalImageData = null;
+    }
+}
+
+// Apply preview permanently
+function applyPhotoPaintPreview() {
+    if (photoPaintState.previewActive) {
+        saveState();
+        photoPaintState.previewActive = false;
+        photoPaintState.originalImageData = null;
+    }
+}
+
+// Batch apply style to multiple layers
+function batchApplyPhotoToPaint(styleType, options = {}, layerIndices = []) {
+    if (layerIndices.length === 0) {
+        alert('No layers selected for batch processing');
+        return;
+    }
+    
+    const originalActiveLayer = state.activeLayer;
+    
+    layerIndices.forEach(index => {
+        if (index >= 0 && index < state.layers.length) {
+            state.activeLayer = state.layers[index];
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+            
+            switch (styleType) {
+                case 'oil':
+                    applyOilPaintStyle(imageData, options);
+                    break;
+                case 'acrylic':
+                    applyAcrylicStyle(imageData, options);
+                    break;
+                case 'watercolor':
+                    applyWatercolorStyle(imageData, options);
+                    break;
+                case 'comic':
+                    applyComicBookStyle(imageData, options);
+                    break;
+                case 'cartoon':
+                    applyCartoonStyle(imageData, options);
+                    break;
+                case 'anime':
+                    applyAnimeStyle(imageData, options);
+                    break;
+                case 'concept-art':
+                    applyConceptArtStyle(imageData, options);
+                    break;
+                case 'pastel':
+                    applyPastelStyle(imageData, options);
+                    break;
+                case 'sketch':
+                    applySketchStyle(imageData, options);
+                    break;
+                case 'gouache':
+                    applyGouacheStyle(imageData, options);
+                    break;
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+    });
+    
+    state.activeLayer = originalActiveLayer;
+    compositeAllLayers();
+    saveState();
+}
+
+// Style blending - blend two styles together
+function applyBlendedPhotoToPaint(style1, options1, style2, options2, blendRatio = 0.5) {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    
+    // Get original image data
+    const originalData = ctx.getImageData(0, 0, width, height);
+    
+    // Apply first style
+    const imageData1 = ctx.getImageData(0, 0, width, height);
+    applyStyleToImageData(style1, imageData1, options1);
+    
+    // Apply second style to original
+    const imageData2 = new ImageData(new Uint8ClampedArray(originalData.data), width, height);
+    applyStyleToImageData(style2, imageData2, options2);
+    
+    // Blend the two results
+    const blendedData = ctx.createImageData(width, height);
+    for (let i = 0; i < blendedData.data.length; i += 4) {
+        blendedData.data[i] = imageData1.data[i] * blendRatio + imageData2.data[i] * (1 - blendRatio);
+        blendedData.data[i + 1] = imageData1.data[i + 1] * blendRatio + imageData2.data[i + 1] * (1 - blendRatio);
+        blendedData.data[i + 2] = imageData1.data[i + 2] * blendRatio + imageData2.data[i + 2] * (1 - blendRatio);
+        blendedData.data[i + 3] = imageData1.data[i + 3]; // Keep original alpha
+    }
+    
+    ctx.putImageData(blendedData, 0, 0);
+    compositeAllLayers();
+    saveState();
+}
+
+// Helper to apply style to image data
+function applyStyleToImageData(styleType, imageData, options) {
+    switch (styleType) {
+        case 'oil':
+            applyOilPaintStyle(imageData, options);
+            break;
+        case 'acrylic':
+            applyAcrylicStyle(imageData, options);
+            break;
+        case 'watercolor':
+            applyWatercolorStyle(imageData, options);
+            break;
+        case 'comic':
+            applyComicBookStyle(imageData, options);
+            break;
+        case 'cartoon':
+            applyCartoonStyle(imageData, options);
+            break;
+        case 'anime':
+            applyAnimeStyle(imageData, options);
+            break;
+        case 'concept-art':
+            applyConceptArtStyle(imageData, options);
+            break;
+        case 'pastel':
+            applyPastelStyle(imageData, options);
+            break;
+        case 'sketch':
+            applySketchStyle(imageData, options);
+            break;
+        case 'gouache':
+            applyGouacheStyle(imageData, options);
+            break;
+    }
 }
 
 // Oil Paint Style - Rich colors, visible brush strokes, impasto effect
@@ -7907,6 +8406,271 @@ function applyBilateralFilter(imageData, strength) {
                 data[idx + 2] = b / weightSum;
             }
         }
+    }
+}
+
+// Pastel Style - Soft, muted colors with chalk-like texture
+function applyPastelStyle(imageData, options = {}) {
+    const softness = options.softness || 0.7;
+    const chalkiness = options.chalkiness || 0.6;
+    const colorVibrancy = options.colorVibrancy || 0.8;
+    
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    // First pass: Soften with mild blur
+    const blurRadius = Math.ceil(2 * softness);
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let r = 0, g = 0, b = 0, count = 0;
+            
+            for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+                for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const idx = (ny * width + nx) * 4;
+                        r += tempData[idx];
+                        g += tempData[idx + 1];
+                        b += tempData[idx + 2];
+                        count++;
+                    }
+                }
+            }
+            
+            const idx = (y * width + x) * 4;
+            data[idx] = r / count;
+            data[idx + 1] = g / count;
+            data[idx + 2] = b / count;
+        }
+    }
+    
+    // Second pass: Reduce saturation and lighten for pastel effect
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i] / 255;
+        let g = data[i + 1] / 255;
+        let b = data[i + 2] / 255;
+        
+        // Convert to HSL
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let l = (max + min) / 2;
+        
+        let h, s;
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            h /= 6;
+        }
+        
+        // Reduce saturation and lighten
+        s *= colorVibrancy;
+        l = l * 0.7 + 0.3; // Lighten towards white
+        
+        // Convert back to RGB
+        let newR, newG, newB;
+        if (s === 0) {
+            newR = newG = newB = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            newR = hue2rgb(p, q, h + 1/3);
+            newG = hue2rgb(p, q, h);
+            newB = hue2rgb(p, q, h - 1/3);
+        }
+        
+        data[i] = newR * 255;
+        data[i + 1] = newG * 255;
+        data[i + 2] = newB * 255;
+        
+        // Add chalk texture noise
+        const noise = (Math.random() - 0.5) * chalkiness * 25;
+        data[i] = Math.min(255, Math.max(0, data[i] + noise));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+    }
+}
+
+// Sketch Style - Pencil drawing with hatching and shading
+function applySketchStyle(imageData, options = {}) {
+    const lineIntensity = options.lineIntensity || 0.8;
+    const shading = options.shading || 0.6;
+    const detail = options.detail || 0.7;
+    
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    // Convert to grayscale first
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        data[i] = data[i + 1] = data[i + 2] = gray;
+    }
+    
+    // Edge detection for sketch lines
+    const edges = new Uint8ClampedArray(width * height);
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            
+            // Sobel edge detection
+            let gx = 0, gy = 0;
+            for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                    const nidx = ((y + ky) * width + (x + kx)) * 4;
+                    const intensity = data[nidx];
+                    
+                    const gxKernel = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+                    const gyKernel = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+                    const kidx = (ky + 1) * 3 + (kx + 1);
+                    
+                    gx += intensity * gxKernel[kidx];
+                    gy += intensity * gyKernel[kidx];
+                }
+            }
+            
+            const magnitude = Math.sqrt(gx * gx + gy * gy);
+            edges[y * width + x] = magnitude * detail;
+        }
+    }
+    
+    // Apply sketch effect
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const edgeVal = edges[y * width + x];
+            
+            // Invert for sketch look (dark lines on white)
+            let value = 255 - edgeVal * lineIntensity;
+            
+            // Add hatching pattern for shading in darker areas
+            if (data[idx] < 150 && shading > 0) {
+                const hatchPattern = Math.sin(x * 0.1 + y * 0.1) * shading * 20;
+                value = Math.min(255, value + hatchPattern);
+            }
+            
+            data[idx] = data[idx + 1] = data[idx + 2] = Math.max(0, Math.min(255, value));
+        }
+    }
+}
+
+// Gouache Style - Opaque, matte paint with bold colors
+function applyGouacheStyle(imageData, options = {}) {
+    const opacity = options.opacity || 0.9;
+    const colorBoldness = options.colorBoldness || 1.3; // 130% boldness for vibrant gouache colors
+    const brushStrokes = options.brushStrokes || 0.6;
+    
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    // First pass: Bold, saturated colors
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i] / 255;
+        let g = data[i + 1] / 255;
+        let b = data[i + 2] / 255;
+        
+        // Convert to HSL
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let l = (max + min) / 2;
+        
+        let h, s;
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            h /= 6;
+        }
+        
+        // Boost saturation for bold gouache colors
+        s = Math.min(1, s * colorBoldness);
+        
+        // Convert back to RGB
+        let newR, newG, newB;
+        if (s === 0) {
+            newR = newG = newB = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            newR = hue2rgb(p, q, h + 1/3);
+            newG = hue2rgb(p, q, h);
+            newB = hue2rgb(p, q, h - 1/3);
+        }
+        
+        data[i] = newR * 255;
+        data[i + 1] = newG * 255;
+        data[i + 2] = newB * 255;
+    }
+    
+    // Second pass: Add opaque, matte texture with visible brush strokes
+    if (brushStrokes > 0) {
+        const brushSize = Math.ceil(3 * brushStrokes);
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let r = 0, g = 0, b = 0, count = 0;
+                
+                // Directional blur for brush stroke effect
+                const direction = Math.floor(y / 5) % 2 === 0 ? 1 : -1;
+                for (let dx = -brushSize; dx <= brushSize; dx++) {
+                    const nx = x + dx * direction;
+                    const ny = y;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const idx = (ny * width + nx) * 4;
+                        r += tempData[idx];
+                        g += tempData[idx + 1];
+                        b += tempData[idx + 2];
+                        count++;
+                    }
+                }
+                
+                const idx = (y * width + x) * 4;
+                data[idx] = r / count;
+                data[idx + 1] = g / count;
+                data[idx + 2] = b / count;
+            }
+        }
+    }
+    
+    // Third pass: Flatten with slight posterization for matte gouache look
+    const colorLevels = 12;
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.round(data[i] / 255 * colorLevels) * (255 / colorLevels);
+        data[i + 1] = Math.round(data[i + 1] / 255 * colorLevels) * (255 / colorLevels);
+        data[i + 2] = Math.round(data[i + 2] / 255 * colorLevels) * (255 / colorLevels);
     }
 }
 
