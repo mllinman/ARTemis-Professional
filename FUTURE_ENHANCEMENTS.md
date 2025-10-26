@@ -168,8 +168,8 @@ Features that would be nice to have but are not essential for core functionality
   - Rotate
   - Scale
   - Move
-- [ ] More basic transforms
   - Flip horizontal/vertical
+- [ ] More transforms
   - Perspective transform
 - [ ] Advanced transforms
   - Free transform with handles
