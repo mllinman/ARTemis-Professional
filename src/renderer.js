@@ -246,6 +246,12 @@ const state = {
         // Adaptive Quality
         adaptiveQuality: true, // Reduce quality for fast strokes
         qualityThreshold: 1.0, // Velocity threshold for quality reduction (px/ms)
+        // Dynamic Brush Physics
+        physicsEnabled: false, // Enable physics simulation
+        drag: 0,              // Air resistance/drag (0-100%)
+        mass: 50,             // Brush mass/weight (1-100)
+        springTension: 50,    // Spring tension/stiffness (0-100%)
+        springDamping: 50,    // Spring damping (0-100%)
     },
     color: '#000000',
     layers: [],
@@ -260,6 +266,15 @@ const state = {
     tiltX: 0,             // Pen tilt X (-1 to 1)
     tiltY: 0,             // Pen tilt Y (-1 to 1)
     twist: 0,             // Pen barrel rotation (0-360)
+    // Physics simulation state
+    physics: {
+        velocityX: 0,      // Velocity in X direction
+        velocityY: 0,      // Velocity in Y direction
+        targetX: 0,        // Target position X (pointer position)
+        targetY: 0,        // Target position Y (pointer position)
+        positionX: 0,      // Simulated position X
+        positionY: 0,      // Simulated position Y
+    },
     history: [],
     historyIndex: -1,
     isPanning: false,
@@ -1023,6 +1038,54 @@ function setupBrushSettings() {
         });
     }
     
+    // PHYSICS: Dynamic Brush Physics handlers
+    const physicsEnabled = document.getElementById('brush-physics-enabled');
+    if (physicsEnabled) {
+        physicsEnabled.addEventListener('change', (e) => {
+            state.brush.physicsEnabled = e.target.checked;
+            // Reset physics state when toggling
+            if (state.brush.physicsEnabled) {
+                resetBrushPhysics(state.lastX, state.lastY);
+            }
+        });
+    }
+    
+    const dragSlider = document.getElementById('brush-drag');
+    const dragValue = document.getElementById('brush-drag-value');
+    if (dragSlider && dragValue) {
+        dragSlider.addEventListener('input', (e) => {
+            state.brush.drag = parseInt(e.target.value);
+            dragValue.textContent = state.brush.drag;
+        });
+    }
+    
+    const massSlider = document.getElementById('brush-mass');
+    const massValue = document.getElementById('brush-mass-value');
+    if (massSlider && massValue) {
+        massSlider.addEventListener('input', (e) => {
+            state.brush.mass = parseInt(e.target.value);
+            massValue.textContent = state.brush.mass;
+        });
+    }
+    
+    const springTensionSlider = document.getElementById('brush-spring-tension');
+    const springTensionValue = document.getElementById('brush-spring-tension-value');
+    if (springTensionSlider && springTensionValue) {
+        springTensionSlider.addEventListener('input', (e) => {
+            state.brush.springTension = parseInt(e.target.value);
+            springTensionValue.textContent = state.brush.springTension;
+        });
+    }
+    
+    const springDampingSlider = document.getElementById('brush-spring-damping');
+    const springDampingValue = document.getElementById('brush-spring-damping-value');
+    if (springDampingSlider && springDampingValue) {
+        springDampingSlider.addEventListener('input', (e) => {
+            state.brush.springDamping = parseInt(e.target.value);
+            springDampingValue.textContent = state.brush.springDamping;
+        });
+    }
+    
     // Phase 1: Dual Brush System handlers
     const dualBrushEnabled = document.getElementById('dual-brush-enabled');
     const dualBrushSettings = document.getElementById('dual-brush-settings');
@@ -1453,6 +1516,40 @@ function applyBrushPreset(presetName) {
     if (brushScatterY && brushScatterYValue) {
         brushScatterY.value = preset.scatterY;
         brushScatterYValue.textContent = preset.scatterY;
+    }
+    
+    // PHYSICS: Update physics UI controls
+    const physicsEnabled = document.getElementById('brush-physics-enabled');
+    if (physicsEnabled) {
+        physicsEnabled.checked = preset.physicsEnabled || false;
+    }
+    
+    const dragSlider = document.getElementById('brush-drag');
+    const dragValue = document.getElementById('brush-drag-value');
+    if (dragSlider && dragValue) {
+        dragSlider.value = preset.drag || 0;
+        dragValue.textContent = preset.drag || 0;
+    }
+    
+    const massSlider = document.getElementById('brush-mass');
+    const massValue = document.getElementById('brush-mass-value');
+    if (massSlider && massValue) {
+        massSlider.value = preset.mass || 50;
+        massValue.textContent = preset.mass || 50;
+    }
+    
+    const springTensionSlider = document.getElementById('brush-spring-tension');
+    const springTensionValue = document.getElementById('brush-spring-tension-value');
+    if (springTensionSlider && springTensionValue) {
+        springTensionSlider.value = preset.springTension || 50;
+        springTensionValue.textContent = preset.springTension || 50;
+    }
+    
+    const springDampingSlider = document.getElementById('brush-spring-damping');
+    const springDampingValue = document.getElementById('brush-spring-damping-value');
+    if (springDampingSlider && springDampingValue) {
+        springDampingSlider.value = preset.springDamping || 50;
+        springDampingValue.textContent = preset.springDamping || 50;
     }
     
     updateCursor();
@@ -4951,6 +5048,9 @@ function startStroke(x, y, pressure) {
         drawCtx.drawImage(state.activeLayer.canvas, 0, 0);
     }
     
+    // Reset physics simulation for new stroke
+    resetBrushPhysics(x, y);
+    
     state.smoothPoints = [{x, y, pressure}];
     drawDot(x, y, pressure);
     state.lastX = x;
@@ -5014,6 +5114,19 @@ function continueStroke(x, y, pressure) {
                     }
                     break;
             }
+        }
+    }
+    
+    // Apply physics simulation if enabled
+    if (state.brush.physicsEnabled) {
+        // Calculate time delta for physics simulation
+        const currentTime = Date.now();
+        const deltaTime = (currentTime - state.lastTime) / 1000; // Convert to seconds
+        
+        if (deltaTime > 0 && deltaTime < 0.1) { // Limit delta to prevent instability
+            const physicsPos = applyBrushPhysics(x, y, deltaTime);
+            x = physicsPos.x;
+            y = physicsPos.y;
         }
     }
     
@@ -5720,6 +5833,76 @@ function interpolatePressureCurve(pressure) {
     if (i >= points.length - 1) return points[points.length - 1];
     
     return points[i] * (1 - fraction) + points[i + 1] * fraction;
+}
+
+// PHYSICS: Dynamic brush physics simulation
+// Implements drag, mass/weight, and spring dynamics for natural movement
+function applyBrushPhysics(targetX, targetY, deltaTime) {
+    if (!state.brush.physicsEnabled || deltaTime <= 0) {
+        // Physics disabled, return target position directly
+        state.physics.positionX = targetX;
+        state.physics.positionY = targetY;
+        return { x: targetX, y: targetY };
+    }
+    
+    // Update target position
+    state.physics.targetX = targetX;
+    state.physics.targetY = targetY;
+    
+    // Calculate spring force (Hooke's Law: F = -k * displacement)
+    const dx = state.physics.targetX - state.physics.positionX;
+    const dy = state.physics.targetY - state.physics.positionY;
+    
+    // Spring tension determines how strongly the brush is pulled toward target
+    // Range 0-100%, map to spring constant 0.1-10
+    const springConstant = 0.1 + (state.brush.springTension / 100) * 9.9;
+    
+    // Spring force
+    const springForceX = dx * springConstant;
+    const springForceY = dy * springConstant;
+    
+    // Apply mass (weight) - heavier brushes accelerate slower
+    // Range 1-100, map to mass 0.1-10 (inverse for intuitive control)
+    const mass = 0.1 + (state.brush.mass / 100) * 9.9;
+    
+    // Calculate acceleration (F = ma, so a = F/m)
+    const accelerationX = springForceX / mass;
+    const accelerationY = springForceY / mass;
+    
+    // Update velocity
+    state.physics.velocityX += accelerationX * deltaTime;
+    state.physics.velocityY += accelerationY * deltaTime;
+    
+    // Apply drag (air resistance) - reduces velocity over time
+    // Range 0-100%, map to drag coefficient 0-0.99
+    const dragCoefficient = (state.brush.drag / 100) * 0.99;
+    state.physics.velocityX *= (1 - dragCoefficient);
+    state.physics.velocityY *= (1 - dragCoefficient);
+    
+    // Apply spring damping - prevents oscillation
+    // Range 0-100%, map to damping 0-0.9
+    const dampingFactor = (state.brush.springDamping / 100) * 0.9;
+    state.physics.velocityX *= (1 - dampingFactor);
+    state.physics.velocityY *= (1 - dampingFactor);
+    
+    // Update position based on velocity
+    state.physics.positionX += state.physics.velocityX * deltaTime;
+    state.physics.positionY += state.physics.velocityY * deltaTime;
+    
+    return {
+        x: state.physics.positionX,
+        y: state.physics.positionY
+    };
+}
+
+// Reset physics state (called when starting a new stroke)
+function resetBrushPhysics(x, y) {
+    state.physics.positionX = x;
+    state.physics.positionY = y;
+    state.physics.targetX = x;
+    state.physics.targetY = y;
+    state.physics.velocityX = 0;
+    state.physics.velocityY = 0;
 }
 
 // ENHANCED: Color mixing from canvas (Painter-style color pickup)
