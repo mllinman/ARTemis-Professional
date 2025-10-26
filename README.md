@@ -46,7 +46,7 @@ ARTemis now features a professional-grade brush engine with capabilities compara
 
 ARTemis includes a comprehensive set of professional digital painting features!
 
-**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)**
+**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)** | **[🎨 Advanced Color Wheel](ADVANCED-COLOR-WHEEL.md)**
 
 #### Core Features:
 1. **Wrap-Around Mode** - Create seamless patterns and textures
@@ -75,7 +75,13 @@ ARTemis includes a comprehensive set of professional digital painting features!
     - Pencil Soft/Hard, Palette Knife, Roller
     - Airbrush Fine, Glitter
 13. **🎯 Screen-Wide Eyedropper** - Sample colors from anywhere on your screen, not just the canvas
-14. **🎨 Professional Color System** - Professional color wheel with HSV triangle and color mixer (already included)
+14. **🎨 Advanced Color System (Coolorus-style)** - Professional color picker with 5 color spaces
+    - HSV, HSL, RGB, LAB, CMYK modes
+    - High-resolution 280x280px interactive color wheel
+    - Gamut Lock for color range constraints
+    - Color History (20 recent colors)
+    - Palette Management with import/export
+    - Color harmony rules and mixer
 
 #### ⭐ NEW: Graphite Pencils
 15. **✏️ Graphite Pencils** - 8 realistic graphite pencils (4H to 8B):
@@ -194,8 +200,18 @@ ARTemis includes a comprehensive set of professional digital painting features!
 - Layer compositing
 
 ### 🎨 Color System
-- Professional color picker
-- Quick color swatches
+- **⭐ NEW: Advanced Color Wheel (Coolorus-style)** - Professional-grade color picker
+  - **5 Color Spaces:** HSV, HSL, RGB, LAB, CMYK for precise color control
+  - **High-Resolution Wheel:** 280x280px interactive color wheel with visual crosshair
+  - **Real-Time Sliders:** Gradient-background sliders for Hue, Saturation, and Value
+  - **Foreground/Background:** Large color swatches with quick swap (X) and reset (D)
+  - **Gamut Lock:** Constrain color selection to specific hue, saturation, and value ranges
+  - **Color History:** Last 20 colors with one-click selection
+  - **Palette Management:** Create, save, load, and share custom color palettes
+  - **Color Harmony:** Complementary, Analogous, Triadic, Tetradic, Split-Complementary
+  - **Export/Import:** Share palettes via JSON files
+- Professional color picker (basic mode)
+- Quick color swatches (8 predefined palettes)
 - Color selection from canvas (eyedropper)
 
 ### ⚡ Performance & UI
@@ -373,6 +389,10 @@ npm start
 - `Ctrl/Cmd + Shift + W` - Save workspace ⭐ NEW
 - `Ctrl/Cmd + Alt + W` - Load workspace ⭐ NEW
 
+### Color
+- `X` - Swap foreground/background colors ⭐ NEW
+- `D` - Reset colors to default (black/white) ⭐ NEW
+
 ### Other
 - `Escape` - Clear selection
 
@@ -442,6 +462,7 @@ The advanced brush engine features:
 
 ### User Documentation
 - **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
+- **[⭐ ADVANCED-COLOR-WHEEL.md](ADVANCED-COLOR-WHEEL.md)** - NEW! Coolorus-style color picker with 5 color spaces, gamut lock, palettes
 - **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization
 - **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the brush system basics
 - **[LAYER-ORGANIZATION-FEATURES.md](LAYER-ORGANIZATION-FEATURES.md)** - Layer types, ordering, and flattening guide
