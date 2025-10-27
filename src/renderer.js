@@ -10844,10 +10844,6 @@ async function exportImage() {
         alert('Error exporting image: ' + error.message);
     }
 }
-        console.error('Error exporting image:', error);
-        alert('Error exporting image: ' + error.message);
-    }
-}
 
 // Canvas Size Dialog
 let canvasSizeDialogInitialized = false;
