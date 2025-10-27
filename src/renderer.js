@@ -67,8 +67,23 @@ async function browserFileOperations(channel, ...args) {
                 input.onchange = async (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        const content = await file.text();
-                        resolve({ canceled: false, filePaths: [file.name], fileContent: content });
+                        // Check if it's likely a binary file (image) or text file (project)
+                        const isBinary = file.type.startsWith('image/') || 
+                                        file.name.match(/\.(png|jpg|jpeg|gif|bmp|webp|tiff|tif|psd|exr)$/i);
+                        
+                        if (isBinary) {
+                            // For binary/image files, pass the file object itself
+                            const dataUrl = await new Promise((res) => {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => res(ev.target.result);
+                                reader.readAsDataURL(file);
+                            });
+                            resolve({ canceled: false, filePaths: [file.name], fileContent: dataUrl, file: file });
+                        } else {
+                            // For text files (like .artemis projects), read as text
+                            const content = await file.text();
+                            resolve({ canceled: false, filePaths: [file.name], fileContent: content, file: file });
+                        }
                     } else {
                         resolve({ canceled: true });
                     }
@@ -450,6 +465,7 @@ const state = {
         'file-new': 'ctrl+n',
         'file-new-with-size': 'ctrl+shift+n',
         'file-open': 'ctrl+o',
+        'file-import': 'ctrl+i',
         'file-save': 'ctrl+s',
         'file-save-as': 'ctrl+shift+s',
         'file-export': 'ctrl+e',
@@ -572,6 +588,7 @@ const defaultKeyboardShortcuts = {
     'file-new': 'ctrl+n',
     'file-new-with-size': 'ctrl+shift+n',
     'file-open': 'ctrl+o',
+    'file-import': 'ctrl+i',
     'file-save': 'ctrl+s',
     'file-save-as': 'ctrl+shift+s',
     'file-export': 'ctrl+e',
@@ -10445,6 +10462,9 @@ function handleMenuAction(action) {
         case 'file-open':
             openProject();
             break;
+        case 'file-import':
+            importImage();
+            break;
         case 'file-save':
             saveProject();
             break;
@@ -10582,9 +10602,9 @@ async function openProject() {
             const filePath = result.filePaths[0];
             const fileExt = filePath.split('.').pop().toLowerCase();
             
-            // Check if it's an image file (including .psd)
-            if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'psd'].includes(fileExt)) {
-                await importImageAsLayer(filePath);
+            // Check if it's an image file (including .psd, .tiff, .exr)
+            if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'psd', 'webp', 'tiff', 'tif', 'exr'].includes(fileExt)) {
+                await importImageAsLayer(filePath, result);
                 return;
             }
             
@@ -10649,14 +10669,55 @@ async function openProject() {
     }
 }
 
-// Import image file (including .psd) as a new layer
-async function importImageAsLayer(filePath) {
+// Import image as a new layer - dedicated function for the Import menu option
+async function importImage() {
+    try {
+        const result = await ipcRenderer.invoke('show-open-dialog', {
+            title: 'Import Image',
+            filters: [
+                { name: 'All Supported Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff', 'tif', 'psd', 'exr'] },
+                { name: 'PNG Image', extensions: ['png'] },
+                { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] },
+                { name: 'GIF Image', extensions: ['gif'] },
+                { name: 'TIFF Image', extensions: ['tiff', 'tif'] },
+                { name: 'Photoshop File', extensions: ['psd'] },
+                { name: 'OpenEXR Image', extensions: ['exr'] },
+                { name: 'All Files', extensions: ['*'] }
+            ],
+            properties: ['openFile']
+        });
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+            const filePath = result.filePaths[0];
+            await importImageAsLayer(filePath, result);
+        }
+    } catch (error) {
+        console.error('Error importing image:', error);
+        alert('Error importing image: ' + error.message);
+    }
+}
+
+// Import image file (including .psd, .tiff, .exr) as a new layer
+// Note: Advanced formats like .psd, .tiff, and .exr will be imported as flattened images
+// Full layer support would require dedicated parser libraries
+async function importImageAsLayer(filePath, dialogResult) {
     try {
         // Read file as data URL
         let dataUrl;
-        if (result.fileContent) {
-            // Browser mode - file content is already available
-            dataUrl = result.fileContent;
+        if (dialogResult && dialogResult.fileContent) {
+            // Browser mode - file content is already available as text
+            // For image files, we need to handle them as binary
+            const file = dialogResult.file;
+            if (file) {
+                dataUrl = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // Fallback - try to use the content directly
+                dataUrl = dialogResult.fileContent;
+            }
         } else {
             // Electron mode - read file
             const fileResult = await ipcRenderer.invoke('read-file-as-dataurl', filePath);
@@ -10666,12 +10727,10 @@ async function importImageAsLayer(filePath) {
             dataUrl = fileResult.dataUrl;
         }
         
-        // Note: .psd files will be imported as flattened images
-        // Full .psd layer support would require a dedicated parser library
         const img = new Image();
         await new Promise((resolve, reject) => {
             img.onload = resolve;
-            img.onerror = () => reject(new Error('Failed to load image'));
+            img.onerror = () => reject(new Error('Failed to load image. Format may not be supported by the browser.'));
             img.src = dataUrl;
         });
         
@@ -10684,7 +10743,7 @@ async function importImageAsLayer(filePath) {
         }
         
         // Add a new layer with the imported image
-        const fileName = filePath.split(/[/\\]/).pop().replace(/\.[^.]+$/, '');
+        const fileName = (typeof filePath === 'string' ? filePath : 'imported').split(/[/\\]/).pop().replace(/\.[^.]+$/, '');
         const layer = addLayer(`Imported: ${fileName}`);
         
         if (layer) {
@@ -10701,7 +10760,7 @@ async function importImageAsLayer(filePath) {
         }
     } catch (error) {
         console.error('Error importing image:', error);
-        alert('Error importing image: ' + error.message);
+        alert('Error importing image: ' + error.message + '\n\nNote: Some formats (.tiff, .exr, .psd with layers) may not be fully supported in browser mode.');
     }
 }
 
@@ -10712,17 +10771,65 @@ async function exportImage() {
             defaultPath: 'untitled.png',
             filters: [
                 { name: 'PNG Image', extensions: ['png'] },
-                { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] }
+                { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] },
+                { name: 'GIF Image', extensions: ['gif'] },
+                { name: 'TIFF Image', extensions: ['tiff', 'tif'] },
+                { name: 'Photoshop File', extensions: ['psd'] },
+                { name: 'OpenEXR Image', extensions: ['exr'] },
+                { name: 'WebP Image', extensions: ['webp'] }
             ]
         });
         
         if (!result.canceled && result.filePath) {
             // Determine format based on file extension
-            const isPng = result.filePath.toLowerCase().endsWith('.png');
-            const format = isPng ? 'image/png' : 'image/jpeg';
+            const filePath = typeof result.filePath === 'string' ? result.filePath : result.filePath.name || 'untitled.png';
+            const ext = filePath.toLowerCase().split('.').pop();
             
-            const dataUrl = mainCanvas.toDataURL(format);
-            const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, '');
+            let dataUrl, base64Data, format;
+            
+            // Handle different export formats
+            if (ext === 'png') {
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+            } else if (ext === 'jpg' || ext === 'jpeg') {
+                format = 'image/jpeg';
+                dataUrl = mainCanvas.toDataURL(format, 0.95); // 95% quality for JPEG
+                base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, '');
+            } else if (ext === 'webp') {
+                format = 'image/webp';
+                dataUrl = mainCanvas.toDataURL(format, 0.95);
+                base64Data = dataUrl.replace(/^data:image\/webp;base64,/, '');
+            } else if (ext === 'gif') {
+                // GIF export - use PNG format as fallback (GIF encoding requires additional library)
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                alert('Note: GIF export uses PNG format. For animated GIF, use dedicated GIF creation tools.');
+            } else if (ext === 'tiff' || ext === 'tif') {
+                // TIFF export - use PNG format as fallback (TIFF encoding requires additional library)
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                alert('Note: TIFF export uses PNG format as fallback. Full TIFF support requires additional libraries.');
+            } else if (ext === 'psd') {
+                // PSD export - export as PNG (full PSD with layers would require PSD encoder library)
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                alert('Note: PSD export creates a flattened PNG file. For layers, use Save Project (.artemis format).');
+            } else if (ext === 'exr') {
+                // EXR export - use PNG format as fallback (EXR encoding requires OpenEXR library)
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                alert('Note: OpenEXR export uses PNG format as fallback. Full EXR support requires OpenEXR libraries.');
+            } else {
+                // Default to PNG
+                format = 'image/png';
+                dataUrl = mainCanvas.toDataURL(format);
+                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+            }
             
             const saveResult = await ipcRenderer.invoke('save-binary-file', result.filePath, base64Data);
             
@@ -10733,6 +10840,10 @@ async function exportImage() {
             }
         }
     } catch (error) {
+        console.error('Error exporting image:', error);
+        alert('Error exporting image: ' + error.message);
+    }
+}
         console.error('Error exporting image:', error);
         alert('Error exporting image: ' + error.message);
     }
