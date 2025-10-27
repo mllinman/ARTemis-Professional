@@ -118,7 +118,7 @@ Test ONE representative brush from each category:
 
 ### Textures and Patterns Testing
 
-#### Built-in Textures (17 textures)
+#### Built-in Textures (16 textures)
 Location: Tools Panel → Texture Library → Built-in Textures dropdown
 
 **Textures to Test**:
@@ -272,7 +272,7 @@ To add full support for advanced formats, would require:
 ### Comprehensive Tests
 - [ ] Test all 20 tools
 - [ ] Test representative brushes from all 17 categories
-- [ ] Test all 17 built-in textures
+- [ ] Test all 16 built-in textures
 - [ ] Test all brush settings
 - [ ] Test all advanced features
 - [ ] Test all color system features
@@ -282,8 +282,8 @@ To add full support for advanced formats, would require:
 
 ## Conclusion
 
-The file import/export system has been successfully enhanced with comprehensive format support. The application includes 178+ professional brushes across 17 categories, 17 built-in textures, and 20 tools, all ready for testing.
+The file import/export system has been successfully enhanced with comprehensive format support. The application includes 178+ professional brushes across 17 categories, 16 built-in textures, and 20 tools, all ready for testing.
 
-Due to the large scope (178+ brushes, 17 textures, 20 tools), a representative sampling approach is recommended for practical testing. The testing guidance above provides a structured methodology for validation.
+Due to the large scope (178+ brushes, 16 textures, 20 tools), a representative sampling approach is recommended for practical testing. The testing guidance above provides a structured methodology for validation.
 
 All menu items are functional, and the application provides clear user feedback for format limitations in browser mode.
