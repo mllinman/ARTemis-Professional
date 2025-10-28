@@ -5118,16 +5118,19 @@ function setupCanvasEvents() {
             }
         }
         
+        // Release transform handle selection but don't finish transform
+        if (state.transform.active && state.transform.selectedHandle !== null) {
+            state.transform.selectedHandle = null;
+            drawTransformHandles();
+            return;
+        }
+        
         if (state.shape.drawing) {
             finishShape();
         }
         
         if (state.gradient.drawing) {
             finishGradient();
-        }
-        
-        if (state.transform.active) {
-            finishTransform();
         }
         
         if (state.crop.active) {
