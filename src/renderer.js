@@ -10529,6 +10529,7 @@ function showPanel(panelId) {
     const panel = document.getElementById(panelId);
     if (panel) {
         panel.style.display = '';
+        panel.classList.remove('hidden');
         // If panel was collapsed, expand it
         if (panel.classList.contains('collapsed')) {
             panel.classList.remove('collapsed');
@@ -14261,6 +14262,169 @@ function showLayerStylesDialog() {
         state.activeLayer.layerStyles = originalStyles;
         document.getElementById('layer-styles-dialog').remove();
         compositeAllLayers();
+    });
+}
+
+// Automated Brush Testing Function
+function testAllBrushes() {
+    const brushCategories = {
+        'basic': ['basic', 'soft', 'hard', 'medium', 'fine', 'large-soft', 'large-hard', 'tiny', 'huge', 'detail'],
+        'airbrush': ['airbrush', 'airbrush-soft', 'airbrush-fine', 'airbrush-large', 'spray', 'mist', 'fog', 'diffuse', 'speckle', 'gradient-spray'],
+        'charcoal': ['charcoal', 'pencil', 'graphite', 'charcoal-soft', 'charcoal-hard', 'sketch', 'conte', 'pastel', 'crayon', 'colored-pencil'],
+        'ink': ['ink', 'ink-fine', 'ink-bold', 'technical-pen', 'marker', 'marker-chisel', 'brush-pen', 'calligraphy', 'fountain-pen', 'gel-pen'],
+        'watercolor': ['watercolor', 'watercolor-wet', 'watercolor-dry', 'wash', 'watercolor-flat', 'watercolor-round', 'splatter', 'wet-blend', 'watercolor-detail', 'drip'],
+        'oil': ['oil-paint', 'oil-flat', 'oil-round', 'oil-fan', 'oil-filbert', 'palette-knife', 'impasto', 'oil-glaze', 'oil-detail', 'oil-textured'],
+        'acrylic': ['acrylic', 'acrylic-flat', 'acrylic-round', 'acrylic-bright', 'acrylic-detail', 'acrylic-glaze', 'acrylic-heavy', 'acrylic-fan', 'acrylic-liner', 'acrylic-mop'],
+        'digital': ['digital-soft', 'digital-hard', 'digital-round', 'digital-flat', 'digital-texture', 'smudge', 'blend', 'digital-detail', 'digital-fuzzy', 'digital-sharp'],
+        'concept': ['concept-soft', 'concept-hard', 'concept-texture', 'cloud', 'smoke', 'grass', 'foliage', 'rocks', 'hair', 'fur'],
+        'special': ['glow', 'stars', 'sparkle', 'lightning', 'fire', 'water-ripple', 'snow', 'rain', 'leaves', 'bokeh']
+    };
+    
+    const results = {
+        passed: [],
+        failed: [],
+        warnings: []
+    };
+    
+    console.log('=== BRUSH TESTING STARTED ===');
+    
+    // Test each category
+    for (const [category, brushes] of Object.entries(brushCategories)) {
+        console.log(`\nTesting ${category} brushes (${brushes.length} brushes):`);
+        
+        for (const brushName of brushes) {
+            try {
+                const preset = brushPresets[brushName];
+                
+                if (!preset) {
+                    results.failed.push({
+                        category,
+                        brush: brushName,
+                        error: 'Brush preset not found'
+                    });
+                    console.error(`❌ ${brushName}: NOT FOUND`);
+                    continue;
+                }
+                
+                // Check if all required properties exist
+                const requiredProps = ['size', 'opacity', 'hardness', 'flow', 'spacing'];
+                const missingProps = requiredProps.filter(prop => preset[prop] === undefined);
+                
+                if (missingProps.length > 0) {
+                    results.failed.push({
+                        category,
+                        brush: brushName,
+                        error: `Missing properties: ${missingProps.join(', ')}`
+                    });
+                    console.error(`❌ ${brushName}: Missing ${missingProps.join(', ')}`);
+                    continue;
+                }
+                
+                // Check for valid value ranges
+                if (preset.size < 1 || preset.size > 200) {
+                    results.warnings.push({
+                        category,
+                        brush: brushName,
+                        warning: `Unusual size: ${preset.size}`
+                    });
+                }
+                
+                if (preset.opacity < 0 || preset.opacity > 100) {
+                    results.failed.push({
+                        category,
+                        brush: brushName,
+                        error: `Invalid opacity: ${preset.opacity}`
+                    });
+                    console.error(`❌ ${brushName}: Invalid opacity ${preset.opacity}`);
+                    continue;
+                }
+                
+                // Brush passed all tests
+                results.passed.push({
+                    category,
+                    brush: brushName
+                });
+                console.log(`✓ ${brushName}: OK`);
+                
+            } catch (error) {
+                results.failed.push({
+                    category,
+                    brush: brushName,
+                    error: error.message
+                });
+                console.error(`❌ ${brushName}: ${error.message}`);
+            }
+        }
+    }
+    
+    // Print summary
+    console.log('\n=== BRUSH TESTING SUMMARY ===');
+    console.log(`✓ Passed: ${results.passed.length}`);
+    console.log(`⚠ Warnings: ${results.warnings.length}`);
+    console.log(`❌ Failed: ${results.failed.length}`);
+    
+    if (results.warnings.length > 0) {
+        console.log('\nWarnings:');
+        results.warnings.forEach(w => {
+            console.log(`  ⚠ ${w.category}/${w.brush}: ${w.warning}`);
+        });
+    }
+    
+    if (results.failed.length > 0) {
+        console.log('\nFailed:');
+        results.failed.forEach(f => {
+            console.log(`  ❌ ${f.category}/${f.brush}: ${f.error}`);
+        });
+    }
+    
+    console.log('\n=== TESTING COMPLETE ===\n');
+    
+    return results;
+}
+
+// Visual Brush Stroke Testing Function
+async function visualTestBrush(brushName, testCanvas, testCtx) {
+    return new Promise((resolve) => {
+        const preset = brushPresets[brushName];
+        if (!preset) {
+            resolve({ success: false, error: 'Brush not found' });
+            return;
+        }
+        
+        // Apply brush preset
+        Object.assign(state.brush, preset);
+        
+        // Clear test area
+        const testX = Math.random() * (testCanvas.width - 200) + 100;
+        const testY = Math.random() * (testCanvas.height - 100) + 50;
+        
+        // Draw test stroke
+        testCtx.save();
+        testCtx.globalAlpha = preset.opacity / 100;
+        
+        // Simple brush stroke simulation
+        drawTestBrushStroke(testCtx, testX, testY, testX + 100, testY + 20, preset);
+        
+        testCtx.restore();
+        
+        // Check if pixels were drawn
+        setTimeout(() => {
+            const imageData = testCtx.getImageData(testX, testY, 100, 20);
+            const pixels = imageData.data;
+            let hasPixels = false;
+            
+            for (let i = 3; i < pixels.length; i += 4) {
+                if (pixels[i] > 0) { // Check alpha channel
+                    hasPixels = true;
+                    break;
+                }
+            }
+            
+            resolve({
+                success: hasPixels,
+                error: hasPixels ? null : 'No visible stroke produced'
+            });
+        }, 100);
     });
 }
 
