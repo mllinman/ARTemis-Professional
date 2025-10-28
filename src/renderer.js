@@ -336,13 +336,28 @@ const state = {
         ]
     },
     transform: {
-        mode: null, // 'move', 'rotate', 'scale'
+        mode: null, // 'move', 'rotate', 'scale', 'free-transform', 'skew', 'perspective', 'warp'
         active: false,
         startX: 0,
         startY: 0,
         originalLayer: null,
         angle: 0,
-        scale: 1
+        scale: 1,
+        scaleX: 1,
+        scaleY: 1,
+        skewX: 0,
+        skewY: 0,
+        // Corner points for free transform and perspective
+        corners: [
+            { x: 0, y: 0 },     // top-left
+            { x: 0, y: 0 },     // top-right
+            { x: 0, y: 0 },     // bottom-right
+            { x: 0, y: 0 }      // bottom-left
+        ],
+        selectedHandle: null,
+        // Warp grid
+        warpGrid: null,
+        warpResolution: 3  // 3x3 grid
     },
     text: {
         fontFamily: 'Arial, sans-serif',
@@ -4956,7 +4971,31 @@ function setupCanvasEvents() {
                 startShape(pos.x, pos.y);
             } else if (state.tool === 'gradient') {
                 startGradient(pos.x, pos.y);
-            } else if (state.tool === 'move' || state.tool === 'rotate' || state.tool === 'scale') {
+            } else if (state.tool === 'move' || state.tool === 'rotate' || state.tool === 'scale' || 
+                       state.tool === 'free-transform' || state.tool === 'skew' || 
+                       state.tool === 'perspective' || state.tool === 'warp') {
+                // Check if clicking on a transform handle
+                if ((state.tool === 'free-transform' || state.tool === 'perspective') && state.transform.active) {
+                    // Check if clicking near a corner handle
+                    for (let i = 0; i < state.transform.corners.length; i++) {
+                        const corner = state.transform.corners[i];
+                        const dist = Math.sqrt(Math.pow(pos.x - corner.x, 2) + Math.pow(pos.y - corner.y, 2));
+                        if (dist < 15) {
+                            state.transform.selectedHandle = i;
+                            return;
+                        }
+                    }
+                } else if (state.tool === 'warp' && state.transform.active && state.transform.warpGrid) {
+                    // Check if clicking near a grid point
+                    for (let i = 0; i < state.transform.warpGrid.length; i++) {
+                        const point = state.transform.warpGrid[i];
+                        const dist = Math.sqrt(Math.pow(pos.x - point.x, 2) + Math.pow(pos.y - point.y, 2));
+                        if (dist < 15) {
+                            state.transform.selectedHandle = i;
+                            return;
+                        }
+                    }
+                }
                 startTransform(state.tool, pos.x, pos.y);
             } else if (state.tool === 'crop') {
                 startCrop(pos.x, pos.y);
@@ -7875,6 +7914,50 @@ function startTransform(mode, x, y) {
     state.transform.originalLayer.height = state.activeLayer.canvas.height;
     const ctx = state.transform.originalLayer.getContext('2d');
     ctx.drawImage(state.activeLayer.canvas, 0, 0);
+    
+    // Initialize corners for free transform and perspective
+    if (mode === 'free-transform' || mode === 'perspective') {
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.corners = [
+            { x: 0, y: 0 },           // top-left
+            { x: w, y: 0 },           // top-right
+            { x: w, y: h },           // bottom-right
+            { x: 0, y: h }            // bottom-left
+        ];
+        state.transform.selectedHandle = null;
+    }
+    
+    // Initialize warp grid
+    if (mode === 'warp') {
+        const res = state.transform.warpResolution;
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.warpGrid = [];
+        
+        for (let row = 0; row <= res; row++) {
+            for (let col = 0; col <= res; col++) {
+                state.transform.warpGrid.push({
+                    x: (col / res) * w,
+                    y: (row / res) * h,
+                    originalX: (col / res) * w,
+                    originalY: (row / res) * h
+                });
+            }
+        }
+        state.transform.selectedHandle = null;
+    }
+    
+    // Reset transform values
+    state.transform.angle = 0;
+    state.transform.scale = 1;
+    state.transform.scaleX = 1;
+    state.transform.scaleY = 1;
+    state.transform.skewX = 0;
+    state.transform.skewY = 0;
+    
+    // Draw transform handles
+    drawTransformHandles();
 }
 
 function updateTransform(x, y) {
@@ -7890,6 +7973,7 @@ function updateTransform(x, y) {
     
     if (state.transform.mode === 'move') {
         ctx.translate(dx, dy);
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'rotate') {
         const centerX = state.canvas.width / 2;
         const centerY = state.canvas.height / 2;
@@ -7898,6 +7982,7 @@ function updateTransform(x, y) {
         ctx.rotate(angle);
         ctx.translate(-centerX, -centerY);
         state.transform.angle = angle;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'scale') {
         const scale = 1 + dy / 100;
         const centerX = state.canvas.width / 2;
@@ -7906,12 +7991,45 @@ function updateTransform(x, y) {
         ctx.scale(scale, scale);
         ctx.translate(-centerX, -centerY);
         state.transform.scale = scale;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
+    } else if (state.transform.mode === 'skew') {
+        const centerX = state.canvas.width / 2;
+        const centerY = state.canvas.height / 2;
+        const skewX = dx / 200;
+        const skewY = dy / 200;
+        ctx.translate(centerX, centerY);
+        ctx.transform(1, skewY, skewX, 1, 0, 0);
+        ctx.translate(-centerX, -centerY);
+        state.transform.skewX = skewX;
+        state.transform.skewY = skewY;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
+    } else if (state.transform.mode === 'free-transform') {
+        // Handle-based free transform
+        if (state.transform.selectedHandle !== null) {
+            state.transform.corners[state.transform.selectedHandle].x = x;
+            state.transform.corners[state.transform.selectedHandle].y = y;
+        }
+        applyPerspectiveTransform(ctx);
+    } else if (state.transform.mode === 'perspective') {
+        // Perspective transform - same as free transform but with perspective
+        if (state.transform.selectedHandle !== null) {
+            state.transform.corners[state.transform.selectedHandle].x = x;
+            state.transform.corners[state.transform.selectedHandle].y = y;
+        }
+        applyPerspectiveTransform(ctx);
+    } else if (state.transform.mode === 'warp') {
+        // Warp tool - move grid points
+        if (state.transform.selectedHandle !== null) {
+            state.transform.warpGrid[state.transform.selectedHandle].x = x;
+            state.transform.warpGrid[state.transform.selectedHandle].y = y;
+        }
+        applyWarpTransform(ctx);
     }
     
-    ctx.drawImage(state.transform.originalLayer, 0, 0);
     ctx.restore();
     
     compositeAllLayers();
+    drawTransformHandles();
 }
 
 function finishTransform() {
@@ -7920,7 +8038,248 @@ function finishTransform() {
     state.transform.active = false;
     state.transform.mode = null;
     state.transform.originalLayer = null;
+    state.transform.selectedHandle = null;
+    state.transform.warpGrid = null;
+    
+    // Clear transform handles
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
     saveState();
+}
+
+function cancelTransform() {
+    if (!state.transform.active || !state.activeLayer) return;
+    
+    // Restore original layer
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.originalLayer, 0, 0);
+    
+    state.transform.active = false;
+    state.transform.mode = null;
+    state.transform.originalLayer = null;
+    state.transform.selectedHandle = null;
+    state.transform.warpGrid = null;
+    
+    // Clear transform handles
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    compositeAllLayers();
+}
+
+function resetTransform() {
+    if (!state.transform.active || !state.activeLayer) return;
+    
+    // Reset to original
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.originalLayer, 0, 0);
+    
+    // Reset corners for free transform/perspective
+    if (state.transform.mode === 'free-transform' || state.transform.mode === 'perspective') {
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.corners = [
+            { x: 0, y: 0 },
+            { x: w, y: 0 },
+            { x: w, y: h },
+            { x: 0, y: h }
+        ];
+    }
+    
+    // Reset warp grid
+    if (state.transform.mode === 'warp' && state.transform.warpGrid) {
+        state.transform.warpGrid.forEach(point => {
+            point.x = point.originalX;
+            point.y = point.originalY;
+        });
+    }
+    
+    compositeAllLayers();
+    drawTransformHandles();
+}
+
+function drawTransformHandles() {
+    if (!state.transform.active) return;
+    
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    if (state.transform.mode === 'free-transform' || state.transform.mode === 'perspective') {
+        // Draw bounding box
+        drawCtx.strokeStyle = '#00aaff';
+        drawCtx.lineWidth = 2;
+        drawCtx.setLineDash([5, 5]);
+        drawCtx.beginPath();
+        drawCtx.moveTo(state.transform.corners[0].x, state.transform.corners[0].y);
+        for (let i = 1; i < 4; i++) {
+            drawCtx.lineTo(state.transform.corners[i].x, state.transform.corners[i].y);
+        }
+        drawCtx.closePath();
+        drawCtx.stroke();
+        drawCtx.setLineDash([]);
+        
+        // Draw corner handles
+        state.transform.corners.forEach((corner, index) => {
+            drawCtx.fillStyle = state.transform.selectedHandle === index ? '#ff6600' : '#00aaff';
+            drawCtx.strokeStyle = '#ffffff';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(corner.x, corner.y, 6, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        });
+    } else if (state.transform.mode === 'warp') {
+        // Draw warp grid
+        const res = state.transform.warpResolution;
+        drawCtx.strokeStyle = '#00aaff';
+        drawCtx.lineWidth = 1;
+        drawCtx.setLineDash([3, 3]);
+        
+        // Draw horizontal lines
+        for (let row = 0; row <= res; row++) {
+            drawCtx.beginPath();
+            for (let col = 0; col <= res; col++) {
+                const idx = row * (res + 1) + col;
+                const point = state.transform.warpGrid[idx];
+                if (col === 0) {
+                    drawCtx.moveTo(point.x, point.y);
+                } else {
+                    drawCtx.lineTo(point.x, point.y);
+                }
+            }
+            drawCtx.stroke();
+        }
+        
+        // Draw vertical lines
+        for (let col = 0; col <= res; col++) {
+            drawCtx.beginPath();
+            for (let row = 0; row <= res; row++) {
+                const idx = row * (res + 1) + col;
+                const point = state.transform.warpGrid[idx];
+                if (row === 0) {
+                    drawCtx.moveTo(point.x, point.y);
+                } else {
+                    drawCtx.lineTo(point.x, point.y);
+                }
+            }
+            drawCtx.stroke();
+        }
+        
+        drawCtx.setLineDash([]);
+        
+        // Draw grid points
+        state.transform.warpGrid.forEach((point, index) => {
+            drawCtx.fillStyle = state.transform.selectedHandle === index ? '#ff6600' : '#00aaff';
+            drawCtx.strokeStyle = '#ffffff';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        });
+    }
+}
+
+function applyPerspectiveTransform(ctx) {
+    // Simple perspective mapping using bilinear interpolation
+    const corners = state.transform.corners;
+    const srcCanvas = state.transform.originalLayer;
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    
+    // Get source and destination image data
+    const srcCtx = srcCanvas.getContext('2d');
+    const srcData = srcCtx.getImageData(0, 0, w, h);
+    const dstData = ctx.createImageData(w, h);
+    
+    // Apply perspective transformation
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Normalize coordinates (0 to 1)
+            const u = x / w;
+            const v = y / h;
+            
+            // Bilinear interpolation of corner positions
+            const x0 = corners[0].x * (1 - u) + corners[1].x * u;
+            const y0 = corners[0].y * (1 - u) + corners[1].y * u;
+            const x1 = corners[3].x * (1 - u) + corners[2].x * u;
+            const y1 = corners[3].y * (1 - u) + corners[2].y * u;
+            
+            const tx = x0 * (1 - v) + x1 * v;
+            const ty = y0 * (1 - v) + y1 * v;
+            
+            // Bounds check
+            const sx = Math.floor(tx);
+            const sy = Math.floor(ty);
+            
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const srcIdx = (y * w + x) * 4;
+                const dstIdx = (sy * w + sx) * 4;
+                
+                dstData.data[dstIdx] = srcData.data[srcIdx];
+                dstData.data[dstIdx + 1] = srcData.data[srcIdx + 1];
+                dstData.data[dstIdx + 2] = srcData.data[srcIdx + 2];
+                dstData.data[dstIdx + 3] = srcData.data[srcIdx + 3];
+            }
+        }
+    }
+    
+    ctx.putImageData(dstData, 0, 0);
+}
+
+function applyWarpTransform(ctx) {
+    const srcCanvas = state.transform.originalLayer;
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    const res = state.transform.warpResolution;
+    
+    // Get source image data
+    const srcCtx = srcCanvas.getContext('2d');
+    const srcData = srcCtx.getImageData(0, 0, w, h);
+    const dstData = ctx.createImageData(w, h);
+    
+    // Apply warp transformation using bilinear interpolation
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Find which grid cell this pixel is in
+            const cellX = (x / w) * res;
+            const cellY = (y / h) * res;
+            const gridX = Math.floor(cellX);
+            const gridY = Math.floor(cellY);
+            
+            if (gridX >= res || gridY >= res) continue;
+            
+            // Get the four corners of the grid cell
+            const p00 = state.transform.warpGrid[gridY * (res + 1) + gridX];
+            const p10 = state.transform.warpGrid[gridY * (res + 1) + gridX + 1];
+            const p01 = state.transform.warpGrid[(gridY + 1) * (res + 1) + gridX];
+            const p11 = state.transform.warpGrid[(gridY + 1) * (res + 1) + gridX + 1];
+            
+            // Interpolate position within cell
+            const u = cellX - gridX;
+            const v = cellY - gridY;
+            
+            const tx = p00.x * (1 - u) * (1 - v) + p10.x * u * (1 - v) + 
+                      p01.x * (1 - u) * v + p11.x * u * v;
+            const ty = p00.y * (1 - u) * (1 - v) + p10.y * u * (1 - v) + 
+                      p01.y * (1 - u) * v + p11.y * u * v;
+            
+            const sx = Math.floor(tx);
+            const sy = Math.floor(ty);
+            
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const srcIdx = (y * w + x) * 4;
+                const dstIdx = (sy * w + sx) * 4;
+                
+                dstData.data[dstIdx] = srcData.data[srcIdx];
+                dstData.data[dstIdx + 1] = srcData.data[srcIdx + 1];
+                dstData.data[dstIdx + 2] = srcData.data[srcIdx + 2];
+                dstData.data[dstIdx + 3] = srcData.data[srcIdx + 3];
+            }
+        }
+    }
+    
+    ctx.putImageData(dstData, 0, 0);
 }
 
 // Filters and Effects
@@ -10642,6 +11001,59 @@ function setupContextualTaskbar() {
         state.shape.filled = !state.shape.filled;
         const checkbox = document.getElementById('shape-filled');
         if (checkbox) checkbox.checked = state.shape.filled;
+    });
+    
+    // Transform action buttons
+    document.querySelector('[data-action="transform-apply"]')?.addEventListener('click', () => {
+        finishTransform();
+    });
+    
+    document.querySelector('[data-action="transform-cancel"]')?.addEventListener('click', () => {
+        cancelTransform();
+    });
+    
+    document.querySelector('[data-action="transform-reset"]')?.addEventListener('click', () => {
+        resetTransform();
+    });
+    
+    document.querySelector('[data-action="flip-h"]')?.addEventListener('click', () => {
+        if (state.activeLayer) {
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.canvas.width;
+            tempCanvas.height = state.canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(state.activeLayer.canvas, 0, 0);
+            
+            ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(tempCanvas, -state.canvas.width, 0);
+            ctx.restore();
+            
+            compositeAllLayers();
+            saveState();
+        }
+    });
+    
+    document.querySelector('[data-action="flip-v"]')?.addEventListener('click', () => {
+        if (state.activeLayer) {
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.canvas.width;
+            tempCanvas.height = state.canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(state.activeLayer.canvas, 0, 0);
+            
+            ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+            ctx.save();
+            ctx.scale(1, -1);
+            ctx.drawImage(tempCanvas, 0, -state.canvas.height);
+            ctx.restore();
+            
+            compositeAllLayers();
+            saveState();
+        }
     });
     
     // Text formatting buttons

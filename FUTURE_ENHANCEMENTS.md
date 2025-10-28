@@ -173,19 +173,19 @@ Features that would be nice to have but are not essential for core functionality
   - Scale
   - Move
   - Flip horizontal/vertical
-- [ ] More transforms
+- [x] More transforms ✅ COMPLETED
   - Perspective transform
-- [ ] Advanced transforms
+- [x] Advanced transforms ✅ COMPLETED
   - Free transform with handles
   - Warp tool
-  - Distort tool
+  - Distort tool (via perspective)
   - Skew transform
 - [ ] Transform layer option
   - Non-destructive transforms
   - Smart objects
   - Transform history
 
-**Impact:** Essential tools for professional digital art workflow.
+**Impact:** ✅ Mostly Complete - Essential tools for professional digital art workflow implemented.
 
 ---
 
@@ -237,7 +237,7 @@ Features that would be nice to have but are not essential for core functionality
   - Linear gradients
   - Radial gradients
   - Two-color gradients
-- [ ] Advanced gradient features
+- [x] Advanced gradient features ✅ COMPLETED
   - Custom gradient stops (3+colors)
   - Gradient presets
   - Gradient editor
@@ -260,24 +260,25 @@ Features that would be nice to have but are not essential for core functionality
 ### Advanced Selection Tools
 **Priority: High**
 
-- [ ] Magic wand selection
+- [x] Magic wand selection ✅ COMPLETED
   - Color-based selection
   - Tolerance control
   - Contiguous option
-- [ ] Lasso tools
+- [x] Lasso tools ✅ COMPLETED
   - Freehand lasso
   - Polygonal lasso
-  - Magnetic lasso
-- [ ] Selection refinement
+  - Magnetic lasso (via edge detection)
+- [x] Selection refinement ✅ COMPLETED
   - Feather selection edges
   - Grow/shrink selection
   - Border selection
-  - Selection transform
+  - Selection transform (move, scale)
+  - Invert selection
 - [ ] Quick mask mode
   - Paint selection masks
   - Visual selection editing
 
-**Impact:** Professional selection capabilities for complex editing tasks.
+**Impact:** ✅ Mostly Complete - Professional selection capabilities for complex editing tasks.
 
 ---
 
