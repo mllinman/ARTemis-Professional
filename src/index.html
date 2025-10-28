@@ -54,6 +54,7 @@
                 <span class="menu-label">Windows</span>
                 <div class="menu-dropdown">
                     <button class="menu-btn" data-action="window-show-left">Show Tools Panel</button>
+                    <button class="menu-btn" data-action="window-show-color">Show Color Panel</button>
                     <button class="menu-btn" data-action="window-show-right">Show Layers Panel</button>
                     <button class="menu-btn" data-action="window-show-toolbar">Show Toolbar</button>
                     <button class="menu-btn" data-action="window-show-contextual">Show Contextual Taskbar</button>
@@ -668,193 +669,11 @@
                         </div>
                     </div>
                     
-                    <!-- Color Picker Section -->
-                    <div class="setting-section">
-                        <div class="setting-section-header">
-                            <span class="setting-section-title">Color</span>
-                            <span class="setting-section-icon">▼</span>
-                        </div>
-                        <div class="setting-section-content">
-                            <div class="color-picker-container">
-                                <input type="color" id="color-picker" value="#000000" class="color-input">
-                                <input type="color" id="gradient-color-2" value="#ffffff" class="color-input" title="Gradient Color 2">
-                                
-                                <!-- Color Mode Selection -->
-                                <div class="setting-group">
-                                    <label style="font-weight: bold; margin-bottom: 8px; display: block;">Color Mode:</label>
-                                    <label style="display: block; margin: 4px 0;">
-                                        <input type="radio" name="color-mode" value="wheel" checked>
-                                        Color Wheel
-                                    </label>
-                                    <label style="display: block; margin: 4px 0;">
-                                        <input type="radio" name="color-mode" value="advanced-wheel">
-                                        🎨 Advanced Color Wheel (Coolorus-style)
-                                    </label>
-                                    <label style="display: block; margin: 4px 0;">
-                                        <input type="radio" name="color-mode" value="mixer">
-                                        Color Mixer
-                                    </label>
-                                    <label style="display: block; margin: 4px 0;">
-                                        <input type="radio" name="color-mode" value="palette">
-                                        Color Palettes
-                                    </label>
-                                </div>
-                                
-                                <!-- Advanced Color Wheel Container (New) -->
-                                <div id="advanced-color-wheel-container" style="display: none;">
-                                    <!-- Will be populated by AdvancedColorWheel class -->
-                                </div>
-                                
-                                <!-- Color Wheel Canvas (Default) -->
-                                <div id="color-wheel-container" style="display: block;">
-                                    <canvas id="color-wheel-canvas" width="200" height="200"></canvas>
-                                    <div class="color-values">
-                                        <label>H: <span id="hue-value">0</span>°</label>
-                                        <label>S: <span id="saturation-value">0</span>%</label>
-                                        <label>V: <span id="value-value">0</span>%</label>
-                                    </div>
-                                    <div class="hsv-inputs" style="margin-top: 10px;">
-                                        <div class="setting-group">
-                                            <label>Hue (0-360):</label>
-                                            <input type="number" id="hue-input" min="0" max="360" value="0" class="slider">
-                                        </div>
-                                        <div class="setting-group">
-                                            <label>Saturation (0-100):</label>
-                                            <input type="number" id="saturation-input" min="0" max="100" value="0" class="slider">
-                                        </div>
-                                        <div class="setting-group">
-                                            <label>Value (0-100):</label>
-                                            <input type="number" id="value-input" min="0" max="100" value="100" class="slider">
-                                        </div>
-                                    </div>
-                                    <div class="rgb-inputs" style="margin-top: 10px;">
-                                        <div class="setting-group">
-                                            <label>Red (0-255):</label>
-                                            <input type="number" id="red-input" min="0" max="255" value="0" class="slider">
-                                        </div>
-                                        <div class="setting-group">
-                                            <label>Green (0-255):</label>
-                                            <input type="number" id="green-input" min="0" max="255" value="0" class="slider">
-                                        </div>
-                                        <div class="setting-group">
-                                            <label>Blue (0-255):</label>
-                                            <input type="number" id="blue-input" min="0" max="255" value="0" class="slider">
-                                        </div>
-                                    </div>
-                                    <div class="hex-input" style="margin-top: 10px;">
-                                        <div class="setting-group">
-                                            <label>Hex Color:</label>
-                                            <input type="text" id="hex-input" value="#000000" class="slider" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Color Mixer Section -->
-                    <div class="setting-section" id="color-mixer-section" style="display: none;">
-                        <div class="setting-section-header">
-                            <span class="setting-section-title">Color Mixer</span>
-                            <span class="setting-section-icon">▼</span>
-                        </div>
-                        <div class="setting-section-content">
-                            <div class="color-mixer-container">
-                                <!-- Visual mixer canvas -->
-                                <canvas id="mixer-canvas" width="240" height="120" style="border: 1px solid #3e3e42; border-radius: 4px; cursor: crosshair; display: block; margin: 0 auto 10px;"></canvas>
-                                
-                                <div class="mixer-colors">
-                                    <div class="mixer-color-input">
-                                        <label>Color 1:</label>
-                                        <input type="color" id="mixer-color-1" value="#ff0000" class="color-input">
-                                    </div>
-                                    <div class="mixer-color-input">
-                                        <label>Color 2:</label>
-                                        <input type="color" id="mixer-color-2" value="#0000ff" class="color-input">
-                                    </div>
-                                </div>
-                                <div class="setting-group">
-                                    <label>Mix Ratio: <span id="mix-ratio-value">50</span>%</label>
-                                    <input type="range" id="mix-ratio" min="0" max="100" value="50" class="slider">
-                                </div>
-                                <div class="mixer-result">
-                                    <label>Mixed Color:</label>
-                                    <div id="mixed-color-preview" style="width: 100%; height: 40px; border: 1px solid #3e3e42; border-radius: 4px;"></div>
-                                    <button id="use-mixed-color-btn" class="icon-btn" style="margin-top: 8px;">Use This Color</button>
-                                </div>
-                                
-                                <!-- Wet Palette -->
-                                <div class="setting-group" style="margin-top: 20px;">
-                                    <label>
-                                        <input type="checkbox" id="wet-palette-enabled" checked>
-                                        Wet Palette
-                                    </label>
-                                    <div id="wet-palette-settings" class="sub-settings">
-                                        <label>Wetness: <span id="wet-palette-wetness-value">50</span>%</label>
-                                        <input type="range" id="wet-palette-wetness" min="0" max="100" value="50" class="slider">
-                                        <label>Bleeding: <span id="wet-palette-bleeding-value">30</span>%</label>
-                                        <input type="range" id="wet-palette-bleeding" min="0" max="100" value="30" class="slider">
-                                        <label>Drying Time: <span id="wet-palette-drying-value">5</span>s</label>
-                                        <input type="range" id="wet-palette-drying" min="1" max="30" value="5" class="slider">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Color Harmonies Section -->
-                    <div class="setting-section" id="color-harmonies-section">
-                        <div class="setting-section-header">
-                            <span class="setting-section-title">Color Harmonies</span>
-                            <span class="setting-section-icon">▼</span>
-                        </div>
-                        <div class="setting-section-content">
-                            <div class="harmony-container">
-                                <div class="setting-group">
-                                    <label>Harmony Type:</label>
-                                    <select id="harmony-type" class="brush-select">
-                                        <option value="complementary">Complementary</option>
-                                        <option value="analogous">Analogous</option>
-                                        <option value="triadic">Triadic</option>
-                                        <option value="tetradic">Tetradic (Square)</option>
-                                        <option value="split-complementary">Split-Complementary</option>
-                                        <option value="monochromatic">Monochromatic</option>
-                                    </select>
-                                </div>
-                                <div id="harmony-colors" class="color-swatches"></div>
-                                <button id="add-harmony-to-set-btn" class="icon-btn" style="margin-top: 8px;">Add to Color Set</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Color Sets Section -->
-                    <div class="setting-section" id="color-sets-section">
-                        <div class="setting-section-header">
-                            <span class="setting-section-title">Color Sets</span>
-                            <span class="setting-section-icon">▼</span>
-                        </div>
-                        <div class="setting-section-content">
-                            <div class="color-sets-container">
-                                <div class="setting-group">
-                                    <label>Current Set:</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <select id="color-set-selector" class="brush-select" style="flex: 1;">
-                                            <option value="default">Default Set</option>
-                                        </select>
-                                        <button id="new-color-set-btn" class="icon-btn" title="New Set">+</button>
-                                        <button id="delete-color-set-btn" class="icon-btn" title="Delete Set">🗑</button>
-                                    </div>
-                                </div>
-                                <div class="setting-group">
-                                    <div id="color-set-colors" class="color-swatches" style="min-height: 80px; border: 1px solid #3e3e42; border-radius: 4px; padding: 8px;">
-                                        <!-- Color swatches will be added here -->
-                                    </div>
-                                </div>
-                                <div class="setting-group">
-                                    <button id="add-current-color-to-set-btn" class="icon-btn">Add Current Color</button>
-                                    <button id="clear-color-set-btn" class="icon-btn" style="margin-left: 8px;">Clear Set</button>
-                                </div>
-                            </div>
+                    <!-- Color Picker Section - Placeholder for hidden inputs only -->
+                    <div class="setting-section" style="display: none;">
+                        <div class="color-picker-container">
+                            <input type="color" id="color-picker" value="#000000" class="color-input">
+                            <input type="color" id="gradient-color-2" value="#ffffff" class="color-input" title="Gradient Color 2">
                         </div>
                     </div>
                     
@@ -1479,6 +1298,27 @@
                     <button id="reset-zoom-btn" class="info-btn" title="Reset Zoom (Ctrl+0)">Reset Zoom</button>
                     <span id="canvas-size">3300 x 5100</span>
                     <span id="cursor-pos">X: 0, Y: 0</span>
+                </div>
+            </div>
+
+            <!-- Color Panel - Dedicated Advanced Color Wheel -->
+            <div id="color-panel" class="panel draggable" style="left: 280px; top: 100px; width: 320px;">
+                <div class="resize-handle"></div>
+                <div class="panel-header">
+                    <button class="panel-collapse-btn" id="color-panel-collapse" title="Collapse Panel">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+                        </svg>
+                    </button>
+                    <span>Color</span>
+                    <button class="panel-detach-btn" id="color-panel-detach" title="Detach Panel">⧉</button>
+                    <button class="panel-close-btn" id="color-panel-close" title="Close Panel">✕</button>
+                </div>
+                <div class="panel-content">
+                    <!-- Advanced Color Wheel Container -->
+                    <div id="advanced-color-wheel-container" style="display: block;">
+                        <!-- Will be populated by AdvancedColorWheel class -->
+                    </div>
                 </div>
             </div>
 

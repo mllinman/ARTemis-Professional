@@ -2705,76 +2705,17 @@ function setupColorPicker() {
 
 // Color Mode Switching
 function setupColorModeSwitch() {
-    const modeRadios = document.querySelectorAll('input[name="color-mode"]');
-    const colorWheelContainer = document.getElementById('color-wheel-container');
+    // No mode radios anymore - always use advanced color wheel
     const advancedColorWheelContainer = document.getElementById('advanced-color-wheel-container');
-    const colorMixerSection = document.getElementById('color-mixer-section');
-    const colorPalettesSection = document.getElementById('color-palettes-section');
-    const colorHarmoniesSection = document.getElementById('color-harmonies-section');
     
-    // Initialize advanced color wheel instance (lazy loading)
+    // Initialize advanced color wheel instance
     let advancedColorWheel = null;
     
-    // Default to wheel mode (basic picker removed)
-    let lastMode = localStorage.getItem('lastColorMode') || 'wheel';
-    
-    // Set the last selected mode
-    const lastModeRadio = document.querySelector(`input[name="color-mode"][value="${lastMode}"]`);
-    if (lastModeRadio) {
-        lastModeRadio.checked = true;
+    // Always show advanced color wheel
+    if (advancedColorWheelContainer && typeof AdvancedColorWheel !== 'undefined') {
+        advancedColorWheelContainer.style.display = 'block';
+        advancedColorWheel = new AdvancedColorWheel('advanced-color-wheel-container');
     }
-    
-    // Function to switch color mode
-    function switchColorMode(mode) {
-        // Hide all color mode sections
-        colorWheelContainer.style.display = 'none';
-        if (advancedColorWheelContainer) advancedColorWheelContainer.style.display = 'none';
-        colorMixerSection.style.display = 'none';
-        colorPalettesSection.style.display = 'none';
-        colorHarmoniesSection.style.display = 'none';
-        
-        // Show the selected mode
-        switch (mode) {
-            case 'wheel':
-                colorWheelContainer.style.display = 'block';
-                colorHarmoniesSection.style.display = 'block';
-                break;
-            case 'advanced-wheel':
-                if (advancedColorWheelContainer) {
-                    advancedColorWheelContainer.style.display = 'block';
-                    // Initialize advanced color wheel if not already done
-                    if (!advancedColorWheel && typeof AdvancedColorWheel !== 'undefined') {
-                        advancedColorWheel = new AdvancedColorWheel('advanced-color-wheel-container');
-                    }
-                }
-                break;
-            case 'mixer':
-                colorMixerSection.style.display = 'block';
-                drawMixerCanvas(); // Redraw the mixer canvas
-                break;
-            case 'palette':
-                colorPalettesSection.style.display = 'block';
-                break;
-            default:
-                // Basic picker is always visible, no additional sections needed
-                break;
-        }
-        
-        // Save the last selected mode
-        localStorage.setItem('lastColorMode', mode);
-    }
-    
-    // Apply initial mode
-    switchColorMode(lastMode);
-    
-    // Add event listeners to radio buttons
-    modeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                switchColorMode(e.target.value);
-            }
-        });
-    });
 }
 
 // Color conversion utilities
@@ -2850,134 +2791,9 @@ function hsvToRgb(h, s, v) {
 
 // Color Wheel
 function setupColorWheel() {
-    const container = document.getElementById('color-wheel-container');
-    const canvas = document.getElementById('color-wheel-canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Draw color wheel
-    drawColorWheel(ctx, canvas.width, canvas.height);
-    
-    canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const dx = x - centerX;
-        const dy = y - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const radius = canvas.width / 2 - 10;
-        
-        if (distance <= radius) {
-            const imageData = ctx.getImageData(x, y, 1, 1).data;
-            const color = rgbToHex(imageData[0], imageData[1], imageData[2]);
-            state.color = color;
-            
-            const colorPicker = document.getElementById('color-picker');
-            if (colorPicker) {
-                colorPicker.value = color;
-            }
-            
-            const hsv = rgbToHsv(imageData[0], imageData[1], imageData[2]);
-            updateAllColorInputs(imageData[0], imageData[1], imageData[2]);
-            
-            updateColorHarmony();
-        }
-    });
-    
-    // HSV input handlers
-    const hueInput = document.getElementById('hue-input');
-    const saturationInput = document.getElementById('saturation-input');
-    const valueInput = document.getElementById('value-input');
-    
-    function updateColorFromHSV() {
-        const h = parseFloat(hueInput.value) || 0;
-        const s = parseFloat(saturationInput.value) || 0;
-        const v = parseFloat(valueInput.value) || 0;
-        
-        const rgb = hsvToRgb(h, s, v);
-        const color = rgbToHex(rgb.r, rgb.g, rgb.b);
-        
-        state.color = color;
-        const colorPicker = document.getElementById('color-picker');
-        if (colorPicker) {
-            colorPicker.value = color;
-        }
-        
-        updateAllColorInputs(rgb.r, rgb.g, rgb.b);
-        updateColorHarmony();
-    }
-    
-    if (hueInput) hueInput.addEventListener('input', updateColorFromHSV);
-    if (saturationInput) saturationInput.addEventListener('input', updateColorFromHSV);
-    if (valueInput) valueInput.addEventListener('input', updateColorFromHSV);
-    
-    // RGB input handlers
-    const redInput = document.getElementById('red-input');
-    const greenInput = document.getElementById('green-input');
-    const blueInput = document.getElementById('blue-input');
-    
-    function updateColorFromRGB() {
-        const r = parseInt(redInput.value) || 0;
-        const g = parseInt(greenInput.value) || 0;
-        const b = parseInt(blueInput.value) || 0;
-        
-        const color = rgbToHex(r, g, b);
-        state.color = color;
-        
-        const colorPicker = document.getElementById('color-picker');
-        if (colorPicker) {
-            colorPicker.value = color;
-        }
-        
-        updateAllColorInputs(r, g, b);
-        updateColorHarmony();
-    }
-    
-    if (redInput) redInput.addEventListener('input', updateColorFromRGB);
-    if (greenInput) greenInput.addEventListener('input', updateColorFromRGB);
-    if (blueInput) blueInput.addEventListener('input', updateColorFromRGB);
-    
-    // HEX input handler
-    const hexInput = document.getElementById('hex-input');
-    
-    function updateColorFromHex() {
-        let hex = hexInput.value.trim();
-        
-        // Add # if missing
-        if (!hex.startsWith('#')) {
-            hex = '#' + hex;
-        }
-        
-        // Validate hex format
-        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-            state.color = hex;
-            
-            const colorPicker = document.getElementById('color-picker');
-            if (colorPicker) {
-                colorPicker.value = hex;
-            }
-            
-            const rgb = hexToRgbObj(hex);
-            updateAllColorInputs(rgb.r, rgb.g, rgb.b);
-            updateColorHarmony();
-        }
-    }
-    
-    if (hexInput) {
-        hexInput.addEventListener('input', updateColorFromHex);
-        hexInput.addEventListener('blur', () => {
-            // Ensure valid format on blur
-            let hex = hexInput.value.trim();
-            if (!hex.startsWith('#')) {
-                hex = '#' + hex;
-            }
-            if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-                hexInput.value = state.color;
-            }
-        });
-    }
+    // Basic color wheel removed - using advanced color wheel only
+    // The canvas element no longer exists in the DOM
+    // Color inputs are also removed, so this function is now empty
 }
 
 function updateHSVDisplay(hsv) {
@@ -10507,6 +10323,9 @@ function handleMenuAction(action) {
         case 'window-show-left':
             showPanel('left-panel');
             break;
+        case 'window-show-color':
+            showPanel('color-panel');
+            break;
         case 'window-show-right':
             showPanel('right-panel');
             break;
@@ -11755,8 +11574,10 @@ function setupPanelControls() {
     // Panel Collapse
     const leftCollapseBtn = document.getElementById('left-panel-collapse');
     const rightCollapseBtn = document.getElementById('right-panel-collapse');
+    const colorCollapseBtn = document.getElementById('color-panel-collapse');
     const leftPanel = document.getElementById('left-panel');
     const rightPanel = document.getElementById('right-panel');
+    const colorPanel = document.getElementById('color-panel');
     
     leftCollapseBtn.addEventListener('click', () => {
         leftPanel.classList.toggle('collapsed');
@@ -11766,9 +11587,16 @@ function setupPanelControls() {
         rightPanel.classList.toggle('collapsed');
     });
     
+    if (colorCollapseBtn && colorPanel) {
+        colorCollapseBtn.addEventListener('click', () => {
+            colorPanel.classList.toggle('collapsed');
+        });
+    }
+    
     // Panel Close
     const leftCloseBtn = document.getElementById('left-panel-close');
     const rightCloseBtn = document.getElementById('right-panel-close');
+    const colorCloseBtn = document.getElementById('color-panel-close');
     
     leftCloseBtn.addEventListener('click', () => {
         leftPanel.classList.add('hidden');
@@ -11780,13 +11608,22 @@ function setupPanelControls() {
         rightPanel.style.display = 'none';
     });
     
+    if (colorCloseBtn && colorPanel) {
+        colorCloseBtn.addEventListener('click', () => {
+            colorPanel.classList.add('hidden');
+            colorPanel.style.display = 'none';
+        });
+    }
+    
     // Panel Detach/Dock
     setupPanelDocking(leftPanel);
     setupPanelDocking(rightPanel);
+    if (colorPanel) setupPanelDocking(colorPanel);
     
     // Panel Resize
     setupPanelResize(leftPanel);
     setupPanelResize(rightPanel);
+    if (colorPanel) setupPanelResize(colorPanel);
 }
 
 function setupPanelResize(panel) {

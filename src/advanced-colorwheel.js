@@ -24,7 +24,7 @@ class AdvancedColorWheel {
         };
         
         // UI Elements
-        this.wheelSize = 280;
+        this.wheelSize = 240;
         this.wheelCenterX = this.wheelSize / 2;
         this.wheelCenterY = this.wheelSize / 2;
         this.wheelRadius = (this.wheelSize / 2) - 20;
