@@ -405,6 +405,11 @@ function createWindow() {
           label: 'Toggle Theme (Light/Dark)',
           accelerator: 'CmdOrCtrl+Shift+T',
           click: () => { mainWindow.webContents.send('theme-toggle'); }
+        },
+        {
+          label: 'Interface Scale...',
+          accelerator: 'CmdOrCtrl+Shift+I',
+          click: () => { mainWindow.webContents.send('interface-scale-dialog'); }
         }
       ]
     },

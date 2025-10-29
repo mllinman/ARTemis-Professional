@@ -905,6 +905,9 @@ function init() {
     // Phase 10: Load theme
     loadTheme();
     
+    // Phase 10: Load interface scale
+    loadInterfaceScale();
+    
     // NEW: Load application state (persistence)
     loadAppState();
     
@@ -1451,6 +1454,132 @@ function setupBrushPresets() {
             updateBrushGallery(e.target.value);
         }
     });
+    
+    // Brush Search Functionality
+    const brushSearchInput = document.getElementById('brush-search');
+    const brushSearchResults = document.getElementById('brush-search-results');
+    
+    if (brushSearchInput && brushSearchResults) {
+        let allBrushes = [];
+        
+        // Build searchable brush list with category info
+        function buildBrushList() {
+            allBrushes = [];
+            Object.keys(brushCategories).forEach(category => {
+                if (category === 'imported') {
+                    state.customBrushes.filter(b => b.imported).forEach(brush => {
+                        allBrushes.push({
+                            id: brush.name,
+                            name: brush.name,
+                            category: 'imported',
+                            displayCategory: 'Imported Brushes'
+                        });
+                    });
+                } else {
+                    brushCategories[category].forEach(brushId => {
+                        allBrushes.push({
+                            id: brushId,
+                            name: brushId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                            category: category,
+                            displayCategory: getCategoryDisplayName(category)
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Get display name for category
+        function getCategoryDisplayName(category) {
+            const categoryOptions = {
+                'basic': 'Basic',
+                'airbrush': 'Airbrush',
+                'charcoal': 'Charcoal & Pencil',
+                'ink': 'Ink & Pen',
+                'watercolor': 'Watercolor',
+                'oil': 'Oil Paint',
+                'acrylic': 'Acrylic',
+                'digital': 'Digital Painting',
+                'concept': 'Concept Art',
+                'special': 'Special Effects',
+                'professional': 'Professional Grade',
+                'artrage': '🎨 Natural Media',
+                'rebelle': '✏️ Graphite Pencils',
+                'metallic': '✨ Metallic & Special',
+                'mixer': '🎨 Mixer & Blending',
+                'texture': '🖼️ Texture Brushes',
+                'enhanced': 'Enhanced',
+                'imported': 'Imported Brushes'
+            };
+            return categoryOptions[category] || category;
+        }
+        
+        buildBrushList();
+        
+        // Search input handler with debounce
+        let searchTimeout;
+        brushSearchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = e.target.value.trim().toLowerCase();
+                
+                if (query === '') {
+                    brushSearchResults.textContent = '';
+                    // Reset to show all options in current category
+                    updatePresetOptions(categorySelect.value);
+                    return;
+                }
+                
+                // Filter brushes
+                const matches = allBrushes.filter(brush => {
+                    return brush.name.toLowerCase().includes(query) ||
+                           brush.id.toLowerCase().includes(query) ||
+                           brush.displayCategory.toLowerCase().includes(query);
+                });
+                
+                // Update results display
+                if (matches.length === 0) {
+                    brushSearchResults.textContent = 'No brushes found';
+                    brushSearchResults.style.color = '#ff6b6b';
+                    presetSelect.innerHTML = '<option value="">No results</option>';
+                } else {
+                    brushSearchResults.textContent = `Found ${matches.length} brush${matches.length === 1 ? '' : 'es'}`;
+                    brushSearchResults.style.color = '#4CAF50';
+                    
+                    // Populate preset dropdown with matches
+                    presetSelect.innerHTML = '';
+                    matches.forEach(brush => {
+                        const option = document.createElement('option');
+                        option.value = brush.id;
+                        option.textContent = `${brush.name} (${brush.displayCategory})`;
+                        presetSelect.appendChild(option);
+                    });
+                    
+                    // Auto-select first match
+                    if (matches.length > 0) {
+                        presetSelect.value = matches[0].id;
+                    }
+                }
+            }, 300); // Debounce for 300ms
+        });
+        
+        // Clear search when category is changed
+        categorySelect.addEventListener('change', () => {
+            brushSearchInput.value = '';
+            brushSearchResults.textContent = '';
+        });
+        
+        // Keyboard shortcut for search: Ctrl+F or Cmd+F when brush panel is focused
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                const leftPanel = document.getElementById('left-panel');
+                if (leftPanel && !leftPanel.classList.contains('collapsed')) {
+                    e.preventDefault();
+                    brushSearchInput.focus();
+                    brushSearchInput.select();
+                }
+            }
+        });
+    }
 }
 
 function applyBrushPreset(presetName) {
@@ -12144,6 +12273,8 @@ function setupMenuHandlers() {
     ipcRenderer.on('workspace-preset', (event, preset) => loadWorkspacePreset(preset));
     ipcRenderer.on('shortcuts-customize', () => showShortcutCustomizationDialog());
     ipcRenderer.on('theme-toggle', () => toggleTheme());
+    ipcRenderer.on('interface-scale-dialog', () => showInterfaceScaleDialog());
+    ipcRenderer.on('interface-scale-cycle', () => cycleInterfaceScale());
     
     // Windows menu handlers
     ipcRenderer.on('window-toggle-panel', (event, panelSide, checked) => {
@@ -12247,6 +12378,17 @@ function handleMenuAction(action) {
             break;
         case 'window-toggle-rulers':
             toggleRulers();
+            break;
+        
+        // Workspace menu
+        case 'workspace-customize-shortcuts':
+            showShortcutCustomizationDialog();
+            break;
+        case 'theme-toggle':
+            toggleTheme();
+            break;
+        case 'interface-scale':
+            showInterfaceScaleDialog();
             break;
         
         default:
@@ -14434,6 +14576,236 @@ function loadTheme() {
     if (savedTheme) {
         state.theme = savedTheme;
         applyTheme(savedTheme);
+    }
+}
+
+// Interface Scaling Functions
+function setInterfaceScale(scale) {
+    // Valid scale values: 0.75, 1.0, 1.25, 1.5
+    const validScales = [0.75, 1.0, 1.25, 1.5];
+    if (!validScales.includes(scale)) {
+        console.warn(`Invalid scale: ${scale}. Using 1.0`);
+        scale = 1.0;
+    }
+    
+    state.interfaceScale = scale;
+    applyInterfaceScale(scale);
+    localStorage.setItem('artemis-interface-scale', scale.toString());
+}
+
+function applyInterfaceScale(scale) {
+    const root = document.documentElement;
+    
+    // Apply base font size scaling
+    root.style.fontSize = `${16 * scale}px`;
+    
+    // Scale UI panels
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    const toolbar = document.getElementById('toolbar');
+    const menuBar = document.getElementById('menu-bar');
+    
+    // Calculate scaled dimensions
+    const basePanelWidth = 280;
+    const baseToolbarHeight = 48;
+    const baseMenuHeight = 28;
+    
+    if (leftPanel) {
+        const currentWidth = parseInt(leftPanel.style.width) || basePanelWidth;
+        const baseWidth = currentWidth / (state.previousScale || 1.0);
+        leftPanel.style.width = `${baseWidth * scale}px`;
+    }
+    
+    if (rightPanel) {
+        const currentWidth = parseInt(rightPanel.style.width) || basePanelWidth;
+        const baseWidth = currentWidth / (state.previousScale || 1.0);
+        rightPanel.style.width = `${baseWidth * scale}px`;
+    }
+    
+    if (toolbar) {
+        toolbar.style.height = `${baseToolbarHeight * scale}px`;
+    }
+    
+    if (menuBar) {
+        menuBar.style.height = `${baseMenuHeight * scale}px`;
+    }
+    
+    // Scale buttons, inputs, and other UI elements
+    const scaleElements = [
+        '.icon-btn',
+        '.tool-btn',
+        '.menu-btn',
+        'button',
+        'input',
+        'select',
+        '.slider',
+        '.setting-group label'
+    ];
+    
+    scaleElements.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            // Store original font size if not already stored
+            if (!el.dataset.originalFontSize) {
+                const computedStyle = window.getComputedStyle(el);
+                el.dataset.originalFontSize = computedStyle.fontSize;
+            }
+            
+            const originalSize = parseFloat(el.dataset.originalFontSize);
+            if (originalSize) {
+                el.style.fontSize = `${originalSize * scale}px`;
+            }
+        });
+    });
+    
+    // Update canvas container to account for scaled UI
+    updateCanvasContainerSize();
+    
+    // Store for next scale operation
+    state.previousScale = scale;
+    
+    // Show notification
+    showScaleNotification(scale);
+}
+
+function showScaleNotification(scale) {
+    const percentage = Math.round(scale * 100);
+    const notification = document.createElement('div');
+    notification.textContent = `Interface Scale: ${percentage}%`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        z-index: 10000;
+        pointer-events: none;
+        animation: fadeInOut 1.5s ease-in-out;
+    `;
+    
+    // Add animation style if not already present
+    if (!document.getElementById('scale-notification-style')) {
+        const style = document.createElement('style');
+        style.id = 'scale-notification-style';
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 1500);
+}
+
+function cycleInterfaceScale() {
+    const scales = [0.75, 1.0, 1.25, 1.5];
+    const currentIndex = scales.indexOf(state.interfaceScale || 1.0);
+    const nextIndex = (currentIndex + 1) % scales.length;
+    setInterfaceScale(scales[nextIndex]);
+}
+
+function showInterfaceScaleDialog() {
+    const currentScale = state.interfaceScale || 1.0;
+    const percentage = Math.round(currentScale * 100);
+    
+    const dialog = document.createElement('div');
+    dialog.className = 'modal-overlay';
+    dialog.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>Interface Scale</h3>
+            <p style="color: #888; margin-bottom: 20px;">Adjust the size of UI elements</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button class="scale-btn" data-scale="0.75" style="padding: 12px; font-size: 14px;">
+                    Small (75%)
+                </button>
+                <button class="scale-btn" data-scale="1.0" style="padding: 12px; font-size: 14px;">
+                    Normal (100%)
+                </button>
+                <button class="scale-btn" data-scale="1.25" style="padding: 12px; font-size: 14px;">
+                    Large (125%)
+                </button>
+                <button class="scale-btn" data-scale="1.5" style="padding: 12px; font-size: 14px;">
+                    Extra Large (150%)
+                </button>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Current Scale:</div>
+                <div style="font-size: 24px; font-weight: bold;">${percentage}%</div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="scale-close-btn" style="padding: 8px 16px;">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    // Highlight current scale
+    dialog.querySelectorAll('.scale-btn').forEach(btn => {
+        if (parseFloat(btn.dataset.scale) === currentScale) {
+            btn.style.background = '#4CAF50';
+            btn.style.color = 'white';
+        }
+    });
+    
+    // Scale button handlers
+    dialog.querySelectorAll('.scale-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const scale = parseFloat(btn.dataset.scale);
+            setInterfaceScale(scale);
+            dialog.remove();
+        });
+    });
+    
+    // Close button
+    dialog.querySelector('#scale-close-btn').addEventListener('click', () => {
+        dialog.remove();
+    });
+    
+    // Click outside to close
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+            dialog.remove();
+        }
+    });
+}
+
+function loadInterfaceScale() {
+    const savedScale = localStorage.getItem('artemis-interface-scale');
+    if (savedScale) {
+        const scale = parseFloat(savedScale);
+        if (!isNaN(scale)) {
+            state.interfaceScale = scale;
+            state.previousScale = scale;
+            applyInterfaceScale(scale);
+        }
+    } else {
+        // Default scale
+        state.interfaceScale = 1.0;
+        state.previousScale = 1.0;
+    }
+}
+
+function updateCanvasContainerSize() {
+    // This ensures the canvas container adjusts when UI is scaled
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+        // Force reflow
+        canvasContainer.style.display = 'none';
+        canvasContainer.offsetHeight; // Trigger reflow
+        canvasContainer.style.display = '';
     }
 }
 
