@@ -336,13 +336,28 @@ const state = {
         ]
     },
     transform: {
-        mode: null, // 'move', 'rotate', 'scale'
+        mode: null, // 'move', 'rotate', 'scale', 'free-transform', 'skew', 'perspective', 'warp'
         active: false,
         startX: 0,
         startY: 0,
         originalLayer: null,
         angle: 0,
-        scale: 1
+        scale: 1,
+        scaleX: 1,
+        scaleY: 1,
+        skewX: 0,
+        skewY: 0,
+        // Corner points for free transform and perspective
+        corners: [
+            { x: 0, y: 0 },     // top-left
+            { x: 0, y: 0 },     // top-right
+            { x: 0, y: 0 },     // bottom-right
+            { x: 0, y: 0 }      // bottom-left
+        ],
+        selectedHandle: null,
+        // Warp grid
+        warpGrid: null,
+        warpResolution: 3  // 3x3 grid
     },
     text: {
         fontFamily: 'Arial, sans-serif',
@@ -877,6 +892,7 @@ function init() {
     setupContextualTaskbar();
     initSettingsDialog();
     initRulers();
+    initGradientEditor();
     
     // Load saved brush presets
     loadBrushPresets();
@@ -4945,13 +4961,41 @@ function setupCanvasEvents() {
                 startSelection(pos.x, pos.y);
             } else if (state.tool === 'magic-wand') {
                 magicWandSelect(pos.x, pos.y);
+            } else if (state.tool === 'lasso') {
+                startLassoSelection(pos.x, pos.y);
+            } else if (state.tool === 'polygonal-lasso') {
+                startPolygonalLassoSelection(pos.x, pos.y);
             } else if (state.tool === 'text') {
                 addText(pos.x, pos.y);
             } else if (state.tool === 'shapes') {
                 startShape(pos.x, pos.y);
             } else if (state.tool === 'gradient') {
                 startGradient(pos.x, pos.y);
-            } else if (state.tool === 'move' || state.tool === 'rotate' || state.tool === 'scale') {
+            } else if (state.tool === 'move' || state.tool === 'rotate' || state.tool === 'scale' || 
+                       state.tool === 'free-transform' || state.tool === 'skew' || 
+                       state.tool === 'perspective' || state.tool === 'warp') {
+                // Check if clicking on a transform handle
+                if ((state.tool === 'free-transform' || state.tool === 'perspective') && state.transform.active) {
+                    // Check if clicking near a corner handle
+                    for (let i = 0; i < state.transform.corners.length; i++) {
+                        const corner = state.transform.corners[i];
+                        const dist = Math.sqrt(Math.pow(pos.x - corner.x, 2) + Math.pow(pos.y - corner.y, 2));
+                        if (dist < 15) {
+                            state.transform.selectedHandle = i;
+                            return;
+                        }
+                    }
+                } else if (state.tool === 'warp' && state.transform.active && state.transform.warpGrid) {
+                    // Check if clicking near a grid point
+                    for (let i = 0; i < state.transform.warpGrid.length; i++) {
+                        const point = state.transform.warpGrid[i];
+                        const dist = Math.sqrt(Math.pow(pos.x - point.x, 2) + Math.pow(pos.y - point.y, 2));
+                        if (dist < 15) {
+                            state.transform.selectedHandle = i;
+                            return;
+                        }
+                    }
+                }
                 startTransform(state.tool, pos.x, pos.y);
             } else if (state.tool === 'crop') {
                 startCrop(pos.x, pos.y);
@@ -5029,6 +5073,8 @@ function setupCanvasEvents() {
                 continueStroke(pos.x, pos.y, e.pressure || 1);
             } else if (state.tool === 'selection') {
                 updateSelection(pos.x, pos.y);
+            } else if (state.tool === 'lasso') {
+                continueLassoSelection(pos.x, pos.y);
             } else if (state.tool === 'shapes' && state.shape.drawing) {
                 updateShape(pos.x, pos.y);
             } else if (state.tool === 'gradient' && state.gradient.drawing) {
@@ -5064,7 +5110,19 @@ function setupCanvasEvents() {
         if (pointerDown && state.isDrawing) {
             pointerDown = false;
             state.isDrawing = false;
-            commitDrawing();
+            
+            if (state.tool === 'lasso') {
+                finishLassoSelection();
+            } else {
+                commitDrawing();
+            }
+        }
+        
+        // Release transform handle selection but don't finish transform
+        if (state.transform.active && state.transform.selectedHandle !== null) {
+            state.transform.selectedHandle = null;
+            drawTransformHandles();
+            return;
         }
         
         if (state.shape.drawing) {
@@ -5073,10 +5131,6 @@ function setupCanvasEvents() {
         
         if (state.gradient.drawing) {
             finishGradient();
-        }
-        
-        if (state.transform.active) {
-            finishTransform();
         }
         
         if (state.crop.active) {
@@ -5122,6 +5176,13 @@ function setupCanvasEvents() {
         
         if (state.crop.active) {
             finishCrop();
+        }
+    });
+    
+    // Handle double-click for polygonal lasso
+    drawCanvas.addEventListener('dblclick', (e) => {
+        if (state.tool === 'polygonal-lasso' && polygonalPoints.length >= 3) {
+            finishPolygonalLassoSelection();
         }
     });
     
@@ -6907,6 +6968,446 @@ function magicWandSelect(x, y) {
     drawSelection();
 }
 
+// Lasso Selection Tools
+let lassoPoints = [];
+let polygonalPoints = [];
+
+function startLassoSelection(x, y) {
+    lassoPoints = [[x, y]];
+    state.selection.type = 'lasso';
+    state.selection.points = lassoPoints;
+}
+
+function continueLassoSelection(x, y) {
+    lassoPoints.push([x, y]);
+    state.selection.points = lassoPoints;
+    drawLassoPreview();
+}
+
+function finishLassoSelection() {
+    if (lassoPoints.length < 3) {
+        lassoPoints = [];
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        return;
+    }
+    
+    createSelectionFromPath(lassoPoints);
+    lassoPoints = [];
+}
+
+function startPolygonalLassoSelection(x, y) {
+    if (polygonalPoints.length === 0) {
+        polygonalPoints = [[x, y]];
+        state.selection.type = 'polygonal';
+        state.selection.points = polygonalPoints;
+    } else {
+        polygonalPoints.push([x, y]);
+        state.selection.points = polygonalPoints;
+        drawPolygonalLassoPreview();
+    }
+}
+
+function finishPolygonalLassoSelection() {
+    if (polygonalPoints.length < 3) {
+        polygonalPoints = [];
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        return;
+    }
+    
+    createSelectionFromPath(polygonalPoints);
+    polygonalPoints = [];
+}
+
+function drawLassoPreview() {
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    if (lassoPoints.length < 2) return;
+    
+    drawCtx.strokeStyle = '#000000';
+    drawCtx.lineWidth = 1;
+    drawCtx.setLineDash([4, 4]);
+    drawCtx.beginPath();
+    drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
+    for (let i = 1; i < lassoPoints.length; i++) {
+        drawCtx.lineTo(lassoPoints[i][0], lassoPoints[i][1]);
+    }
+    drawCtx.stroke();
+    
+    drawCtx.strokeStyle = '#ffffff';
+    drawCtx.lineDashOffset = 4;
+    drawCtx.beginPath();
+    drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
+    for (let i = 1; i < lassoPoints.length; i++) {
+        drawCtx.lineTo(lassoPoints[i][0], lassoPoints[i][1]);
+    }
+    drawCtx.stroke();
+    
+    drawCtx.setLineDash([]);
+}
+
+function drawPolygonalLassoPreview() {
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    if (polygonalPoints.length < 1) return;
+    
+    // Draw completed segments
+    drawCtx.strokeStyle = '#000000';
+    drawCtx.lineWidth = 1;
+    drawCtx.setLineDash([4, 4]);
+    drawCtx.beginPath();
+    drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
+    for (let i = 1; i < polygonalPoints.length; i++) {
+        drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+    }
+    drawCtx.stroke();
+    
+    drawCtx.strokeStyle = '#ffffff';
+    drawCtx.lineDashOffset = 4;
+    drawCtx.beginPath();
+    drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
+    for (let i = 1; i < polygonalPoints.length; i++) {
+        drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+    }
+    drawCtx.stroke();
+    
+    drawCtx.setLineDash([]);
+    
+    // Draw points
+    polygonalPoints.forEach(point => {
+        drawCtx.fillStyle = '#ffffff';
+        drawCtx.strokeStyle = '#000000';
+        drawCtx.beginPath();
+        drawCtx.arc(point[0], point[1], 3, 0, Math.PI * 2);
+        drawCtx.fill();
+        drawCtx.stroke();
+    });
+}
+
+function createSelectionFromPath(points) {
+    if (!state.activeLayer || points.length < 3) return;
+    
+    // Find bounding box
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+    
+    points.forEach(([x, y]) => {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+    });
+    
+    minX = Math.floor(Math.max(0, minX));
+    minY = Math.floor(Math.max(0, minY));
+    maxX = Math.ceil(Math.min(state.canvas.width, maxX));
+    maxY = Math.ceil(Math.min(state.canvas.height, maxY));
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    // Create selection mask
+    const selectionMask = new Uint8Array(state.canvas.width * state.canvas.height);
+    
+    // Create temporary canvas for path rendering
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = state.canvas.width;
+    tempCanvas.height = state.canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Draw path
+    tempCtx.fillStyle = '#ffffff';
+    tempCtx.beginPath();
+    tempCtx.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i++) {
+        tempCtx.lineTo(points[i][0], points[i][1]);
+    }
+    tempCtx.closePath();
+    tempCtx.fill();
+    
+    // Get image data and create mask
+    const imageData = tempCtx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const data = imageData.data;
+    
+    for (let y = 0; y < state.canvas.height; y++) {
+        for (let x = 0; x < state.canvas.width; x++) {
+            const idx = (y * state.canvas.width + x) * 4;
+            if (data[idx] > 128) { // White pixels
+                selectionMask[y * state.canvas.width + x] = 1;
+            }
+        }
+    }
+    
+    // Apply feathering if set
+    const featherRadius = state.selection.feather || 0;
+    if (featherRadius > 0) {
+        applyFeathering(selectionMask, state.canvas.width, state.canvas.height, featherRadius);
+    }
+    
+    // Set selection
+    state.selection.active = true;
+    state.selection.startX = minX;
+    state.selection.startY = minY;
+    state.selection.endX = maxX;
+    state.selection.endY = maxY;
+    state.selection.marchingAntsOffset = 0;
+    state.selection.mask = selectionMask;
+    state.selection.isMaskBased = true;
+    
+    // Cancel any existing animation
+    if (state.selection.animationFrame) {
+        cancelAnimationFrame(state.selection.animationFrame);
+    }
+    
+    // Start marching ants animation
+    state.selection.animationFrame = requestAnimationFrame(animateMarchingAnts);
+    drawSelection();
+}
+
+// Selection Refinement Functions
+function featherSelection(radius) {
+    if (!state.selection.active || !state.selection.mask) return;
+    
+    applyFeathering(state.selection.mask, state.canvas.width, state.canvas.height, radius);
+    drawSelection();
+}
+
+function growSelection(pixels) {
+    if (!state.selection.active || !state.selection.mask) return;
+    
+    const mask = state.selection.mask;
+    const newMask = new Uint8Array(mask.length);
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            
+            if (mask[idx]) {
+                // Fill in area around selected pixels
+                for (let dy = -pixels; dy <= pixels; dy++) {
+                    for (let dx = -pixels; dx <= pixels; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance <= pixels) {
+                                newMask[ny * width + nx] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    state.selection.mask = newMask;
+    updateSelectionBounds();
+    drawSelection();
+}
+
+function shrinkSelection(pixels) {
+    if (!state.selection.active || !state.selection.mask) return;
+    
+    const mask = state.selection.mask;
+    const newMask = new Uint8Array(mask.length);
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            
+            if (mask[idx]) {
+                // Check if all pixels within radius are selected
+                let allSelected = true;
+                for (let dy = -pixels; dy <= pixels && allSelected; dy++) {
+                    for (let dx = -pixels; dx <= pixels && allSelected; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance <= pixels && !mask[ny * width + nx]) {
+                                allSelected = false;
+                            }
+                        }
+                    }
+                }
+                if (allSelected) {
+                    newMask[idx] = 1;
+                }
+            }
+        }
+    }
+    
+    state.selection.mask = newMask;
+    updateSelectionBounds();
+    drawSelection();
+}
+
+function borderSelection(pixels) {
+    if (!state.selection.active || !state.selection.mask) return;
+    
+    const mask = state.selection.mask;
+    const newMask = new Uint8Array(mask.length);
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            
+            if (mask[idx]) {
+                // Check if this pixel is on the border
+                let isBorder = false;
+                for (let dy = -pixels; dy <= pixels && !isBorder; dy++) {
+                    for (let dx = -pixels; dx <= pixels && !isBorder; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance <= pixels && !mask[ny * width + nx]) {
+                                isBorder = true;
+                            }
+                        }
+                    }
+                }
+                if (isBorder) {
+                    newMask[idx] = 1;
+                }
+            }
+        }
+    }
+    
+    state.selection.mask = newMask;
+    updateSelectionBounds();
+    drawSelection();
+}
+
+function invertSelection() {
+    if (!state.selection.active) {
+        // Select all if no selection
+        selectAll();
+        return;
+    }
+    
+    if (!state.selection.mask) {
+        // Convert rectangular selection to mask
+        const mask = new Uint8Array(state.canvas.width * state.canvas.height);
+        const minX = Math.min(state.selection.startX, state.selection.endX);
+        const minY = Math.min(state.selection.startY, state.selection.endY);
+        const maxX = Math.max(state.selection.startX, state.selection.endX);
+        const maxY = Math.max(state.selection.startY, state.selection.endY);
+        
+        for (let y = 0; y < state.canvas.height; y++) {
+            for (let x = 0; x < state.canvas.width; x++) {
+                const idx = y * state.canvas.width + x;
+                if (x < minX || x >= maxX || y < minY || y >= maxY) {
+                    mask[idx] = 1;
+                } else {
+                    mask[idx] = 0;
+                }
+            }
+        }
+        
+        state.selection.mask = mask;
+        state.selection.isMaskBased = true;
+    } else {
+        // Invert existing mask
+        for (let i = 0; i < state.selection.mask.length; i++) {
+            state.selection.mask[i] = state.selection.mask[i] ? 0 : 1;
+        }
+    }
+    
+    updateSelectionBounds();
+    drawSelection();
+}
+
+function applyFeathering(mask, width, height, radius) {
+    if (radius <= 0) return;
+    
+    const originalMask = new Uint8Array(mask);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            
+            // Calculate average of surrounding pixels
+            let sum = 0;
+            let count = 0;
+            
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance <= radius) {
+                            sum += originalMask[ny * width + nx];
+                            count++;
+                        }
+                    }
+                }
+            }
+            
+            // Average creates soft edge
+            mask[idx] = count > 0 ? (sum / count > 0.5 ? 1 : 0) : 0;
+        }
+    }
+}
+
+function updateSelectionBounds() {
+    if (!state.selection.mask) return;
+    
+    let minX = state.canvas.width, minY = state.canvas.height;
+    let maxX = 0, maxY = 0;
+    let hasSelection = false;
+    
+    for (let y = 0; y < state.canvas.height; y++) {
+        for (let x = 0; x < state.canvas.width; x++) {
+            if (state.selection.mask[y * state.canvas.width + x]) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+                hasSelection = true;
+            }
+        }
+    }
+    
+    if (hasSelection) {
+        state.selection.startX = minX;
+        state.selection.startY = minY;
+        state.selection.endX = maxX + 1;
+        state.selection.endY = maxY + 1;
+    } else {
+        clearSelection();
+    }
+}
+
+function selectAll() {
+    const mask = new Uint8Array(state.canvas.width * state.canvas.height);
+    mask.fill(1);
+    
+    state.selection.active = true;
+    state.selection.startX = 0;
+    state.selection.startY = 0;
+    state.selection.endX = state.canvas.width;
+    state.selection.endY = state.canvas.height;
+    state.selection.mask = mask;
+    state.selection.isMaskBased = true;
+    state.selection.marchingAntsOffset = 0;
+    
+    // Cancel any existing animation
+    if (state.selection.animationFrame) {
+        cancelAnimationFrame(state.selection.animationFrame);
+    }
+    
+    // Start marching ants animation
+    state.selection.animationFrame = requestAnimationFrame(animateMarchingAnts);
+    drawSelection();
+}
+
 // Text Tool
 function addText(x, y) {
     // FIXED: If clicking on an existing text layer, edit it instead of creating new
@@ -7121,14 +7622,284 @@ function drawGradient(ctx, gradient) {
         );
     }
     
-    // Add color stops
-    gradient.colorStops.forEach(stop => {
+    // Add color stops (sort by position first)
+    const sortedStops = [...gradient.colorStops].sort((a, b) => a.position - b.position);
+    sortedStops.forEach(stop => {
         grad.addColorStop(stop.position, stop.color);
     });
     
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
     ctx.restore();
+}
+
+// Gradient Editor Functions
+let selectedGradientStop = null;
+
+function initGradientEditor() {
+    const canvas = document.getElementById('gradient-editor-canvas');
+    const container = document.getElementById('gradient-stops-container');
+    const addStopBtn = document.getElementById('add-gradient-stop');
+    const presetSelect = document.getElementById('gradient-presets');
+    
+    if (!canvas || !container) return;
+    
+    // Draw gradient preview
+    function updateGradientPreview() {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Create gradient
+        const grad = ctx.createLinearGradient(0, 0, width, 0);
+        const sortedStops = [...state.gradient.colorStops].sort((a, b) => a.position - b.position);
+        sortedStops.forEach(stop => {
+            grad.addColorStop(stop.position, stop.color);
+        });
+        
+        // Draw checkerboard background
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#a0a0a0';
+        for (let x = 0; x < width; x += 10) {
+            for (let y = 0; y < height; y += 10) {
+                if ((Math.floor(x / 10) + Math.floor(y / 10)) % 2 === 0) {
+                    ctx.fillRect(x, y, 10, 10);
+                }
+            }
+        }
+        
+        // Draw gradient
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+        
+        updateStopHandles();
+    }
+    
+    // Update stop handles
+    function updateStopHandles() {
+        container.innerHTML = '';
+        state.gradient.colorStops.forEach((stop, index) => {
+            const handle = document.createElement('div');
+            handle.style.position = 'absolute';
+            handle.style.left = (stop.position * 240 - 6) + 'px';
+            handle.style.top = '0px';
+            handle.style.width = '12px';
+            handle.style.height = '20px';
+            handle.style.backgroundColor = stop.color;
+            handle.style.border = selectedGradientStop === index ? '2px solid white' : '1px solid #000';
+            handle.style.borderRadius = '3px';
+            handle.style.cursor = 'pointer';
+            handle.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            handle.title = `Stop ${index + 1}: ${Math.round(stop.position * 100)}%`;
+            
+            // Click to select/edit
+            handle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectedGradientStop = index;
+                
+                // Create color picker
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = stop.color;
+                picker.style.position = 'absolute';
+                picker.style.opacity = '0';
+                picker.style.pointerEvents = 'none';
+                document.body.appendChild(picker);
+                
+                picker.addEventListener('change', (e) => {
+                    state.gradient.colorStops[index].color = e.target.value;
+                    updateGradientPreview();
+                    document.body.removeChild(picker);
+                });
+                
+                picker.click();
+                updateStopHandles();
+            });
+            
+            // Right-click to delete (if more than 2 stops)
+            handle.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                if (state.gradient.colorStops.length > 2) {
+                    state.gradient.colorStops.splice(index, 1);
+                    if (selectedGradientStop === index) {
+                        selectedGradientStop = null;
+                    } else if (selectedGradientStop > index) {
+                        selectedGradientStop--;
+                    }
+                    updateGradientPreview();
+                }
+            });
+            
+            // Drag to reposition
+            let isDragging = false;
+            handle.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                handle.setPointerCapture(e.pointerId);
+                selectedGradientStop = index;
+                updateStopHandles();
+            });
+            
+            handle.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                const rect = container.getBoundingClientRect();
+                let position = (e.clientX - rect.left) / rect.width;
+                position = Math.max(0, Math.min(1, position));
+                state.gradient.colorStops[index].position = position;
+                updateGradientPreview();
+            });
+            
+            handle.addEventListener('pointerup', (e) => {
+                isDragging = false;
+                handle.releasePointerCapture(e.pointerId);
+            });
+            
+            container.appendChild(handle);
+        });
+    }
+    
+    // Add stop button
+    if (addStopBtn) {
+        addStopBtn.addEventListener('click', () => {
+            // Add new stop in the middle
+            const newPosition = 0.5;
+            // Interpolate color at this position
+            const sortedStops = [...state.gradient.colorStops].sort((a, b) => a.position - b.position);
+            let color = '#808080';
+            
+            for (let i = 0; i < sortedStops.length - 1; i++) {
+                if (newPosition >= sortedStops[i].position && newPosition <= sortedStops[i + 1].position) {
+                    const t = (newPosition - sortedStops[i].position) / (sortedStops[i + 1].position - sortedStops[i].position);
+                    const c1 = hexToRgb(sortedStops[i].color);
+                    const c2 = hexToRgb(sortedStops[i + 1].color);
+                    const r = Math.round(c1.r + (c2.r - c1.r) * t);
+                    const g = Math.round(c1.g + (c2.g - c1.g) * t);
+                    const b = Math.round(c1.b + (c2.b - c1.b) * t);
+                    color = rgbToHex(r, g, b);
+                    break;
+                }
+            }
+            
+            state.gradient.colorStops.push({ position: newPosition, color: color });
+            updateGradientPreview();
+        });
+    }
+    
+    // Canvas click to add stop
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const position = (e.clientX - rect.left) / rect.width;
+        
+        // Interpolate color at click position
+        const sortedStops = [...state.gradient.colorStops].sort((a, b) => a.position - b.position);
+        let color = '#808080';
+        
+        for (let i = 0; i < sortedStops.length - 1; i++) {
+            if (position >= sortedStops[i].position && position <= sortedStops[i + 1].position) {
+                const t = (position - sortedStops[i].position) / (sortedStops[i + 1].position - sortedStops[i].position);
+                const c1 = hexToRgb(sortedStops[i].color);
+                const c2 = hexToRgb(sortedStops[i + 1].color);
+                const r = Math.round(c1.r + (c2.r - c1.r) * t);
+                const g = Math.round(c1.g + (c2.g - c1.g) * t);
+                const b = Math.round(c1.b + (c2.b - c1.b) * t);
+                color = rgbToHex(r, g, b);
+                break;
+            }
+        }
+        
+        state.gradient.colorStops.push({ position: position, color: color });
+        updateGradientPreview();
+    });
+    
+    // Gradient presets
+    if (presetSelect) {
+        presetSelect.addEventListener('change', (e) => {
+            const preset = e.target.value;
+            if (!preset) return;
+            
+            switch (preset) {
+                case 'bw':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#000000' },
+                        { position: 1, color: '#ffffff' }
+                    ];
+                    break;
+                case 'rainbow':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#ff0000' },
+                        { position: 0.17, color: '#ff7f00' },
+                        { position: 0.33, color: '#ffff00' },
+                        { position: 0.5, color: '#00ff00' },
+                        { position: 0.67, color: '#0000ff' },
+                        { position: 0.83, color: '#8b00ff' },
+                        { position: 1, color: '#ff0000' }
+                    ];
+                    break;
+                case 'sunset':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#ff6b35' },
+                        { position: 0.5, color: '#f7931e' },
+                        { position: 1, color: '#fdc830' }
+                    ];
+                    break;
+                case 'ocean':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#00d2ff' },
+                        { position: 0.5, color: '#3a7bd5' },
+                        { position: 1, color: '#00416a' }
+                    ];
+                    break;
+                case 'fire':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#ff0000' },
+                        { position: 0.5, color: '#ff7f00' },
+                        { position: 1, color: '#ffff00' }
+                    ];
+                    break;
+                case 'forest':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#134e13' },
+                        { position: 0.5, color: '#2d7a2d' },
+                        { position: 1, color: '#8bc34a' }
+                    ];
+                    break;
+                case 'purple-pink':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#667eea' },
+                        { position: 0.5, color: '#764ba2' },
+                        { position: 1, color: '#f857a6' }
+                    ];
+                    break;
+                case 'blue-green':
+                    state.gradient.colorStops = [
+                        { position: 0, color: '#00c6ff' },
+                        { position: 0.5, color: '#0072ff' },
+                        { position: 1, color: '#00ffaa' }
+                    ];
+                    break;
+            }
+            
+            updateGradientPreview();
+            presetSelect.value = ''; // Reset selection
+        });
+    }
+    
+    // Initial draw
+    updateGradientPreview();
+}
+
+// Helper functions for color interpolation
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 // Transform Tools
@@ -7146,6 +7917,50 @@ function startTransform(mode, x, y) {
     state.transform.originalLayer.height = state.activeLayer.canvas.height;
     const ctx = state.transform.originalLayer.getContext('2d');
     ctx.drawImage(state.activeLayer.canvas, 0, 0);
+    
+    // Initialize corners for free transform and perspective
+    if (mode === 'free-transform' || mode === 'perspective') {
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.corners = [
+            { x: 0, y: 0 },           // top-left
+            { x: w, y: 0 },           // top-right
+            { x: w, y: h },           // bottom-right
+            { x: 0, y: h }            // bottom-left
+        ];
+        state.transform.selectedHandle = null;
+    }
+    
+    // Initialize warp grid
+    if (mode === 'warp') {
+        const res = state.transform.warpResolution;
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.warpGrid = [];
+        
+        for (let row = 0; row <= res; row++) {
+            for (let col = 0; col <= res; col++) {
+                state.transform.warpGrid.push({
+                    x: (col / res) * w,
+                    y: (row / res) * h,
+                    originalX: (col / res) * w,
+                    originalY: (row / res) * h
+                });
+            }
+        }
+        state.transform.selectedHandle = null;
+    }
+    
+    // Reset transform values
+    state.transform.angle = 0;
+    state.transform.scale = 1;
+    state.transform.scaleX = 1;
+    state.transform.scaleY = 1;
+    state.transform.skewX = 0;
+    state.transform.skewY = 0;
+    
+    // Draw transform handles
+    drawTransformHandles();
 }
 
 function updateTransform(x, y) {
@@ -7161,6 +7976,7 @@ function updateTransform(x, y) {
     
     if (state.transform.mode === 'move') {
         ctx.translate(dx, dy);
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'rotate') {
         const centerX = state.canvas.width / 2;
         const centerY = state.canvas.height / 2;
@@ -7169,6 +7985,7 @@ function updateTransform(x, y) {
         ctx.rotate(angle);
         ctx.translate(-centerX, -centerY);
         state.transform.angle = angle;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'scale') {
         const scale = 1 + dy / 100;
         const centerX = state.canvas.width / 2;
@@ -7177,12 +7994,45 @@ function updateTransform(x, y) {
         ctx.scale(scale, scale);
         ctx.translate(-centerX, -centerY);
         state.transform.scale = scale;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
+    } else if (state.transform.mode === 'skew') {
+        const centerX = state.canvas.width / 2;
+        const centerY = state.canvas.height / 2;
+        const skewX = dx / 200;
+        const skewY = dy / 200;
+        ctx.translate(centerX, centerY);
+        ctx.transform(1, skewY, skewX, 1, 0, 0);
+        ctx.translate(-centerX, -centerY);
+        state.transform.skewX = skewX;
+        state.transform.skewY = skewY;
+        ctx.drawImage(state.transform.originalLayer, 0, 0);
+    } else if (state.transform.mode === 'free-transform') {
+        // Handle-based free transform
+        if (state.transform.selectedHandle !== null) {
+            state.transform.corners[state.transform.selectedHandle].x = x;
+            state.transform.corners[state.transform.selectedHandle].y = y;
+        }
+        applyPerspectiveTransform(ctx);
+    } else if (state.transform.mode === 'perspective') {
+        // Perspective transform - same as free transform but with perspective
+        if (state.transform.selectedHandle !== null) {
+            state.transform.corners[state.transform.selectedHandle].x = x;
+            state.transform.corners[state.transform.selectedHandle].y = y;
+        }
+        applyPerspectiveTransform(ctx);
+    } else if (state.transform.mode === 'warp') {
+        // Warp tool - move grid points
+        if (state.transform.selectedHandle !== null) {
+            state.transform.warpGrid[state.transform.selectedHandle].x = x;
+            state.transform.warpGrid[state.transform.selectedHandle].y = y;
+        }
+        applyWarpTransform(ctx);
     }
     
-    ctx.drawImage(state.transform.originalLayer, 0, 0);
     ctx.restore();
     
     compositeAllLayers();
+    drawTransformHandles();
 }
 
 function finishTransform() {
@@ -7191,7 +8041,248 @@ function finishTransform() {
     state.transform.active = false;
     state.transform.mode = null;
     state.transform.originalLayer = null;
+    state.transform.selectedHandle = null;
+    state.transform.warpGrid = null;
+    
+    // Clear transform handles
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
     saveState();
+}
+
+function cancelTransform() {
+    if (!state.transform.active || !state.activeLayer) return;
+    
+    // Restore original layer
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.originalLayer, 0, 0);
+    
+    state.transform.active = false;
+    state.transform.mode = null;
+    state.transform.originalLayer = null;
+    state.transform.selectedHandle = null;
+    state.transform.warpGrid = null;
+    
+    // Clear transform handles
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    compositeAllLayers();
+}
+
+function resetTransform() {
+    if (!state.transform.active || !state.activeLayer) return;
+    
+    // Reset to original
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.originalLayer, 0, 0);
+    
+    // Reset corners for free transform/perspective
+    if (state.transform.mode === 'free-transform' || state.transform.mode === 'perspective') {
+        const w = state.canvas.width;
+        const h = state.canvas.height;
+        state.transform.corners = [
+            { x: 0, y: 0 },
+            { x: w, y: 0 },
+            { x: w, y: h },
+            { x: 0, y: h }
+        ];
+    }
+    
+    // Reset warp grid
+    if (state.transform.mode === 'warp' && state.transform.warpGrid) {
+        state.transform.warpGrid.forEach(point => {
+            point.x = point.originalX;
+            point.y = point.originalY;
+        });
+    }
+    
+    compositeAllLayers();
+    drawTransformHandles();
+}
+
+function drawTransformHandles() {
+    if (!state.transform.active) return;
+    
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    if (state.transform.mode === 'free-transform' || state.transform.mode === 'perspective') {
+        // Draw bounding box
+        drawCtx.strokeStyle = '#00aaff';
+        drawCtx.lineWidth = 2;
+        drawCtx.setLineDash([5, 5]);
+        drawCtx.beginPath();
+        drawCtx.moveTo(state.transform.corners[0].x, state.transform.corners[0].y);
+        for (let i = 1; i < 4; i++) {
+            drawCtx.lineTo(state.transform.corners[i].x, state.transform.corners[i].y);
+        }
+        drawCtx.closePath();
+        drawCtx.stroke();
+        drawCtx.setLineDash([]);
+        
+        // Draw corner handles
+        state.transform.corners.forEach((corner, index) => {
+            drawCtx.fillStyle = state.transform.selectedHandle === index ? '#ff6600' : '#00aaff';
+            drawCtx.strokeStyle = '#ffffff';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(corner.x, corner.y, 6, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        });
+    } else if (state.transform.mode === 'warp') {
+        // Draw warp grid
+        const res = state.transform.warpResolution;
+        drawCtx.strokeStyle = '#00aaff';
+        drawCtx.lineWidth = 1;
+        drawCtx.setLineDash([3, 3]);
+        
+        // Draw horizontal lines
+        for (let row = 0; row <= res; row++) {
+            drawCtx.beginPath();
+            for (let col = 0; col <= res; col++) {
+                const idx = row * (res + 1) + col;
+                const point = state.transform.warpGrid[idx];
+                if (col === 0) {
+                    drawCtx.moveTo(point.x, point.y);
+                } else {
+                    drawCtx.lineTo(point.x, point.y);
+                }
+            }
+            drawCtx.stroke();
+        }
+        
+        // Draw vertical lines
+        for (let col = 0; col <= res; col++) {
+            drawCtx.beginPath();
+            for (let row = 0; row <= res; row++) {
+                const idx = row * (res + 1) + col;
+                const point = state.transform.warpGrid[idx];
+                if (row === 0) {
+                    drawCtx.moveTo(point.x, point.y);
+                } else {
+                    drawCtx.lineTo(point.x, point.y);
+                }
+            }
+            drawCtx.stroke();
+        }
+        
+        drawCtx.setLineDash([]);
+        
+        // Draw grid points
+        state.transform.warpGrid.forEach((point, index) => {
+            drawCtx.fillStyle = state.transform.selectedHandle === index ? '#ff6600' : '#00aaff';
+            drawCtx.strokeStyle = '#ffffff';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        });
+    }
+}
+
+function applyPerspectiveTransform(ctx) {
+    // Simple perspective mapping using bilinear interpolation
+    const corners = state.transform.corners;
+    const srcCanvas = state.transform.originalLayer;
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    
+    // Get source and destination image data
+    const srcCtx = srcCanvas.getContext('2d');
+    const srcData = srcCtx.getImageData(0, 0, w, h);
+    const dstData = ctx.createImageData(w, h);
+    
+    // Apply perspective transformation
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Normalize coordinates (0 to 1)
+            const u = x / w;
+            const v = y / h;
+            
+            // Bilinear interpolation of corner positions
+            const x0 = corners[0].x * (1 - u) + corners[1].x * u;
+            const y0 = corners[0].y * (1 - u) + corners[1].y * u;
+            const x1 = corners[3].x * (1 - u) + corners[2].x * u;
+            const y1 = corners[3].y * (1 - u) + corners[2].y * u;
+            
+            const tx = x0 * (1 - v) + x1 * v;
+            const ty = y0 * (1 - v) + y1 * v;
+            
+            // Bounds check
+            const sx = Math.floor(tx);
+            const sy = Math.floor(ty);
+            
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const srcIdx = (y * w + x) * 4;
+                const dstIdx = (sy * w + sx) * 4;
+                
+                dstData.data[dstIdx] = srcData.data[srcIdx];
+                dstData.data[dstIdx + 1] = srcData.data[srcIdx + 1];
+                dstData.data[dstIdx + 2] = srcData.data[srcIdx + 2];
+                dstData.data[dstIdx + 3] = srcData.data[srcIdx + 3];
+            }
+        }
+    }
+    
+    ctx.putImageData(dstData, 0, 0);
+}
+
+function applyWarpTransform(ctx) {
+    const srcCanvas = state.transform.originalLayer;
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    const res = state.transform.warpResolution;
+    
+    // Get source image data
+    const srcCtx = srcCanvas.getContext('2d');
+    const srcData = srcCtx.getImageData(0, 0, w, h);
+    const dstData = ctx.createImageData(w, h);
+    
+    // Apply warp transformation using bilinear interpolation
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Find which grid cell this pixel is in
+            const cellX = (x / w) * res;
+            const cellY = (y / h) * res;
+            const gridX = Math.floor(cellX);
+            const gridY = Math.floor(cellY);
+            
+            if (gridX >= res || gridY >= res) continue;
+            
+            // Get the four corners of the grid cell
+            const p00 = state.transform.warpGrid[gridY * (res + 1) + gridX];
+            const p10 = state.transform.warpGrid[gridY * (res + 1) + gridX + 1];
+            const p01 = state.transform.warpGrid[(gridY + 1) * (res + 1) + gridX];
+            const p11 = state.transform.warpGrid[(gridY + 1) * (res + 1) + gridX + 1];
+            
+            // Interpolate position within cell
+            const u = cellX - gridX;
+            const v = cellY - gridY;
+            
+            const tx = p00.x * (1 - u) * (1 - v) + p10.x * u * (1 - v) + 
+                      p01.x * (1 - u) * v + p11.x * u * v;
+            const ty = p00.y * (1 - u) * (1 - v) + p10.y * u * (1 - v) + 
+                      p01.y * (1 - u) * v + p11.y * u * v;
+            
+            const sx = Math.floor(tx);
+            const sy = Math.floor(ty);
+            
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const srcIdx = (y * w + x) * 4;
+                const dstIdx = (sy * w + sx) * 4;
+                
+                dstData.data[dstIdx] = srcData.data[srcIdx];
+                dstData.data[dstIdx + 1] = srcData.data[srcIdx + 1];
+                dstData.data[dstIdx + 2] = srcData.data[srcIdx + 2];
+                dstData.data[dstIdx + 3] = srcData.data[srcIdx + 3];
+            }
+        }
+    }
+    
+    ctx.putImageData(dstData, 0, 0);
 }
 
 // Filters and Effects
@@ -9645,9 +10736,20 @@ function updateUndoRedoButtons() {
 // Keyboard Shortcuts
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Escape to clear selection
+        // Escape to clear selection or finish polygonal lasso
         if (e.key === 'Escape') {
-            clearSelection();
+            if (state.tool === 'polygonal-lasso' && polygonalPoints.length > 0) {
+                polygonalPoints = [];
+                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            } else {
+                clearSelection();
+            }
+            return;
+        }
+        
+        // Enter to finish polygonal lasso
+        if (e.key === 'Enter' && state.tool === 'polygonal-lasso' && polygonalPoints.length >= 3) {
+            finishPolygonalLassoSelection();
             return;
         }
         
@@ -9842,19 +10944,44 @@ function setupContextualTaskbar() {
     
     // Selection actions
     document.querySelector('[data-action="select-all"]')?.addEventListener('click', () => {
-        if (state.activeLayer) {
-            state.selection.active = true;
-            state.selection.startX = 0;
-            state.selection.startY = 0;
-            state.selection.endX = state.canvas.width;
-            state.selection.endY = state.canvas.height;
-            compositeAllLayers();
-        }
+        selectAll();
     });
     
     document.querySelector('[data-action="deselect"]')?.addEventListener('click', () => {
-        state.selection.active = false;
-        compositeAllLayers();
+        clearSelection();
+    });
+    
+    // Selection refinement actions
+    document.querySelector('[data-action="selection-feather"]')?.addEventListener('click', () => {
+        const radius = prompt('Enter feather radius (pixels):', '5');
+        if (radius !== null) {
+            featherSelection(parseInt(radius) || 5);
+        }
+    });
+    
+    document.querySelector('[data-action="selection-grow"]')?.addEventListener('click', () => {
+        const pixels = prompt('Expand selection by (pixels):', '2');
+        if (pixels !== null) {
+            growSelection(parseInt(pixels) || 2);
+        }
+    });
+    
+    document.querySelector('[data-action="selection-shrink"]')?.addEventListener('click', () => {
+        const pixels = prompt('Contract selection by (pixels):', '2');
+        if (pixels !== null) {
+            shrinkSelection(parseInt(pixels) || 2);
+        }
+    });
+    
+    document.querySelector('[data-action="selection-border"]')?.addEventListener('click', () => {
+        const pixels = prompt('Border width (pixels):', '2');
+        if (pixels !== null) {
+            borderSelection(parseInt(pixels) || 2);
+        }
+    });
+    
+    document.querySelector('[data-action="selection-invert"]')?.addEventListener('click', () => {
+        invertSelection();
     });
     
     // Shape type buttons
@@ -9877,6 +11004,59 @@ function setupContextualTaskbar() {
         state.shape.filled = !state.shape.filled;
         const checkbox = document.getElementById('shape-filled');
         if (checkbox) checkbox.checked = state.shape.filled;
+    });
+    
+    // Transform action buttons
+    document.querySelector('[data-action="transform-apply"]')?.addEventListener('click', () => {
+        finishTransform();
+    });
+    
+    document.querySelector('[data-action="transform-cancel"]')?.addEventListener('click', () => {
+        cancelTransform();
+    });
+    
+    document.querySelector('[data-action="transform-reset"]')?.addEventListener('click', () => {
+        resetTransform();
+    });
+    
+    document.querySelector('[data-action="flip-h"]')?.addEventListener('click', () => {
+        if (state.activeLayer) {
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.canvas.width;
+            tempCanvas.height = state.canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(state.activeLayer.canvas, 0, 0);
+            
+            ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(tempCanvas, -state.canvas.width, 0);
+            ctx.restore();
+            
+            compositeAllLayers();
+            saveState();
+        }
+    });
+    
+    document.querySelector('[data-action="flip-v"]')?.addEventListener('click', () => {
+        if (state.activeLayer) {
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.canvas.width;
+            tempCanvas.height = state.canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(state.activeLayer.canvas, 0, 0);
+            
+            ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+            ctx.save();
+            ctx.scale(1, -1);
+            ctx.drawImage(tempCanvas, 0, -state.canvas.height);
+            ctx.restore();
+            
+            compositeAllLayers();
+            saveState();
+        }
     });
     
     // Text formatting buttons
@@ -10028,6 +11208,24 @@ function setupContextualTaskbar() {
     if (magicWandAntiAlias) {
         magicWandAntiAlias.addEventListener('change', (e) => {
             state.magicWand.antiAlias = e.target.checked;
+        });
+    }
+    
+    // Lasso settings
+    const lassoFeather = document.getElementById('lasso-feather');
+    const lassoFeatherValue = document.getElementById('lasso-feather-value');
+    const lassoAntiAlias = document.getElementById('lasso-anti-alias');
+    
+    if (lassoFeather && lassoFeatherValue) {
+        lassoFeather.addEventListener('input', (e) => {
+            state.selection.feather = parseInt(e.target.value);
+            lassoFeatherValue.textContent = e.target.value;
+        });
+    }
+    
+    if (lassoAntiAlias) {
+        lassoAntiAlias.addEventListener('change', (e) => {
+            state.selection.antiAlias = e.target.checked;
         });
     }
     
