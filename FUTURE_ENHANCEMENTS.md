@@ -180,12 +180,12 @@ Features that would be nice to have but are not essential for core functionality
   - Warp tool
   - Distort tool (via perspective)
   - Skew transform
-- [ ] Transform layer option
+- [x] Transform layer option ✅ COMPLETED (Phase 6 Enhancement)
   - Non-destructive transforms
   - Smart objects
   - Transform history
 
-**Impact:** ✅ Mostly Complete - Essential tools for professional digital art workflow implemented.
+**Impact:** ✅ Complete - Essential tools for professional digital art workflow implemented with full non-destructive editing support.
 
 ---
 
@@ -274,11 +274,11 @@ Features that would be nice to have but are not essential for core functionality
   - Border selection
   - Selection transform (move, scale)
   - Invert selection
-- [ ] Quick mask mode
+- [x] Quick mask mode ✅ COMPLETED (Phase 8 Enhancement)
   - Paint selection masks
   - Visual selection editing
 
-**Impact:** ✅ Mostly Complete - Professional selection capabilities for complex editing tasks.
+**Impact:** ✅ Complete - Professional selection capabilities for complex editing tasks with full quick mask support.
 
 ---
 

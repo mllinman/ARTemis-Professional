@@ -314,6 +314,13 @@ const state = {
             frequency: 57       // Anchor point frequency
         }
     },
+    // Quick Mask Mode (Phase 8)
+    quickMask: {
+        active: false,          // Quick mask mode enabled/disabled
+        canvas: null,           // Canvas for mask editing
+        overlayColor: 'rgba(255, 0, 0, 0.5)', // Red semi-transparent overlay
+        opacity: 0.5            // Mask overlay opacity
+    },
     shape: {
         type: 'rectangle',
         filled: true,
@@ -347,6 +354,8 @@ const state = {
         scaleY: 1,
         skewX: 0,
         skewY: 0,
+        translateX: 0,
+        translateY: 0,
         // Corner points for free transform and perspective
         corners: [
             { x: 0, y: 0 },     // top-left
@@ -357,7 +366,12 @@ const state = {
         selectedHandle: null,
         // Warp grid
         warpGrid: null,
-        warpResolution: 3  // 3x3 grid
+        warpResolution: 3,  // 3x3 grid
+        // Transform History (Phase 6) - Non-destructive transforms
+        history: [],         // Array of transform operations
+        historyIndex: -1,    // Current position in history
+        smartObject: null,   // Original layer data for non-destructive editing
+        isSmartObject: false // Whether current layer is a smart object
     },
     text: {
         fontFamily: 'Arial, sans-serif',
@@ -6560,6 +6574,17 @@ function calculateBrushOpacity(pressure) {
 }
 
 function commitDrawing() {
+    // Quick Mask Mode: Draw to mask canvas instead
+    if (state.quickMask.active) {
+        const ctx = state.quickMask.canvas.getContext('2d');
+        ctx.drawImage(drawCanvas, 0, 0);
+        
+        // Clear draw canvas and redraw overlay
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        drawQuickMaskOverlay();
+        return;
+    }
+    
     // FIXED: Ensure we have an active layer
     if (!state.activeLayer) {
         console.warn('commitDrawing: No active layer, creating one');
@@ -7549,6 +7574,145 @@ function selectAll() {
     drawSelection();
 }
 
+// ============================================
+// Quick Mask Mode (Phase 8 Enhancement)
+// ============================================
+
+function toggleQuickMaskMode() {
+    state.quickMask.active = !state.quickMask.active;
+    
+    if (state.quickMask.active) {
+        enterQuickMaskMode();
+    } else {
+        exitQuickMaskMode();
+    }
+}
+
+function enterQuickMaskMode() {
+    // Initialize quick mask canvas if not exists
+    if (!state.quickMask.canvas) {
+        state.quickMask.canvas = document.createElement('canvas');
+        state.quickMask.canvas.width = state.canvas.width;
+        state.quickMask.canvas.height = state.canvas.height;
+    }
+    
+    // Convert existing selection to mask if present
+    if (state.selection.active && state.selection.mask) {
+        const ctx = state.quickMask.canvas.getContext('2d');
+        const imageData = ctx.createImageData(state.canvas.width, state.canvas.height);
+        
+        for (let i = 0; i < state.selection.mask.length; i++) {
+            const value = state.selection.mask[i] ? 255 : 0;
+            imageData.data[i * 4] = value;
+            imageData.data[i * 4 + 1] = value;
+            imageData.data[i * 4 + 2] = value;
+            imageData.data[i * 4 + 3] = 255;
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    } else {
+        // Clear mask canvas
+        const ctx = state.quickMask.canvas.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+    }
+    
+    // Clear current selection
+    clearSelection();
+    
+    // Switch to brush tool for painting mask
+    const previousTool = state.tool;
+    state.quickMask.previousTool = previousTool;
+    selectTool('brush');
+    
+    // Show mask overlay
+    drawQuickMaskOverlay();
+    
+    // Show notification
+    showNotification('Quick Mask Mode (Paint white to add to selection, black to remove)');
+}
+
+function exitQuickMaskMode() {
+    // Convert mask canvas to selection
+    const ctx = state.quickMask.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const mask = new Uint8Array(state.canvas.width * state.canvas.height);
+    
+    // Convert grayscale to binary mask (threshold at 50%)
+    for (let i = 0; i < mask.length; i++) {
+        const value = imageData.data[i * 4]; // Red channel
+        mask[i] = value > 127 ? 1 : 0;
+    }
+    
+    // Check if there's any selection
+    let hasSelection = false;
+    for (let i = 0; i < mask.length; i++) {
+        if (mask[i]) {
+            hasSelection = true;
+            break;
+        }
+    }
+    
+    if (hasSelection) {
+        state.selection.active = true;
+        state.selection.mask = mask;
+        state.selection.isMaskBased = true;
+        updateSelectionBounds();
+        
+        // Start marching ants animation
+        if (state.selection.animationFrame) {
+            cancelAnimationFrame(state.selection.animationFrame);
+        }
+        state.selection.animationFrame = requestAnimationFrame(animateMarchingAnts);
+        drawSelection();
+    }
+    
+    // Clear mask overlay
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    // Restore previous tool
+    if (state.quickMask.previousTool) {
+        selectTool(state.quickMask.previousTool);
+        state.quickMask.previousTool = null;
+    }
+    
+    // Show notification
+    showNotification('Quick Mask Mode Off');
+}
+
+function drawQuickMaskOverlay() {
+    if (!state.quickMask.active) return;
+    
+    // Clear and redraw overlay
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    // Get mask data
+    const ctx = state.quickMask.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    
+    // Create overlay with red tint where mask is black (unselected)
+    drawCtx.save();
+    drawCtx.globalAlpha = state.quickMask.opacity;
+    
+    // More efficient: Create ImageData for overlay instead of individual fillRect calls
+    const overlayData = drawCtx.createImageData(state.canvas.width, state.canvas.height);
+    
+    for (let i = 0; i < imageData.data.length; i += 4) {
+        const value = imageData.data[i]; // Red channel from mask
+        
+        // Draw red overlay where mask is black (protected/unselected area)
+        if (value < 127) {
+            overlayData.data[i] = 255;     // R
+            overlayData.data[i + 1] = 0;   // G
+            overlayData.data[i + 2] = 0;   // B
+            overlayData.data[i + 3] = 255; // A (full opacity, globalAlpha will handle transparency)
+        }
+    }
+    
+    drawCtx.putImageData(overlayData, 0, 0);
+    drawCtx.restore();
+}
+
 // Text Tool
 function addText(x, y) {
     // FIXED: If clicking on an existing text layer, edit it instead of creating new
@@ -8117,6 +8281,8 @@ function updateTransform(x, y) {
     
     if (state.transform.mode === 'move') {
         ctx.translate(dx, dy);
+        state.transform.translateX = dx;
+        state.transform.translateY = dy;
         ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'rotate') {
         const centerX = state.canvas.width / 2;
@@ -8178,6 +8344,23 @@ function updateTransform(x, y) {
 
 function finishTransform() {
     if (!state.transform.active) return;
+    
+    // Save to history if this is a smart object
+    if (state.transform.isSmartObject) {
+        addTransformToHistory({
+            mode: state.transform.mode,
+            angle: state.transform.angle,
+            scale: state.transform.scale,
+            scaleX: state.transform.scaleX,
+            scaleY: state.transform.scaleY,
+            skewX: state.transform.skewX,
+            skewY: state.transform.skewY,
+            translateX: state.transform.translateX,
+            translateY: state.transform.translateY,
+            corners: state.transform.corners,
+            warpGrid: state.transform.warpGrid
+        });
+    }
     
     state.transform.active = false;
     state.transform.mode = null;
@@ -8424,6 +8607,162 @@ function applyWarpTransform(ctx) {
     }
     
     ctx.putImageData(dstData, 0, 0);
+}
+
+// ============================================
+// Transform History & Smart Objects (Phase 6 Enhancement)
+// ============================================
+
+function convertLayerToSmartObject() {
+    if (!state.activeLayer) return;
+    
+    // Store original layer data
+    state.transform.smartObject = document.createElement('canvas');
+    state.transform.smartObject.width = state.activeLayer.canvas.width;
+    state.transform.smartObject.height = state.activeLayer.canvas.height;
+    const ctx = state.transform.smartObject.getContext('2d');
+    ctx.drawImage(state.activeLayer.canvas, 0, 0);
+    
+    state.transform.isSmartObject = true;
+    state.transform.history = [];
+    state.transform.historyIndex = -1;
+    
+    showNotification('Layer converted to Smart Object');
+}
+
+// Helper function to create transform snapshot
+function createTransformSnapshot(transformData) {
+    return {
+        mode: transformData.mode,
+        angle: transformData.angle || 0,
+        scale: transformData.scale || 1,
+        scaleX: transformData.scaleX || 1,
+        scaleY: transformData.scaleY || 1,
+        skewX: transformData.skewX || 0,
+        skewY: transformData.skewY || 0,
+        translateX: transformData.translateX || 0,
+        translateY: transformData.translateY || 0,
+        corners: transformData.corners ? [...transformData.corners] : null,
+        warpGrid: transformData.warpGrid ? JSON.parse(JSON.stringify(transformData.warpGrid)) : null,
+        timestamp: Date.now()
+    };
+}
+
+function addTransformToHistory(transformData) {
+    if (!state.transform.isSmartObject) return;
+    
+    // Remove any transforms after current index (when making new transform after undo)
+    state.transform.history = state.transform.history.slice(0, state.transform.historyIndex + 1);
+    
+    // Add new transform using helper function
+    state.transform.history.push(createTransformSnapshot(transformData));
+    
+    state.transform.historyIndex++;
+    
+    // Limit history size to 50 transforms
+    if (state.transform.history.length > 50) {
+        state.transform.history.shift();
+        state.transform.historyIndex--;
+    }
+}
+
+function applyTransformHistory() {
+    if (!state.transform.isSmartObject || !state.transform.smartObject || !state.activeLayer) return;
+    
+    // Start with original smart object data
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.smartObject, 0, 0);
+    
+    // Apply all transforms up to current index
+    for (let i = 0; i <= state.transform.historyIndex; i++) {
+        const transform = state.transform.history[i];
+        applyHistoricalTransform(ctx, transform);
+    }
+    
+    compositeAllLayers();
+}
+
+function applyHistoricalTransform(ctx, transform) {
+    ctx.save();
+    
+    const centerX = state.canvas.width / 2;
+    const centerY = state.canvas.height / 2;
+    
+    if (transform.mode === 'move') {
+        // Apply translation transform
+        ctx.translate(transform.translateX || 0, transform.translateY || 0);
+    } else if (transform.mode === 'rotate') {
+        ctx.translate(centerX, centerY);
+        ctx.rotate(transform.angle);
+        ctx.translate(-centerX, -centerY);
+    } else if (transform.mode === 'scale') {
+        ctx.translate(centerX, centerY);
+        ctx.scale(transform.scale, transform.scale);
+        ctx.translate(-centerX, -centerY);
+    } else if (transform.mode === 'skew') {
+        ctx.translate(centerX, centerY);
+        ctx.transform(1, transform.skewY, transform.skewX, 1, 0, 0);
+        ctx.translate(-centerX, -centerY);
+    }
+    
+    ctx.restore();
+}
+
+function undoTransform() {
+    if (!state.transform.isSmartObject || state.transform.historyIndex < 0) {
+        showNotification('No transforms to undo');
+        return;
+    }
+    
+    state.transform.historyIndex--;
+    applyTransformHistory();
+    showNotification(`Undo Transform (${state.transform.historyIndex + 1}/${state.transform.history.length})`);
+}
+
+function redoTransform() {
+    if (!state.transform.isSmartObject || state.transform.historyIndex >= state.transform.history.length - 1) {
+        showNotification('No transforms to redo');
+        return;
+    }
+    
+    state.transform.historyIndex++;
+    applyTransformHistory();
+    showNotification(`Redo Transform (${state.transform.historyIndex + 1}/${state.transform.history.length})`);
+}
+
+function resetSmartObject() {
+    if (!state.transform.isSmartObject || !state.transform.smartObject || !state.activeLayer) {
+        showNotification('Layer is not a Smart Object');
+        return;
+    }
+    
+    // Clear all transforms
+    state.transform.history = [];
+    state.transform.historyIndex = -1;
+    
+    // Restore original
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.drawImage(state.transform.smartObject, 0, 0);
+    
+    compositeAllLayers();
+    showNotification('Smart Object reset to original');
+}
+
+function rasterizeSmartObject() {
+    if (!state.transform.isSmartObject) {
+        showNotification('Layer is not a Smart Object');
+        return;
+    }
+    
+    // Clear smart object data
+    state.transform.isSmartObject = false;
+    state.transform.smartObject = null;
+    state.transform.history = [];
+    state.transform.historyIndex = -1;
+    
+    showNotification('Smart Object rasterized');
 }
 
 // Filters and Effects
@@ -11614,6 +11953,13 @@ function setupKeyboardShortcuts() {
             }
         }
         
+        // Quick Mask Mode toggle (Q key) - Phase 8 enhancement
+        if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'q') {
+            e.preventDefault();
+            toggleQuickMaskMode();
+            return;
+        }
+        
         // Brush size shortcuts
         if (e.key === '[') {
             state.brush.size = Math.max(1, state.brush.size - 5);
@@ -11795,6 +12141,29 @@ function setupContextualTaskbar() {
             
             compositeAllLayers();
             saveState();
+        }
+    });
+    
+    // Smart Object / Transform History buttons (Phase 6)
+    document.querySelector('[data-action="smart-object-convert"]')?.addEventListener('click', () => {
+        convertLayerToSmartObject();
+    });
+    
+    document.querySelector('[data-action="smart-object-reset"]')?.addEventListener('click', () => {
+        resetSmartObject();
+    });
+    
+    document.querySelector('[data-action="smart-object-rasterize"]')?.addEventListener('click', () => {
+        rasterizeSmartObject();
+    });
+    
+    // Quick Mask Mode button (Phase 8)
+    document.querySelector('[data-action="quick-mask-toggle"]')?.addEventListener('click', () => {
+        toggleQuickMaskMode();
+        // Update button appearance
+        const btn = document.getElementById('quick-mask-btn');
+        if (btn) {
+            btn.classList.toggle('active', state.quickMask.active);
         }
     });
     
