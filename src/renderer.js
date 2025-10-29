@@ -15231,49 +15231,95 @@ function showCustomThemeCreator() {
 }
 
 function previewCustomTheme() {
+    // Helper function to validate and sanitize hex color values
+    const sanitizeColor = (color) => {
+        // Color inputs guarantee hex format, but validate anyway for security
+        if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            return color;
+        }
+        return '#000000'; // Safe fallback
+    };
+    
     const colors = {
-        bgPrimary: document.getElementById('color-bg-primary')?.value || '#1e1e1e',
-        bgSecondary: document.getElementById('color-bg-secondary')?.value || '#2d2d30',
-        bgTertiary: document.getElementById('color-bg-tertiary')?.value || '#252526',
-        borderColor: document.getElementById('color-border')?.value || '#3e3e42',
-        textPrimary: document.getElementById('color-text-primary')?.value || '#cccccc',
-        textSecondary: document.getElementById('color-text-secondary')?.value || '#969696',
-        hoverBg: document.getElementById('color-hover-bg')?.value || '#3e3e42',
-        accent: document.getElementById('color-accent')?.value || '#007acc'
+        bgPrimary: sanitizeColor(document.getElementById('color-bg-primary')?.value || '#1e1e1e'),
+        bgSecondary: sanitizeColor(document.getElementById('color-bg-secondary')?.value || '#2d2d30'),
+        bgTertiary: sanitizeColor(document.getElementById('color-bg-tertiary')?.value || '#252526'),
+        borderColor: sanitizeColor(document.getElementById('color-border')?.value || '#3e3e42'),
+        textPrimary: sanitizeColor(document.getElementById('color-text-primary')?.value || '#cccccc'),
+        textSecondary: sanitizeColor(document.getElementById('color-text-secondary')?.value || '#969696'),
+        hoverBg: sanitizeColor(document.getElementById('color-hover-bg')?.value || '#3e3e42'),
+        accent: sanitizeColor(document.getElementById('color-accent')?.value || '#007acc')
     };
     
     const preview = document.getElementById('theme-preview');
     if (preview) {
+        // Use style properties directly instead of innerHTML to avoid XSS concerns
         preview.style.background = colors.bgPrimary;
         preview.style.color = colors.textPrimary;
         preview.style.border = `2px solid ${colors.borderColor}`;
-        preview.innerHTML = `
-            <div style="background: ${colors.bgSecondary}; padding: 8px; margin-bottom: 8px; border-radius: 2px;">
-                <div style="color: ${colors.textPrimary}; font-weight: bold;">Primary Text on Secondary Background</div>
-                <div style="color: ${colors.textSecondary}; font-size: 0.9em;">Secondary text color</div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <div style="flex: 1; background: ${colors.accent}; padding: 8px; color: white; text-align: center; border-radius: 2px;">Accent</div>
-                <div style="flex: 1; background: ${colors.hoverBg}; padding: 8px; color: ${colors.textPrimary}; text-align: center; border-radius: 2px;">Hover</div>
-            </div>
-        `;
+        
+        // Build preview DOM safely
+        preview.innerHTML = '';
+        
+        // Create first div
+        const div1 = document.createElement('div');
+        div1.style.cssText = `background: ${colors.bgSecondary}; padding: 8px; margin-bottom: 8px; border-radius: 2px;`;
+        
+        const div1Text1 = document.createElement('div');
+        div1Text1.style.cssText = `color: ${colors.textPrimary}; font-weight: bold;`;
+        div1Text1.textContent = 'Primary Text on Secondary Background';
+        
+        const div1Text2 = document.createElement('div');
+        div1Text2.style.cssText = `color: ${colors.textSecondary}; font-size: 0.9em;`;
+        div1Text2.textContent = 'Secondary text color';
+        
+        div1.appendChild(div1Text1);
+        div1.appendChild(div1Text2);
+        
+        // Create second div container
+        const div2Container = document.createElement('div');
+        div2Container.style.cssText = 'display: flex; gap: 8px;';
+        
+        const div2Accent = document.createElement('div');
+        div2Accent.style.cssText = `flex: 1; background: ${colors.accent}; padding: 8px; color: white; text-align: center; border-radius: 2px;`;
+        div2Accent.textContent = 'Accent';
+        
+        const div2Hover = document.createElement('div');
+        div2Hover.style.cssText = `flex: 1; background: ${colors.hoverBg}; padding: 8px; color: ${colors.textPrimary}; text-align: center; border-radius: 2px;`;
+        div2Hover.textContent = 'Hover';
+        
+        div2Container.appendChild(div2Accent);
+        div2Container.appendChild(div2Hover);
+        
+        preview.appendChild(div1);
+        preview.appendChild(div2Container);
     }
 }
 
 function saveCustomTheme() {
-    const themeName = document.getElementById('theme-name')?.value || 'Custom Theme';
+    // Sanitize theme name to prevent XSS
+    const rawThemeName = document.getElementById('theme-name')?.value || 'Custom Theme';
+    const themeName = rawThemeName.replace(/[<>'"]/g, ''); // Remove potential XSS characters
     const themeId = 'custom-' + Date.now();
     
+    // Helper function to validate and sanitize hex color values
+    const sanitizeColor = (color) => {
+        if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            return color;
+        }
+        return '#000000'; // Safe fallback
+    };
+    
     const colors = {
-        bgPrimary: document.getElementById('color-bg-primary')?.value || '#1e1e1e',
-        bgSecondary: document.getElementById('color-bg-secondary')?.value || '#2d2d30',
-        bgTertiary: document.getElementById('color-bg-tertiary')?.value || '#252526',
-        borderColor: document.getElementById('color-border')?.value || '#3e3e42',
-        textPrimary: document.getElementById('color-text-primary')?.value || '#cccccc',
-        textSecondary: document.getElementById('color-text-secondary')?.value || '#969696',
-        hoverBg: document.getElementById('color-hover-bg')?.value || '#3e3e42',
+        bgPrimary: sanitizeColor(document.getElementById('color-bg-primary')?.value || '#1e1e1e'),
+        bgSecondary: sanitizeColor(document.getElementById('color-bg-secondary')?.value || '#2d2d30'),
+        bgTertiary: sanitizeColor(document.getElementById('color-bg-tertiary')?.value || '#252526'),
+        borderColor: sanitizeColor(document.getElementById('color-border')?.value || '#3e3e42'),
+        textPrimary: sanitizeColor(document.getElementById('color-text-primary')?.value || '#cccccc'),
+        textSecondary: sanitizeColor(document.getElementById('color-text-secondary')?.value || '#969696'),
+        hoverBg: sanitizeColor(document.getElementById('color-hover-bg')?.value || '#3e3e42'),
         shadow: 'rgba(0, 0, 0, 0.5)',
-        accent: document.getElementById('color-accent')?.value || '#007acc'
+        accent: sanitizeColor(document.getElementById('color-accent')?.value || '#007acc')
     };
     
     const customTheme = {
