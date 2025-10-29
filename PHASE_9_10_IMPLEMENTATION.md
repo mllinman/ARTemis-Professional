@@ -248,7 +248,7 @@ loadTheme() // Load from localStorage
   - Includes category information in results
   
 - **Keyboard Integration**
-  - Ctrl+F / Cmd+F to focus search field
+  - Ctrl+Shift+F / Cmd+Shift+F to focus search field
   - Works when brush panel is visible
   - Clears search when category changes
   
@@ -415,7 +415,7 @@ updateCanvasContainerSize() // Adjust canvas
 2. Type in the "Search Brushes" field
 3. See real-time results with count
 4. Select from filtered brushes in dropdown
-5. Press Ctrl+F / Cmd+F to quickly focus search
+5. Press Ctrl+Shift+F / Cmd+Shift+F to quickly focus search
 6. Clear search or change category to reset
 
 ### Adjusting Interface Scale (NEW)

@@ -578,7 +578,7 @@ const state = {
     theme: 'dark', // 'dark' or 'light'
     // Phase 10: Interface scaling
     interfaceScale: 1.0, // 0.75, 1.0, 1.25, 1.5
-    previousScale: 1.0
+    previousScale: null // Track previous scale for relative adjustments
 };
 
 // Default keyboard shortcuts (for reset functionality)
@@ -1464,6 +1464,7 @@ function setupBrushPresets() {
     
     if (brushSearchInput && brushSearchResults) {
         let allBrushes = [];
+        let searchTimeout = null; // Debounce timer for search
         
         // Build searchable brush list with category info
         function buildBrushList() {
@@ -1519,7 +1520,6 @@ function setupBrushPresets() {
         buildBrushList();
         
         // Search input handler with debounce
-        let searchTimeout;
         brushSearchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
@@ -1571,11 +1571,15 @@ function setupBrushPresets() {
             brushSearchResults.textContent = '';
         });
         
-        // Keyboard shortcut for search: Ctrl+F or Cmd+F when brush panel is focused
+        // Keyboard shortcut for search: Ctrl+Shift+F (to avoid conflict with browser find)
         document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            // Use Ctrl+Shift+F / Cmd+Shift+F to avoid conflict with browser's Ctrl+F
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
                 const leftPanel = document.getElementById('left-panel');
-                if (leftPanel && !leftPanel.classList.contains('collapsed')) {
+                // Only activate if left panel is visible and not in an input field
+                if (leftPanel && !leftPanel.classList.contains('collapsed') && 
+                    document.activeElement.tagName !== 'INPUT' && 
+                    document.activeElement.tagName !== 'TEXTAREA') {
                     e.preventDefault();
                     brushSearchInput.focus();
                     brushSearchInput.select();
@@ -14586,14 +14590,15 @@ function loadTheme() {
 function setInterfaceScale(scale) {
     // Valid scale values: 0.75, 1.0, 1.25, 1.5
     const validScales = [0.75, 1.0, 1.25, 1.5];
-    if (!validScales.includes(scale)) {
-        console.warn(`Invalid scale: ${scale}. Using 1.0`);
-        scale = 1.0;
+    const validatedScale = validScales.includes(scale) ? scale : 1.0;
+    
+    if (validatedScale !== scale) {
+        console.warn(`Invalid scale: ${scale}. Using ${validatedScale}`);
     }
     
-    state.interfaceScale = scale;
-    applyInterfaceScale(scale);
-    localStorage.setItem('artemis-interface-scale', scale.toString());
+    state.interfaceScale = validatedScale;
+    applyInterfaceScale(validatedScale);
+    localStorage.setItem('artemis-interface-scale', validatedScale.toString());
 }
 
 function applyInterfaceScale(scale) {
@@ -14615,13 +14620,15 @@ function applyInterfaceScale(scale) {
     
     if (leftPanel) {
         const currentWidth = parseInt(leftPanel.style.width) || basePanelWidth;
-        const baseWidth = currentWidth / (state.previousScale || 1.0);
+        const previousScale = (state.previousScale !== null && state.previousScale !== 0) ? state.previousScale : 1.0;
+        const baseWidth = currentWidth / previousScale;
         leftPanel.style.width = `${baseWidth * scale}px`;
     }
     
     if (rightPanel) {
         const currentWidth = parseInt(rightPanel.style.width) || basePanelWidth;
-        const baseWidth = currentWidth / (state.previousScale || 1.0);
+        const previousScale = (state.previousScale !== null && state.previousScale !== 0) ? state.previousScale : 1.0;
+        const baseWidth = currentWidth / previousScale;
         rightPanel.style.width = `${baseWidth * scale}px`;
     }
     
@@ -14633,7 +14640,10 @@ function applyInterfaceScale(scale) {
         menuBar.style.height = `${baseMenuHeight * scale}px`;
     }
     
-    // Scale buttons, inputs, and other UI elements
+    // Use CSS custom property for efficient scaling
+    root.style.setProperty('--ui-scale', scale.toString());
+    
+    // Scale specific UI elements that need explicit sizing
     const scaleElements = [
         '.icon-btn',
         '.tool-btn',
@@ -14645,20 +14655,25 @@ function applyInterfaceScale(scale) {
         '.setting-group label'
     ];
     
-    scaleElements.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-            // Store original font size if not already stored
-            if (!el.dataset.originalFontSize) {
-                const computedStyle = window.getComputedStyle(el);
-                el.dataset.originalFontSize = computedStyle.fontSize;
-            }
-            
-            const originalSize = parseFloat(el.dataset.originalFontSize);
-            if (originalSize) {
-                el.style.fontSize = `${originalSize * scale}px`;
-            }
+    // Only set font sizes on first scale or when we have a valid previous scale
+    const shouldUpdateFontSizes = state.previousScale === null || state.previousScale !== scale;
+    
+    if (shouldUpdateFontSizes) {
+        scaleElements.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => {
+                // Store original font size if not already stored
+                if (!el.dataset.originalFontSize) {
+                    const computedStyle = window.getComputedStyle(el);
+                    el.dataset.originalFontSize = computedStyle.fontSize;
+                }
+                
+                const originalSize = parseFloat(el.dataset.originalFontSize);
+                if (originalSize && !isNaN(originalSize)) {
+                    el.style.fontSize = `${originalSize * scale}px`;
+                }
+            });
         });
-    });
+    }
     
     // Update canvas container to account for scaled UI
     updateCanvasContainerSize();
@@ -14803,12 +14818,17 @@ function loadInterfaceScale() {
 
 function updateCanvasContainerSize() {
     // This ensures the canvas container adjusts when UI is scaled
+    // Use requestAnimationFrame for better performance
     const canvasContainer = document.getElementById('canvas-container');
     if (canvasContainer) {
-        // Force reflow
-        canvasContainer.style.display = 'none';
-        canvasContainer.offsetHeight; // Trigger reflow
-        canvasContainer.style.display = '';
+        requestAnimationFrame(() => {
+            // Use transform instead of display toggle for less disruptive reflow
+            canvasContainer.style.transform = 'translateZ(0)';
+            // Remove transform after a tick to trigger layout recalculation
+            requestAnimationFrame(() => {
+                canvasContainer.style.transform = '';
+            });
+        });
     }
 }
 
