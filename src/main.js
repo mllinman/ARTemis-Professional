@@ -407,6 +407,10 @@ function createWindow() {
           click: () => { mainWindow.webContents.send('theme-toggle'); }
         },
         {
+          label: 'Theme Presets...',
+          click: () => { mainWindow.webContents.send('theme-presets'); }
+        },
+        {
           label: 'Interface Scale...',
           accelerator: 'CmdOrCtrl+Shift+I',
           click: () => { mainWindow.webContents.send('interface-scale-dialog'); }
