@@ -248,19 +248,99 @@ function createWindow() {
         },
         {
           label: 'Blur',
-          click: () => { mainWindow.webContents.send('filter-blur'); }
+          submenu: [
+            {
+              label: 'Box Blur',
+              click: () => { mainWindow.webContents.send('filter-blur'); }
+            },
+            {
+              label: 'Gaussian Blur',
+              click: () => { mainWindow.webContents.send('filter-gaussian-blur'); }
+            },
+            {
+              label: 'Motion Blur',
+              click: () => { mainWindow.webContents.send('filter-motion-blur'); }
+            },
+            {
+              label: 'Radial Blur',
+              click: () => { mainWindow.webContents.send('filter-radial-blur'); }
+            }
+          ]
         },
         {
           label: 'Sharpen',
           click: () => { mainWindow.webContents.send('filter-sharpen'); }
         },
         {
-          label: 'Grayscale',
-          click: () => { mainWindow.webContents.send('filter-grayscale'); }
+          label: 'Noise',
+          submenu: [
+            {
+              label: 'Add Noise',
+              click: () => { mainWindow.webContents.send('filter-add-noise'); }
+            },
+            {
+              label: 'Reduce Noise',
+              click: () => { mainWindow.webContents.send('filter-reduce-noise'); }
+            }
+          ]
         },
+        { type: 'separator' },
         {
-          label: 'Invert',
-          click: () => { mainWindow.webContents.send('filter-invert'); }
+          label: 'Artistic',
+          submenu: [
+            {
+              label: 'Oil Painting',
+              click: () => { mainWindow.webContents.send('filter-oil-painting'); }
+            },
+            {
+              label: 'Watercolor',
+              click: () => { mainWindow.webContents.send('filter-watercolor'); }
+            },
+            {
+              label: 'Posterize',
+              click: () => { mainWindow.webContents.send('filter-posterize'); }
+            },
+            {
+              label: 'Mosaic',
+              click: () => { mainWindow.webContents.send('filter-mosaic'); }
+            }
+          ]
+        },
+        { type: 'separator' },
+        {
+          label: 'Color',
+          submenu: [
+            {
+              label: 'Grayscale',
+              click: () => { mainWindow.webContents.send('filter-grayscale'); }
+            },
+            {
+              label: 'Invert',
+              click: () => { mainWindow.webContents.send('filter-invert'); }
+            },
+            {
+              label: 'Hue/Saturation',
+              click: () => { mainWindow.webContents.send('filter-hue-saturation'); }
+            }
+          ]
+        },
+        { type: 'separator' },
+        {
+          label: 'Distort',
+          submenu: [
+            {
+              label: 'Pinch/Bulge',
+              click: () => { mainWindow.webContents.send('filter-pinch-bulge'); }
+            },
+            {
+              label: 'Twirl',
+              click: () => { mainWindow.webContents.send('filter-twirl'); }
+            },
+            {
+              label: 'Wave',
+              click: () => { mainWindow.webContents.send('filter-wave'); }
+            }
+          ]
         }
       ]
     },
