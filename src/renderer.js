@@ -354,6 +354,8 @@ const state = {
         scaleY: 1,
         skewX: 0,
         skewY: 0,
+        translateX: 0,
+        translateY: 0,
         // Corner points for free transform and perspective
         corners: [
             { x: 0, y: 0 },     // top-left
@@ -7692,19 +7694,22 @@ function drawQuickMaskOverlay() {
     drawCtx.save();
     drawCtx.globalAlpha = state.quickMask.opacity;
     
-    for (let y = 0; y < state.canvas.height; y++) {
-        for (let x = 0; x < state.canvas.width; x++) {
-            const i = (y * state.canvas.width + x) * 4;
-            const value = imageData.data[i]; // Red channel
-            
-            // Draw red overlay where mask is black (protected/unselected area)
-            if (value < 127) {
-                drawCtx.fillStyle = '#FF0000';
-                drawCtx.fillRect(x, y, 1, 1);
-            }
+    // More efficient: Create ImageData for overlay instead of individual fillRect calls
+    const overlayData = drawCtx.createImageData(state.canvas.width, state.canvas.height);
+    
+    for (let i = 0; i < imageData.data.length; i += 4) {
+        const value = imageData.data[i]; // Red channel from mask
+        
+        // Draw red overlay where mask is black (protected/unselected area)
+        if (value < 127) {
+            overlayData.data[i] = 255;     // R
+            overlayData.data[i + 1] = 0;   // G
+            overlayData.data[i + 2] = 0;   // B
+            overlayData.data[i + 3] = 255; // A (full opacity, globalAlpha will handle transparency)
         }
     }
     
+    drawCtx.putImageData(overlayData, 0, 0);
     drawCtx.restore();
 }
 
@@ -8276,6 +8281,8 @@ function updateTransform(x, y) {
     
     if (state.transform.mode === 'move') {
         ctx.translate(dx, dy);
+        state.transform.translateX = dx;
+        state.transform.translateY = dy;
         ctx.drawImage(state.transform.originalLayer, 0, 0);
     } else if (state.transform.mode === 'rotate') {
         const centerX = state.canvas.width / 2;
@@ -8348,6 +8355,8 @@ function finishTransform() {
             scaleY: state.transform.scaleY,
             skewX: state.transform.skewX,
             skewY: state.transform.skewY,
+            translateX: state.transform.translateX,
+            translateY: state.transform.translateY,
             corners: state.transform.corners,
             warpGrid: state.transform.warpGrid
         });
@@ -8621,25 +8630,32 @@ function convertLayerToSmartObject() {
     showNotification('Layer converted to Smart Object');
 }
 
+// Helper function to create transform snapshot
+function createTransformSnapshot(transformData) {
+    return {
+        mode: transformData.mode,
+        angle: transformData.angle || 0,
+        scale: transformData.scale || 1,
+        scaleX: transformData.scaleX || 1,
+        scaleY: transformData.scaleY || 1,
+        skewX: transformData.skewX || 0,
+        skewY: transformData.skewY || 0,
+        translateX: transformData.translateX || 0,
+        translateY: transformData.translateY || 0,
+        corners: transformData.corners ? [...transformData.corners] : null,
+        warpGrid: transformData.warpGrid ? JSON.parse(JSON.stringify(transformData.warpGrid)) : null,
+        timestamp: Date.now()
+    };
+}
+
 function addTransformToHistory(transformData) {
     if (!state.transform.isSmartObject) return;
     
     // Remove any transforms after current index (when making new transform after undo)
     state.transform.history = state.transform.history.slice(0, state.transform.historyIndex + 1);
     
-    // Add new transform
-    state.transform.history.push({
-        mode: transformData.mode,
-        angle: transformData.angle,
-        scale: transformData.scale,
-        scaleX: transformData.scaleX,
-        scaleY: transformData.scaleY,
-        skewX: transformData.skewX,
-        skewY: transformData.skewY,
-        corners: transformData.corners ? [...transformData.corners] : null,
-        warpGrid: transformData.warpGrid ? JSON.parse(JSON.stringify(transformData.warpGrid)) : null,
-        timestamp: Date.now()
-    });
+    // Add new transform using helper function
+    state.transform.history.push(createTransformSnapshot(transformData));
     
     state.transform.historyIndex++;
     
@@ -8676,6 +8692,10 @@ function applyHistoricalTransform(ctx, transform) {
     if (transform.mode === 'move') {
         // Move transform (would need startX/endX stored)
         // For now, skip as it's not directly recorded
+    } else if (transform.mode === 'rotate') {
+    if (transform.mode === 'move') {
+        // Apply translation transform
+        ctx.translate(transform.translateX || 0, transform.translateY || 0);
     } else if (transform.mode === 'rotate') {
         ctx.translate(centerX, centerY);
         ctx.rotate(transform.angle);
