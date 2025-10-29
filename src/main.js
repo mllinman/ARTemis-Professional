@@ -373,6 +373,38 @@ function createWindow() {
         {
           label: 'Manage Workspaces',
           click: () => { mainWindow.webContents.send('workspace-manage'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Workspace Presets',
+          submenu: [
+            {
+              label: 'Painting',
+              click: () => { mainWindow.webContents.send('workspace-preset', 'painting'); }
+            },
+            {
+              label: 'Illustration',
+              click: () => { mainWindow.webContents.send('workspace-preset', 'illustration'); }
+            },
+            {
+              label: 'Photo Editing',
+              click: () => { mainWindow.webContents.send('workspace-preset', 'photo-editing'); }
+            },
+            {
+              label: 'Minimal',
+              click: () => { mainWindow.webContents.send('workspace-preset', 'minimal'); }
+            }
+          ]
+        },
+        { type: 'separator' },
+        {
+          label: 'Customize Keyboard Shortcuts',
+          click: () => { mainWindow.webContents.send('shortcuts-customize'); }
+        },
+        {
+          label: 'Toggle Theme (Light/Dark)',
+          accelerator: 'CmdOrCtrl+Shift+T',
+          click: () => { mainWindow.webContents.send('theme-toggle'); }
         }
       ]
     },

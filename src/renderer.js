@@ -573,7 +573,9 @@ const state = {
         lastCapture: 0
     },
     // Custom brush names (for renaming brushes)
-    customBrushNames: {}
+    customBrushNames: {},
+    // Phase 10: Theme settings
+    theme: 'dark' // 'dark' or 'light'
 };
 
 // Default keyboard shortcuts (for reset functionality)
@@ -899,6 +901,9 @@ function init() {
     
     // Load saved keyboard shortcuts
     loadKeyboardShortcuts();
+    
+    // Phase 10: Load theme
+    loadTheme();
     
     // NEW: Load application state (persistence)
     loadAppState();
@@ -12136,6 +12141,9 @@ function setupMenuHandlers() {
     ipcRenderer.on('workspace-save', () => showSaveWorkspaceDialog());
     ipcRenderer.on('workspace-load', () => showLoadWorkspaceDialog());
     ipcRenderer.on('workspace-manage', () => showManageWorkspacesDialog());
+    ipcRenderer.on('workspace-preset', (event, preset) => loadWorkspacePreset(preset));
+    ipcRenderer.on('shortcuts-customize', () => showShortcutCustomizationDialog());
+    ipcRenderer.on('theme-toggle', () => toggleTheme());
     
     // Windows menu handlers
     ipcRenderer.on('window-toggle-panel', (event, panelSide, checked) => {
@@ -13352,6 +13360,9 @@ function setupShortcutDialogButtons() {
     const closeBtn = document.getElementById('shortcut-customization-close');
     const cancelBtn = document.getElementById('shortcut-customization-cancel');
     const saveBtn = document.getElementById('shortcut-customization-save');
+    const importBtn = document.getElementById('shortcut-import');
+    const exportBtn = document.getElementById('shortcut-export');
+    const resetBtn = document.getElementById('shortcut-reset');
     
     const closeDialog = () => {
         dialog.classList.add('hidden');
@@ -13372,10 +13383,66 @@ function setupShortcutDialogButtons() {
         saveBtn.removeEventListener('click', saveShortcuts);
         saveBtn.addEventListener('click', saveShortcuts);
     }
+    if (importBtn) {
+        importBtn.removeEventListener('click', importShortcuts);
+        importBtn.addEventListener('click', importShortcuts);
+    }
+    if (exportBtn) {
+        exportBtn.removeEventListener('click', exportShortcuts);
+        exportBtn.addEventListener('click', exportShortcuts);
+    }
+    if (resetBtn) {
+        resetBtn.removeEventListener('click', resetShortcuts);
+        resetBtn.addEventListener('click', resetShortcuts);
+    }
     
     // Listen for key presses when editing
     document.removeEventListener('keydown', handleShortcutKeyPress);
     document.addEventListener('keydown', handleShortcutKeyPress);
+}
+
+function importShortcuts() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const imported = JSON.parse(event.target.result);
+                tempShortcuts = { ...imported };
+                showShortcutCustomizationDialog();
+                alert('Shortcuts imported successfully! Click "Save Changes" to apply them.');
+            } catch (err) {
+                alert('Error importing shortcuts: Invalid file format');
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportShortcuts() {
+    const data = JSON.stringify(tempShortcuts, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'artemis-shortcuts.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Shortcuts exported successfully!');
+}
+
+function resetShortcuts() {
+    if (confirm('Reset all keyboard shortcuts to defaults? This will discard any custom changes.')) {
+        tempShortcuts = { ...defaultKeyboardShortcuts };
+        showShortcutCustomizationDialog();
+    }
 }
 
 function handleShortcutKeyPress(e) {
@@ -14150,6 +14217,87 @@ function deleteWorkspace(name) {
     localStorage.setItem('artemis-workspaces', JSON.stringify(workspaces));
 }
 
+// Phase 10: Workspace Presets
+const workspacePresets = {
+    'painting': {
+        name: 'Painting',
+        leftPanelWidth: 300,
+        rightPanelWidth: 300,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Optimized for digital painting with full access to brushes and layers'
+    },
+    'illustration': {
+        name: 'Illustration',
+        leftPanelWidth: 250,
+        rightPanelWidth: 350,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Balanced workspace for illustration work with emphasis on layers panel'
+    },
+    'photo-editing': {
+        name: 'Photo Editing',
+        leftPanelWidth: 200,
+        rightPanelWidth: 350,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Focused on photo editing tools and adjustment layers'
+    },
+    'minimal': {
+        name: 'Minimal',
+        leftPanelWidth: 280,
+        rightPanelWidth: 280,
+        leftPanelCollapsed: true,
+        rightPanelCollapsed: true,
+        description: 'Minimal workspace with maximum canvas space'
+    }
+};
+
+function loadWorkspacePreset(presetName) {
+    const preset = workspacePresets[presetName];
+    if (!preset) {
+        alert('Workspace preset not found');
+        return false;
+    }
+    
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    
+    // Apply preset settings
+    leftPanel.style.width = preset.leftPanelWidth + 'px';
+    rightPanel.style.width = preset.rightPanelWidth + 'px';
+    
+    if (preset.leftPanelCollapsed) {
+        leftPanel.classList.add('collapsed');
+    } else {
+        leftPanel.classList.remove('collapsed');
+    }
+    
+    if (preset.rightPanelCollapsed) {
+        rightPanel.classList.add('collapsed');
+    } else {
+        rightPanel.classList.remove('collapsed');
+    }
+    
+    alert(`Workspace preset "${preset.name}" loaded successfully!`);
+    return true;
+}
+
+function showWorkspacePresetsDialog() {
+    const presetList = Object.entries(workspacePresets)
+        .map(([key, preset]) => `• ${preset.name}: ${preset.description}`)
+        .join('\n');
+    
+    const selection = prompt(
+        `Available Workspace Presets:\n\n${presetList}\n\nEnter preset name (painting, illustration, photo-editing, minimal):`,
+        'painting'
+    );
+    
+    if (selection && selection.trim()) {
+        loadWorkspacePreset(selection.trim().toLowerCase());
+    }
+}
+
 function showSaveWorkspaceDialog() {
     const name = prompt('Enter workspace name:', 'My Workspace');
     if (name && name.trim()) {
@@ -14202,6 +14350,90 @@ function showManageWorkspacesDialog() {
             deleteWorkspace(action.trim());
             alert(`Workspace "${action}" deleted.`);
         }
+    }
+}
+
+// Phase 10: Theme Customization
+function toggleTheme() {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(state.theme);
+    localStorage.setItem('artemis-theme', state.theme);
+}
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    
+    if (theme === 'light') {
+        // Light theme colors
+        root.style.setProperty('--bg-primary', '#f3f3f3');
+        root.style.setProperty('--bg-secondary', '#ffffff');
+        root.style.setProperty('--bg-tertiary', '#e8e8e8');
+        root.style.setProperty('--border-color', '#d0d0d0');
+        root.style.setProperty('--text-primary', '#1e1e1e');
+        root.style.setProperty('--text-secondary', '#4a4a4a');
+        root.style.setProperty('--hover-bg', '#e0e0e0');
+        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.15)');
+        
+        document.body.style.background = '#f3f3f3';
+        document.body.style.color = '#1e1e1e';
+    } else {
+        // Dark theme colors (default)
+        root.style.setProperty('--bg-primary', '#1e1e1e');
+        root.style.setProperty('--bg-secondary', '#2d2d30');
+        root.style.setProperty('--bg-tertiary', '#252526');
+        root.style.setProperty('--border-color', '#3e3e42');
+        root.style.setProperty('--text-primary', '#cccccc');
+        root.style.setProperty('--text-secondary', '#969696');
+        root.style.setProperty('--hover-bg', '#3e3e42');
+        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.5)');
+        
+        document.body.style.background = '#1e1e1e';
+        document.body.style.color = '#cccccc';
+    }
+    
+    // Update all elements that use these colors
+    updateThemeColors();
+}
+
+function updateThemeColors() {
+    // Update menu bar
+    const menuBar = document.getElementById('menu-bar');
+    if (menuBar) {
+        menuBar.style.background = state.theme === 'light' ? '#ffffff' : '#252526';
+        menuBar.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update toolbar
+    const toolbar = document.getElementById('toolbar');
+    if (toolbar) {
+        toolbar.style.background = state.theme === 'light' ? '#e8e8e8' : '#2d2d30';
+        toolbar.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update panels
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    if (leftPanel) {
+        leftPanel.style.background = state.theme === 'light' ? '#f3f3f3' : '#1e1e1e';
+        leftPanel.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    if (rightPanel) {
+        rightPanel.style.background = state.theme === 'light' ? '#f3f3f3' : '#1e1e1e';
+        rightPanel.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update all labels and text
+    const textColor = state.theme === 'light' ? '#1e1e1e' : '#cccccc';
+    document.querySelectorAll('.menu-label, .menu-btn, label, .tab').forEach(el => {
+        el.style.color = textColor;
+    });
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('artemis-theme');
+    if (savedTheme) {
+        state.theme = savedTheme;
+        applyTheme(savedTheme);
     }
 }
 
