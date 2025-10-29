@@ -361,6 +361,9 @@
                         <button class="context-btn" data-action="text-italic" title="Italic">
                             <em>I</em>
                         </button>
+                        <button class="context-btn" data-action="text-underline" title="Underline">
+                            <u>U</u>
+                        </button>
                         <span class="context-divider"></span>
                         <button class="context-btn" data-action="text-align-left" title="Align Left">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -403,6 +406,23 @@
                         <input type="number" class="context-input" data-action="text-kerning" min="-10" max="50" step="0.5" value="0" style="width: 50px;" title="Letter Spacing">
                         <label title="Line Height (Leading)" style="font-size: 11px; color: #858585; margin-right: 4px; margin-left: 8px;">Leading:</label>
                         <input type="number" class="context-input" data-action="text-leading" min="0.5" max="3" step="0.1" value="1.2" style="width: 50px;" title="Line Height">
+                        <span class="context-divider"></span>
+                        <button class="context-btn" data-action="text-stroke" title="Stroke/Outline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 4v3h5.5v12h3V7H19V4z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="text-shadow" title="Shadow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" opacity="0.3"/>
+                                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-4.05-.99-7-5.04-7-9.39V8.52l7-3.06 7 3.06v2.09c0 4.35-2.95 8.4-7 9.39z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="text-gradient" title="Gradient Fill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11 9h2v2h-2zm-2 2h2v2H9zm4 0h2v2h-2zm2-2h2v2h-2zM7 9h2v2H7zm12-6H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 18H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm2-7h-2v2h2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2h2v-2H5V5h14v6z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 
@@ -1169,12 +1189,49 @@
                                     <option value="vertical">Vertical</option>
                                     <option value="both">Both (Quad)</option>
                                     <option value="radial">Radial</option>
+                                    <option value="kaleidoscope">Kaleidoscope</option>
+                                    <option value="tile">Tile (Seamless Pattern)</option>
                                 </select>
                                 <div id="radial-segments-group" class="hidden">
                                     <label>Segments:</label>
                                     <input type="range" id="symmetry-segments" min="2" max="16" value="8">
                                     <span id="symmetry-segments-value">8</span>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Phase 11: Guides & Grid -->
+                        <div class="setting-group">
+                            <label>
+                                <input type="checkbox" id="guides-enabled">
+                                Show Guides
+                            </label>
+                            <div id="guides-settings" class="sub-settings hidden">
+                                <button class="secondary-btn" id="add-horizontal-guide">Add Horizontal Guide</button>
+                                <button class="secondary-btn" id="add-vertical-guide">Add Vertical Guide</button>
+                                <button class="secondary-btn" id="clear-guides">Clear All Guides</button>
+                                <label>
+                                    <input type="checkbox" id="snap-to-guides">
+                                    Snap to Guides
+                                </label>
+                                <label>Snap Distance (px):</label>
+                                <input type="number" id="snap-distance" min="1" max="50" value="10" style="width: 60px;">
+                            </div>
+                        </div>
+                        
+                        <!-- Phase 11: Grid -->
+                        <div class="setting-group">
+                            <label>
+                                <input type="checkbox" id="grid-enabled">
+                                Show Grid
+                            </label>
+                            <div id="grid-settings" class="sub-settings hidden">
+                                <label>Grid Size (px):</label>
+                                <input type="number" id="grid-size" min="10" max="500" value="50" style="width: 60px;">
+                                <label>
+                                    <input type="checkbox" id="snap-to-grid">
+                                    Snap to Grid
+                                </label>
                             </div>
                         </div>
 
@@ -1313,9 +1370,20 @@
                             </label>
                             <button class="secondary-btn" id="load-reference-btn">Load Reference...</button>
                             <div id="reference-settings" class="sub-settings hidden">
-                                <label>Opacity:</label>
+                                <label>Opacity: <span id="reference-opacity-value">70%</span></label>
                                 <input type="range" id="reference-opacity" min="0" max="100" value="70">
-                                <span id="reference-opacity-value">70%</span>
+                                
+                                <!-- Phase 11: Position controls -->
+                                <label>X Position: <span id="reference-x-value">0</span>px</label>
+                                <input type="number" id="reference-x" value="0" style="width: 80px;">
+                                
+                                <label>Y Position: <span id="reference-y-value">0</span>px</label>
+                                <input type="number" id="reference-y" value="0" style="width: 80px;">
+                                
+                                <label>Scale: <span id="reference-scale-value">100%</span></label>
+                                <input type="range" id="reference-scale" min="10" max="200" value="100">
+                                
+                                <button class="secondary-btn" id="center-reference-btn">Center Reference</button>
                             </div>
                         </div>
                     </div>
