@@ -575,7 +575,10 @@ const state = {
     // Custom brush names (for renaming brushes)
     customBrushNames: {},
     // Phase 10: Theme settings
-    theme: 'dark' // 'dark' or 'light'
+    theme: 'dark', // 'dark' or 'light'
+    // Phase 10: Interface scaling
+    interfaceScale: 1.0, // 0.75, 1.0, 1.25, 1.5
+    previousScale: 1.0
 };
 
 // Default keyboard shortcuts (for reset functionality)
