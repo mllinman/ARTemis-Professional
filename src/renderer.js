@@ -8690,10 +8690,6 @@ function applyHistoricalTransform(ctx, transform) {
     const centerY = state.canvas.height / 2;
     
     if (transform.mode === 'move') {
-        // Move transform (would need startX/endX stored)
-        // For now, skip as it's not directly recorded
-    } else if (transform.mode === 'rotate') {
-    if (transform.mode === 'move') {
         // Apply translation transform
         ctx.translate(transform.translateX || 0, transform.translateY || 0);
     } else if (transform.mode === 'rotate') {
