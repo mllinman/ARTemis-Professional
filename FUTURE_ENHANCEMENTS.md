@@ -210,7 +210,7 @@ Features that would be nice to have but are not essential for core functionality
 ### Text Improvements
 **Priority: Medium**
 
-- [ ] Advanced text formatting
+- [x] Advanced text formatting ✅ COMPLETED
   - Font family selection
   - Font size control
   - Bold, italic, underline
@@ -219,12 +219,12 @@ Features that would be nice to have but are not essential for core functionality
   - Follow vector paths
   - Circle text
   - Custom path text
-- [ ] Text effects
-  - Stroke/outline
-  - Shadow
-  - Gradient fill
+- [x] Text effects ✅ COMPLETED
+  - Stroke/outline with color and width controls
+  - Shadow with blur, offset, and color controls
+  - Gradient fill (linear and radial)
 
-**Impact:** Professional typography and vector illustration capabilities.
+**Impact:** ✅ Partially Complete - Professional text effects and formatting now available. Text-on-path feature remains for future implementation.
 
 ---
 
@@ -382,23 +382,23 @@ Features that would be nice to have but are not essential for core functionality
 ### Symmetry & Guides
 **Priority: Medium**
 
-- [ ] Symmetry modes
-  - Horizontal/vertical symmetry
-  - Radial symmetry (4, 6, 8+ axes)
-  - Kaleidoscope mode
-  - Tile mode for patterns
-- [ ] Rulers and guides
-  - Draggable guides
-  - Custom grid
-  - Snap to grid/guides
-  - Perspective grid
-- [ ] Reference images
-  - Import reference images
-  - Pin to canvas
-  - Opacity control
-  - Scale and position
+- [x] Symmetry modes ✅ ENHANCED
+  - Horizontal/vertical symmetry (already implemented)
+  - Radial symmetry (4, 6, 8+ axes) (already implemented)
+  - Kaleidoscope mode ✅ NEW
+  - Tile mode for seamless patterns ✅ NEW
+- [x] Rulers and guides ✅ PARTIALLY COMPLETE
+  - Draggable guides (UI for adding guides at specific positions) ✅ NEW
+  - Custom grid with configurable size ✅ NEW
+  - Snap to grid/guides with distance control ✅ NEW
+  - Perspective grid (future enhancement)
+- [x] Reference images ✅ ENHANCED
+  - Import reference images (already implemented)
+  - Pin to canvas (already implemented)
+  - Opacity control (already implemented)
+  - Scale and position controls ✅ NEW
 
-**Impact:** Professional illustration tools for precise and creative work.
+**Impact:** ✅ Mostly Complete - Professional illustration tools for precise and creative work now available. Interactive draggable guides and perspective grid remain for future enhancement.
 
 ---
 
