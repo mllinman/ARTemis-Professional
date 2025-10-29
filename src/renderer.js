@@ -919,7 +919,8 @@ function init() {
     // Load saved keyboard shortcuts
     loadKeyboardShortcuts();
     
-    // Phase 10: Load theme
+    // Phase 10: Load custom themes and apply saved theme
+    loadCustomThemes();
     loadTheme();
     
     // Phase 10: Load interface scale
@@ -12649,6 +12650,7 @@ function setupMenuHandlers() {
     ipcRenderer.on('workspace-preset', (event, preset) => loadWorkspacePreset(preset));
     ipcRenderer.on('shortcuts-customize', () => showShortcutCustomizationDialog());
     ipcRenderer.on('theme-toggle', () => toggleTheme());
+    ipcRenderer.on('theme-presets', () => showThemePresetsDialog());
     ipcRenderer.on('interface-scale-dialog', () => showInterfaceScaleDialog());
     ipcRenderer.on('interface-scale-cycle', () => cycleInterfaceScale());
     
@@ -12762,6 +12764,9 @@ function handleMenuAction(action) {
             break;
         case 'theme-toggle':
             toggleTheme();
+            break;
+        case 'theme-presets':
+            showThemePresetsDialog();
             break;
         case 'interface-scale':
             showInterfaceScaleDialog();
@@ -14879,38 +14884,16 @@ function toggleTheme() {
 }
 
 function applyTheme(theme) {
-    const root = document.documentElement;
-    
-    if (theme === 'light') {
-        // Light theme colors
-        root.style.setProperty('--bg-primary', '#f3f3f3');
-        root.style.setProperty('--bg-secondary', '#ffffff');
-        root.style.setProperty('--bg-tertiary', '#e8e8e8');
-        root.style.setProperty('--border-color', '#d0d0d0');
-        root.style.setProperty('--text-primary', '#1e1e1e');
-        root.style.setProperty('--text-secondary', '#4a4a4a');
-        root.style.setProperty('--hover-bg', '#e0e0e0');
-        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.15)');
-        
-        document.body.style.background = '#f3f3f3';
-        document.body.style.color = '#1e1e1e';
+    // Check if it's a custom theme or preset
+    if (themePresets[theme]) {
+        applyCustomTheme(themePresets[theme]);
+    } else if (theme === 'light') {
+        // Backward compatibility - apply light theme using preset
+        applyCustomTheme(themePresets['light']);
     } else {
-        // Dark theme colors (default)
-        root.style.setProperty('--bg-primary', '#1e1e1e');
-        root.style.setProperty('--bg-secondary', '#2d2d30');
-        root.style.setProperty('--bg-tertiary', '#252526');
-        root.style.setProperty('--border-color', '#3e3e42');
-        root.style.setProperty('--text-primary', '#cccccc');
-        root.style.setProperty('--text-secondary', '#969696');
-        root.style.setProperty('--hover-bg', '#3e3e42');
-        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.5)');
-        
-        document.body.style.background = '#1e1e1e';
-        document.body.style.color = '#cccccc';
+        // Default to dark theme
+        applyCustomTheme(themePresets['dark']);
     }
-    
-    // Update all elements that use these colors
-    updateThemeColors();
 }
 
 function updateThemeColors() {
@@ -14953,6 +14936,523 @@ function loadTheme() {
         state.theme = savedTheme;
         applyTheme(savedTheme);
     }
+}
+
+// Custom Theme System - Phase 10 Enhancement
+const themePresets = {
+    'dark': {
+        name: 'Dark (Default)',
+        colors: {
+            bgPrimary: '#1e1e1e',
+            bgSecondary: '#2d2d30',
+            bgTertiary: '#252526',
+            borderColor: '#3e3e42',
+            textPrimary: '#cccccc',
+            textSecondary: '#969696',
+            hoverBg: '#3e3e42',
+            shadow: 'rgba(0, 0, 0, 0.5)',
+            accent: '#007acc'
+        }
+    },
+    'light': {
+        name: 'Light',
+        colors: {
+            bgPrimary: '#f3f3f3',
+            bgSecondary: '#ffffff',
+            bgTertiary: '#e8e8e8',
+            borderColor: '#d0d0d0',
+            textPrimary: '#1e1e1e',
+            textSecondary: '#4a4a4a',
+            hoverBg: '#e0e0e0',
+            shadow: 'rgba(0, 0, 0, 0.15)',
+            accent: '#0078d4'
+        }
+    },
+    'blue': {
+        name: 'Ocean Blue',
+        colors: {
+            bgPrimary: '#1a2332',
+            bgSecondary: '#243447',
+            bgTertiary: '#1e2836',
+            borderColor: '#3d4f66',
+            textPrimary: '#d4e1f0',
+            textSecondary: '#8fa3b8',
+            hoverBg: '#2f4059',
+            shadow: 'rgba(0, 20, 40, 0.5)',
+            accent: '#4a9eff'
+        }
+    },
+    'green': {
+        name: 'Forest Green',
+        colors: {
+            bgPrimary: '#1a2e1a',
+            bgSecondary: '#243d24',
+            bgTertiary: '#1e331e',
+            borderColor: '#3d5e3d',
+            textPrimary: '#d4f0d4',
+            textSecondary: '#8fb88f',
+            hoverBg: '#2f4d2f',
+            shadow: 'rgba(10, 30, 10, 0.5)',
+            accent: '#4aff4a'
+        }
+    },
+    'purple': {
+        name: 'Royal Purple',
+        colors: {
+            bgPrimary: '#241a2e',
+            bgSecondary: '#33243d',
+            bgTertiary: '#281e33',
+            borderColor: '#4d3d5e',
+            textPrimary: '#e8d4f0',
+            textSecondary: '#b88fb8',
+            hoverBg: '#3d2f4d',
+            shadow: 'rgba(20, 10, 30, 0.5)',
+            accent: '#b84aff'
+        }
+    },
+    'warm': {
+        name: 'Warm Sunset',
+        colors: {
+            bgPrimary: '#2e1f1a',
+            bgSecondary: '#3d2d24',
+            bgTertiary: '#33241e',
+            borderColor: '#5e4d3d',
+            textPrimary: '#f0e4d4',
+            textSecondary: '#b8a38f',
+            hoverBg: '#4d3d2f',
+            shadow: 'rgba(30, 15, 10, 0.5)',
+            accent: '#ff8a4a'
+        }
+    },
+    'high-contrast': {
+        name: 'High Contrast',
+        colors: {
+            bgPrimary: '#000000',
+            bgSecondary: '#1a1a1a',
+            bgTertiary: '#0d0d0d',
+            borderColor: '#ffffff',
+            textPrimary: '#ffffff',
+            textSecondary: '#d0d0d0',
+            hoverBg: '#333333',
+            shadow: 'rgba(255, 255, 255, 0.3)',
+            accent: '#00ffff'
+        }
+    }
+};
+
+function applyCustomTheme(themeData) {
+    const root = document.documentElement;
+    const colors = themeData.colors;
+    
+    // Apply CSS custom properties
+    root.style.setProperty('--bg-primary', colors.bgPrimary);
+    root.style.setProperty('--bg-secondary', colors.bgSecondary);
+    root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+    root.style.setProperty('--border-color', colors.borderColor);
+    root.style.setProperty('--text-primary', colors.textPrimary);
+    root.style.setProperty('--text-secondary', colors.textSecondary);
+    root.style.setProperty('--hover-bg', colors.hoverBg);
+    root.style.setProperty('--shadow', colors.shadow);
+    root.style.setProperty('--accent-color', colors.accent);
+    
+    // Apply to body
+    document.body.style.background = colors.bgPrimary;
+    document.body.style.color = colors.textPrimary;
+    
+    // Update all elements
+    updateThemeColors();
+}
+
+function loadThemePreset(presetName) {
+    if (themePresets[presetName]) {
+        applyCustomTheme(themePresets[presetName]);
+        state.theme = presetName;
+        localStorage.setItem('artemis-theme', presetName);
+        showNotification(`Theme changed to ${themePresets[presetName].name}`);
+    }
+}
+
+function showThemePresetsDialog() {
+    const dialogHtml = `
+        <div class="dialog-overlay" id="theme-presets-dialog">
+            <div class="dialog-box" style="width: 500px; max-height: 600px; overflow-y: auto;">
+                <div class="dialog-header">
+                    <h3>Theme Presets</h3>
+                    <button class="close-btn" onclick="document.getElementById('theme-presets-dialog').remove()">×</button>
+                </div>
+                <div class="dialog-content">
+                    <div class="theme-presets-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        ${Object.keys(themePresets).map(key => {
+                            const theme = themePresets[key];
+                            const isActive = state.theme === key;
+                            return `
+                                <div class="theme-preset-card ${isActive ? 'active' : ''}" 
+                                     onclick="loadThemePreset('${key}'); document.getElementById('theme-presets-dialog').remove();"
+                                     style="padding: 12px; border: 2px solid ${theme.colors.borderColor}; 
+                                            background: ${theme.colors.bgSecondary}; cursor: pointer; border-radius: 4px;
+                                            transition: transform 0.2s, box-shadow 0.2s;">
+                                    <div style="font-weight: bold; color: ${theme.colors.textPrimary}; margin-bottom: 8px;">
+                                        ${theme.name}
+                                    </div>
+                                    <div class="theme-preview" style="display: flex; gap: 4px; height: 30px;">
+                                        <div style="flex: 1; background: ${theme.colors.bgPrimary}; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: ${theme.colors.bgSecondary}; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: ${theme.colors.accent}; border-radius: 2px;"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                        <button onclick="showCustomThemeCreator()" class="btn" style="width: 100%; margin-bottom: 8px;">
+                            Create Custom Theme
+                        </button>
+                        <button onclick="importTheme()" class="btn" style="width: 100%; margin-bottom: 8px;">
+                            Import Theme
+                        </button>
+                        <button onclick="exportCurrentTheme()" class="btn" style="width: 100%;">
+                            Export Current Theme
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', dialogHtml);
+    
+    // Add hover effects
+    document.querySelectorAll('.theme-preset-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'scale(1.05)';
+            card.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'scale(1)';
+            card.style.boxShadow = 'none';
+        });
+    });
+}
+
+function showCustomThemeCreator() {
+    // Close existing dialog
+    const existingDialog = document.getElementById('theme-presets-dialog');
+    if (existingDialog) existingDialog.remove();
+    
+    // Get current theme colors
+    const root = document.documentElement;
+    const currentColors = {
+        bgPrimary: getComputedStyle(root).getPropertyValue('--bg-primary').trim() || '#1e1e1e',
+        bgSecondary: getComputedStyle(root).getPropertyValue('--bg-secondary').trim() || '#2d2d30',
+        bgTertiary: getComputedStyle(root).getPropertyValue('--bg-tertiary').trim() || '#252526',
+        borderColor: getComputedStyle(root).getPropertyValue('--border-color').trim() || '#3e3e42',
+        textPrimary: getComputedStyle(root).getPropertyValue('--text-primary').trim() || '#cccccc',
+        textSecondary: getComputedStyle(root).getPropertyValue('--text-secondary').trim() || '#969696',
+        hoverBg: getComputedStyle(root).getPropertyValue('--hover-bg').trim() || '#3e3e42',
+        accent: getComputedStyle(root).getPropertyValue('--accent-color').trim() || '#007acc'
+    };
+    
+    const dialogHtml = `
+        <div class="dialog-overlay" id="custom-theme-creator">
+            <div class="dialog-box" style="width: 600px; max-height: 700px; overflow-y: auto;">
+                <div class="dialog-header">
+                    <h3>Custom Theme Creator</h3>
+                    <button class="close-btn" onclick="document.getElementById('custom-theme-creator').remove()">×</button>
+                </div>
+                <div class="dialog-content">
+                    <div class="form-group">
+                        <label>Theme Name:</label>
+                        <input type="text" id="theme-name" placeholder="My Custom Theme" class="text-input" style="width: 100%; padding: 8px; margin-bottom: 16px;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Background Primary:</label>
+                            <input type="color" id="color-bg-primary" value="${currentColors.bgPrimary}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Background Secondary:</label>
+                            <input type="color" id="color-bg-secondary" value="${currentColors.bgSecondary}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Background Tertiary:</label>
+                            <input type="color" id="color-bg-tertiary" value="${currentColors.bgTertiary}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Border Color:</label>
+                            <input type="color" id="color-border" value="${currentColors.borderColor}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Text Primary:</label>
+                            <input type="color" id="color-text-primary" value="${currentColors.textPrimary}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Text Secondary:</label>
+                            <input type="color" id="color-text-secondary" value="${currentColors.textSecondary}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Hover Background:</label>
+                            <input type="color" id="color-hover-bg" value="${currentColors.hoverBg}" class="color-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Accent Color:</label>
+                            <input type="color" id="color-accent" value="${currentColors.accent}" class="color-input">
+                        </div>
+                    </div>
+                    
+                    <div class="preview-box" style="margin: 20px 0; padding: 16px; border: 2px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary);">
+                        <div style="font-weight: bold; margin-bottom: 8px; color: var(--text-primary);">Live Preview</div>
+                        <div id="theme-preview" style="padding: 12px; border-radius: 4px;"></div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button onclick="previewCustomTheme()" class="btn" style="flex: 1;">Preview</button>
+                        <button onclick="saveCustomTheme()" class="btn btn-primary" style="flex: 1;">Save Theme</button>
+                        <button onclick="document.getElementById('custom-theme-creator').remove(); showThemePresetsDialog();" class="btn" style="flex: 1;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', dialogHtml);
+    
+    // Add real-time preview
+    const colorInputs = document.querySelectorAll('#custom-theme-creator input[type="color"]');
+    colorInputs.forEach(input => {
+        input.style.width = '100%';
+        input.style.height = '40px';
+        input.style.cursor = 'pointer';
+        input.addEventListener('input', () => previewCustomTheme());
+    });
+    
+    // Initial preview
+    previewCustomTheme();
+}
+
+function previewCustomTheme() {
+    // Helper function to validate and sanitize hex color values
+    const sanitizeColor = (color) => {
+        // Color inputs guarantee hex format, but validate anyway for security
+        if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            return color;
+        }
+        return '#000000'; // Safe fallback
+    };
+    
+    const colors = {
+        bgPrimary: sanitizeColor(document.getElementById('color-bg-primary')?.value || '#1e1e1e'),
+        bgSecondary: sanitizeColor(document.getElementById('color-bg-secondary')?.value || '#2d2d30'),
+        bgTertiary: sanitizeColor(document.getElementById('color-bg-tertiary')?.value || '#252526'),
+        borderColor: sanitizeColor(document.getElementById('color-border')?.value || '#3e3e42'),
+        textPrimary: sanitizeColor(document.getElementById('color-text-primary')?.value || '#cccccc'),
+        textSecondary: sanitizeColor(document.getElementById('color-text-secondary')?.value || '#969696'),
+        hoverBg: sanitizeColor(document.getElementById('color-hover-bg')?.value || '#3e3e42'),
+        accent: sanitizeColor(document.getElementById('color-accent')?.value || '#007acc')
+    };
+    
+    const preview = document.getElementById('theme-preview');
+    if (preview) {
+        // Use style properties directly instead of innerHTML to avoid XSS concerns
+        preview.style.background = colors.bgPrimary;
+        preview.style.color = colors.textPrimary;
+        preview.style.border = `2px solid ${colors.borderColor}`;
+        
+        // Build preview DOM safely
+        preview.innerHTML = '';
+        
+        // Create first div
+        const div1 = document.createElement('div');
+        div1.style.cssText = `background: ${colors.bgSecondary}; padding: 8px; margin-bottom: 8px; border-radius: 2px;`;
+        
+        const div1Text1 = document.createElement('div');
+        div1Text1.style.cssText = `color: ${colors.textPrimary}; font-weight: bold;`;
+        div1Text1.textContent = 'Primary Text on Secondary Background';
+        
+        const div1Text2 = document.createElement('div');
+        div1Text2.style.cssText = `color: ${colors.textSecondary}; font-size: 0.9em;`;
+        div1Text2.textContent = 'Secondary text color';
+        
+        div1.appendChild(div1Text1);
+        div1.appendChild(div1Text2);
+        
+        // Create second div container
+        const div2Container = document.createElement('div');
+        div2Container.style.cssText = 'display: flex; gap: 8px;';
+        
+        const div2Accent = document.createElement('div');
+        div2Accent.style.cssText = `flex: 1; background: ${colors.accent}; padding: 8px; color: white; text-align: center; border-radius: 2px;`;
+        div2Accent.textContent = 'Accent';
+        
+        const div2Hover = document.createElement('div');
+        div2Hover.style.cssText = `flex: 1; background: ${colors.hoverBg}; padding: 8px; color: ${colors.textPrimary}; text-align: center; border-radius: 2px;`;
+        div2Hover.textContent = 'Hover';
+        
+        div2Container.appendChild(div2Accent);
+        div2Container.appendChild(div2Hover);
+        
+        preview.appendChild(div1);
+        preview.appendChild(div2Container);
+    }
+}
+
+function saveCustomTheme() {
+    // Sanitize theme name to prevent XSS
+    const rawThemeName = document.getElementById('theme-name')?.value || 'Custom Theme';
+    const themeName = rawThemeName.replace(/[<>'"]/g, ''); // Remove potential XSS characters
+    const themeId = 'custom-' + Date.now();
+    
+    // Helper function to validate and sanitize hex color values
+    const sanitizeColor = (color) => {
+        if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            return color;
+        }
+        return '#000000'; // Safe fallback
+    };
+    
+    const colors = {
+        bgPrimary: sanitizeColor(document.getElementById('color-bg-primary')?.value || '#1e1e1e'),
+        bgSecondary: sanitizeColor(document.getElementById('color-bg-secondary')?.value || '#2d2d30'),
+        bgTertiary: sanitizeColor(document.getElementById('color-bg-tertiary')?.value || '#252526'),
+        borderColor: sanitizeColor(document.getElementById('color-border')?.value || '#3e3e42'),
+        textPrimary: sanitizeColor(document.getElementById('color-text-primary')?.value || '#cccccc'),
+        textSecondary: sanitizeColor(document.getElementById('color-text-secondary')?.value || '#969696'),
+        hoverBg: sanitizeColor(document.getElementById('color-hover-bg')?.value || '#3e3e42'),
+        shadow: 'rgba(0, 0, 0, 0.5)',
+        accent: sanitizeColor(document.getElementById('color-accent')?.value || '#007acc')
+    };
+    
+    const customTheme = {
+        id: themeId,
+        name: themeName,
+        colors: colors,
+        created: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    const customThemes = JSON.parse(localStorage.getItem('artemis-custom-themes') || '[]');
+    customThemes.push(customTheme);
+    localStorage.setItem('artemis-custom-themes', JSON.stringify(customThemes));
+    
+    // Add to themePresets
+    themePresets[themeId] = customTheme;
+    
+    // Apply the theme
+    applyCustomTheme(customTheme);
+    state.theme = themeId;
+    localStorage.setItem('artemis-theme', themeId);
+    
+    // Close dialog and show success
+    document.getElementById('custom-theme-creator')?.remove();
+    showNotification(`Custom theme "${themeName}" saved and applied!`);
+}
+
+function importTheme() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                const content = await file.text();
+                const themeData = JSON.parse(content);
+                
+                // Validate theme structure
+                if (!themeData.name || !themeData.colors) {
+                    throw new Error('Invalid theme file format');
+                }
+                
+                const themeId = 'custom-' + Date.now();
+                themeData.id = themeId;
+                
+                // Save to localStorage
+                const customThemes = JSON.parse(localStorage.getItem('artemis-custom-themes') || '[]');
+                customThemes.push(themeData);
+                localStorage.setItem('artemis-custom-themes', JSON.stringify(customThemes));
+                
+                // Add to themePresets
+                themePresets[themeId] = themeData;
+                
+                // Apply the theme
+                applyCustomTheme(themeData);
+                state.theme = themeId;
+                localStorage.setItem('artemis-theme', themeId);
+                
+                // Close dialog and show success
+                document.getElementById('theme-presets-dialog')?.remove();
+                showNotification(`Theme "${themeData.name}" imported and applied!`);
+            } catch (error) {
+                alert('Error importing theme: ' + error.message);
+            }
+        }
+    };
+    input.click();
+}
+
+function exportCurrentTheme() {
+    const themeName = prompt('Enter a name for this theme:', 'My Custom Theme');
+    if (!themeName) return;
+    
+    const root = document.documentElement;
+    const themeData = {
+        name: themeName,
+        colors: {
+            bgPrimary: getComputedStyle(root).getPropertyValue('--bg-primary').trim(),
+            bgSecondary: getComputedStyle(root).getPropertyValue('--bg-secondary').trim(),
+            bgTertiary: getComputedStyle(root).getPropertyValue('--bg-tertiary').trim(),
+            borderColor: getComputedStyle(root).getPropertyValue('--border-color').trim(),
+            textPrimary: getComputedStyle(root).getPropertyValue('--text-primary').trim(),
+            textSecondary: getComputedStyle(root).getPropertyValue('--text-secondary').trim(),
+            hoverBg: getComputedStyle(root).getPropertyValue('--hover-bg').trim(),
+            shadow: getComputedStyle(root).getPropertyValue('--shadow').trim(),
+            accent: getComputedStyle(root).getPropertyValue('--accent-color').trim() || '#007acc'
+        },
+        exported: new Date().toISOString()
+    };
+    
+    const json = JSON.stringify(themeData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${themeName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-theme.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Theme exported successfully!');
+}
+
+function loadCustomThemes() {
+    const customThemes = JSON.parse(localStorage.getItem('artemis-custom-themes') || '[]');
+    customThemes.forEach(theme => {
+        themePresets[theme.id] = theme;
+    });
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+        border: 1px solid var(--border-color);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // Interface Scaling Functions
