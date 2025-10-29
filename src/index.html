@@ -1905,9 +1905,16 @@
                 <p style="margin-bottom: 15px;">Click on any shortcut to change it. Press the desired key combination.</p>
                 <div id="shortcut-list" class="shortcut-customization-list"></div>
             </div>
-            <div class="dialog-footer">
-                <button class="dialog-btn secondary" id="shortcut-customization-cancel">Cancel</button>
-                <button class="dialog-btn primary" id="shortcut-customization-save">Save Changes</button>
+            <div class="dialog-footer" style="display: flex; justify-content: space-between; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="dialog-btn secondary" id="shortcut-import">Import</button>
+                    <button class="dialog-btn secondary" id="shortcut-export">Export</button>
+                    <button class="dialog-btn secondary" id="shortcut-reset">Reset to Defaults</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="dialog-btn secondary" id="shortcut-customization-cancel">Cancel</button>
+                    <button class="dialog-btn primary" id="shortcut-customization-save">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>

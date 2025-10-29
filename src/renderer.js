@@ -573,7 +573,9 @@ const state = {
         lastCapture: 0
     },
     // Custom brush names (for renaming brushes)
-    customBrushNames: {}
+    customBrushNames: {},
+    // Phase 10: Theme settings
+    theme: 'dark' // 'dark' or 'light'
 };
 
 // Default keyboard shortcuts (for reset functionality)
@@ -899,6 +901,9 @@ function init() {
     
     // Load saved keyboard shortcuts
     loadKeyboardShortcuts();
+    
+    // Phase 10: Load theme
+    loadTheme();
     
     // NEW: Load application state (persistence)
     loadAppState();
@@ -8353,6 +8358,65 @@ function applyFilter(filterType, options = {}) {
         case 'fire':
             applyFireEffect(imageData, options);
             break;
+            
+        // Phase 9: Advanced Filters
+        case 'gaussian-blur':
+            applyGaussianBlur(imageData, options.radius || 5);
+            break;
+            
+        case 'motion-blur':
+            applyMotionBlur(imageData, options.distance || 10, options.angle || 0);
+            break;
+            
+        case 'radial-blur':
+            applyRadialBlur(imageData, options.centerX, options.centerY, options.strength || 0.1);
+            break;
+            
+        case 'add-noise':
+            applyAddNoise(imageData, options.amount || 25);
+            break;
+            
+        case 'reduce-noise':
+            applyReduceNoise(imageData, options.radius || 1);
+            break;
+            
+        case 'oil-painting':
+            applyOilPainting(imageData, options.radius || 4, options.intensity || 50);
+            break;
+            
+        case 'watercolor':
+            applyWatercolor(imageData, options.smoothness || 5, options.edgeDarken || 0.5);
+            break;
+            
+        case 'posterize':
+            applyPosterize(imageData, options.levels || 4);
+            break;
+            
+        case 'mosaic':
+            applyMosaic(imageData, options.blockSize || 10);
+            break;
+            
+        case 'color-balance':
+            applyColorBalance(imageData, options.shadows || {r: 0, g: 0, b: 0}, 
+                            options.midtones || {r: 0, g: 0, b: 0}, 
+                            options.highlights || {r: 0, g: 0, b: 0});
+            break;
+            
+        case 'hue-saturation':
+            applyHueSaturation(imageData, options.hue || 0, options.saturation || 0, options.lightness || 0);
+            break;
+            
+        case 'pinch-bulge':
+            applyPinchBulge(imageData, options.centerX, options.centerY, options.radius, options.strength || 0.5);
+            break;
+            
+        case 'twirl':
+            applyTwirl(imageData, options.centerX, options.centerY, options.radius, options.angle || 90);
+            break;
+            
+        case 'wave':
+            applyWave(imageData, options.amplitude || 10, options.wavelength || 50, options.direction || 'horizontal');
+            break;
     }
     
     ctx.putImageData(imageData, 0, 0);
@@ -8561,6 +8625,545 @@ function applyFireEffect(imageData, options = {}) {
         data[i] = Math.min(255, Math.max(0, (data[i] - 128) * contrastFactor + 128));
         data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrastFactor + 128));
         data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrastFactor + 128));
+    }
+}
+
+// ============================================================================
+// PHASE 9: ADVANCED FILTERS
+// ============================================================================
+
+// Gaussian Blur - smoother than box blur
+function applyGaussianBlur(imageData, radius = 5) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    
+    // Generate Gaussian kernel
+    const kernel = [];
+    const sigma = radius / 3;
+    let sum = 0;
+    for (let i = -radius; i <= radius; i++) {
+        const value = Math.exp(-(i * i) / (2 * sigma * sigma));
+        kernel.push(value);
+        sum += value;
+    }
+    // Normalize kernel
+    for (let i = 0; i < kernel.length; i++) {
+        kernel[i] /= sum;
+    }
+    
+    const tempData = new Uint8ClampedArray(data);
+    
+    // Horizontal pass
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let r = 0, g = 0, b = 0, a = 0;
+            for (let i = -radius; i <= radius; i++) {
+                const nx = Math.min(width - 1, Math.max(0, x + i));
+                const idx = (y * width + nx) * 4;
+                const weight = kernel[i + radius];
+                r += tempData[idx] * weight;
+                g += tempData[idx + 1] * weight;
+                b += tempData[idx + 2] * weight;
+                a += tempData[idx + 3] * weight;
+            }
+            const idx = (y * width + x) * 4;
+            data[idx] = r;
+            data[idx + 1] = g;
+            data[idx + 2] = b;
+            data[idx + 3] = a;
+        }
+    }
+    
+    // Copy result for vertical pass
+    tempData.set(data);
+    
+    // Vertical pass
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let r = 0, g = 0, b = 0, a = 0;
+            for (let i = -radius; i <= radius; i++) {
+                const ny = Math.min(height - 1, Math.max(0, y + i));
+                const idx = (ny * width + x) * 4;
+                const weight = kernel[i + radius];
+                r += tempData[idx] * weight;
+                g += tempData[idx + 1] * weight;
+                b += tempData[idx + 2] * weight;
+                a += tempData[idx + 3] * weight;
+            }
+            const idx = (y * width + x) * 4;
+            data[idx] = r;
+            data[idx + 1] = g;
+            data[idx + 2] = b;
+            data[idx + 3] = a;
+        }
+    }
+}
+
+// Motion Blur
+function applyMotionBlur(imageData, distance = 10, angle = 0) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    const rad = angle * Math.PI / 180;
+    const dx = Math.cos(rad);
+    const dy = Math.sin(rad);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let r = 0, g = 0, b = 0, a = 0, count = 0;
+            
+            for (let i = 0; i < distance; i++) {
+                const nx = Math.floor(x + dx * i);
+                const ny = Math.floor(y + dy * i);
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const idx = (ny * width + nx) * 4;
+                    r += tempData[idx];
+                    g += tempData[idx + 1];
+                    b += tempData[idx + 2];
+                    a += tempData[idx + 3];
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                const idx = (y * width + x) * 4;
+                data[idx] = r / count;
+                data[idx + 1] = g / count;
+                data[idx + 2] = b / count;
+                data[idx + 3] = a / count;
+            }
+        }
+    }
+}
+
+// Radial Blur
+function applyRadialBlur(imageData, centerX, centerY, strength = 0.1) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    const cx = centerX || width / 2;
+    const cy = centerY || height / 2;
+    const samples = 10;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const dx = x - cx;
+            const dy = y - cy;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const blur = distance * strength;
+            
+            let r = 0, g = 0, b = 0, a = 0;
+            
+            for (let i = 0; i < samples; i++) {
+                const t = i / samples;
+                const offset = blur * (t - 0.5);
+                const nx = Math.floor(cx + dx * (1 - offset / distance));
+                const ny = Math.floor(cy + dy * (1 - offset / distance));
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const idx = (ny * width + nx) * 4;
+                    r += tempData[idx];
+                    g += tempData[idx + 1];
+                    b += tempData[idx + 2];
+                    a += tempData[idx + 3];
+                }
+            }
+            
+            const idx = (y * width + x) * 4;
+            data[idx] = r / samples;
+            data[idx + 1] = g / samples;
+            data[idx + 2] = b / samples;
+            data[idx + 3] = a / samples;
+        }
+    }
+}
+
+// Add Noise
+function applyAddNoise(imageData, amount = 25) {
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * amount * 2;
+        data[i] = Math.min(255, Math.max(0, data[i] + noise));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+    }
+}
+
+// Reduce Noise (median filter)
+function applyReduceNoise(imageData, radius = 1) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    for (let y = radius; y < height - radius; y++) {
+        for (let x = radius; x < width - radius; x++) {
+            const rValues = [], gValues = [], bValues = [];
+            
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const idx = ((y + dy) * width + (x + dx)) * 4;
+                    rValues.push(tempData[idx]);
+                    gValues.push(tempData[idx + 1]);
+                    bValues.push(tempData[idx + 2]);
+                }
+            }
+            
+            rValues.sort((a, b) => a - b);
+            gValues.sort((a, b) => a - b);
+            bValues.sort((a, b) => a - b);
+            
+            const median = Math.floor(rValues.length / 2);
+            const idx = (y * width + x) * 4;
+            data[idx] = rValues[median];
+            data[idx + 1] = gValues[median];
+            data[idx + 2] = bValues[median];
+        }
+    }
+}
+
+// Oil Painting Effect
+function applyOilPainting(imageData, radius = 4, intensity = 50) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    for (let y = radius; y < height - radius; y++) {
+        for (let x = radius; x < width - radius; x++) {
+            const intensityBins = new Array(intensity + 1).fill(0);
+            const rBins = new Array(intensity + 1).fill(0);
+            const gBins = new Array(intensity + 1).fill(0);
+            const bBins = new Array(intensity + 1).fill(0);
+            
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const idx = ((y + dy) * width + (x + dx)) * 4;
+                    const r = tempData[idx];
+                    const g = tempData[idx + 1];
+                    const b = tempData[idx + 2];
+                    const curIntensity = Math.floor(((r + g + b) / 3) * intensity / 255);
+                    
+                    intensityBins[curIntensity]++;
+                    rBins[curIntensity] += r;
+                    gBins[curIntensity] += g;
+                    bBins[curIntensity] += b;
+                }
+            }
+            
+            let maxIndex = 0;
+            for (let i = 1; i <= intensity; i++) {
+                if (intensityBins[i] > intensityBins[maxIndex]) {
+                    maxIndex = i;
+                }
+            }
+            
+            const idx = (y * width + x) * 4;
+            const count = intensityBins[maxIndex];
+            if (count > 0) {
+                data[idx] = rBins[maxIndex] / count;
+                data[idx + 1] = gBins[maxIndex] / count;
+                data[idx + 2] = bBins[maxIndex] / count;
+            }
+        }
+    }
+}
+
+// Watercolor Effect
+function applyWatercolor(imageData, smoothness = 5, edgeDarken = 0.5) {
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    // Apply smoothing
+    applyGaussianBlur(imageData, smoothness);
+    
+    // Detect and darken edges
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            let edgeStrength = 0;
+            
+            for (let c = 0; c < 3; c++) {
+                const idx = (y * width + x) * 4 + c;
+                const gx = -tempData[((y - 1) * width + (x - 1)) * 4 + c] + tempData[((y - 1) * width + (x + 1)) * 4 + c]
+                          -2 * tempData[(y * width + (x - 1)) * 4 + c] + 2 * tempData[(y * width + (x + 1)) * 4 + c]
+                          -tempData[((y + 1) * width + (x - 1)) * 4 + c] + tempData[((y + 1) * width + (x + 1)) * 4 + c];
+                
+                const gy = -tempData[((y - 1) * width + (x - 1)) * 4 + c] - 2 * tempData[((y - 1) * width + x) * 4 + c] - tempData[((y - 1) * width + (x + 1)) * 4 + c]
+                          +tempData[((y + 1) * width + (x - 1)) * 4 + c] + 2 * tempData[((y + 1) * width + x) * 4 + c] + tempData[((y + 1) * width + (x + 1)) * 4 + c];
+                
+                edgeStrength += Math.sqrt(gx * gx + gy * gy);
+            }
+            
+            const idx = (y * width + x) * 4;
+            const darken = 1 - Math.min(1, edgeStrength / 1000 * edgeDarken);
+            data[idx] *= darken;
+            data[idx + 1] *= darken;
+            data[idx + 2] *= darken;
+        }
+    }
+}
+
+// Posterize
+function applyPosterize(imageData, levels = 4) {
+    const data = imageData.data;
+    const step = 256 / levels;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.floor(data[i] / step) * step;
+        data[i + 1] = Math.floor(data[i + 1] / step) * step;
+        data[i + 2] = Math.floor(data[i + 2] / step) * step;
+    }
+}
+
+// Mosaic/Pixelate
+function applyMosaic(imageData, blockSize = 10) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    
+    for (let y = 0; y < height; y += blockSize) {
+        for (let x = 0; x < width; x += blockSize) {
+            let r = 0, g = 0, b = 0, a = 0, count = 0;
+            
+            // Calculate average color in block
+            for (let dy = 0; dy < blockSize && y + dy < height; dy++) {
+                for (let dx = 0; dx < blockSize && x + dx < width; dx++) {
+                    const idx = ((y + dy) * width + (x + dx)) * 4;
+                    r += data[idx];
+                    g += data[idx + 1];
+                    b += data[idx + 2];
+                    a += data[idx + 3];
+                    count++;
+                }
+            }
+            
+            r /= count;
+            g /= count;
+            b /= count;
+            a /= count;
+            
+            // Fill block with average color
+            for (let dy = 0; dy < blockSize && y + dy < height; dy++) {
+                for (let dx = 0; dx < blockSize && x + dx < width; dx++) {
+                    const idx = ((y + dy) * width + (x + dx)) * 4;
+                    data[idx] = r;
+                    data[idx + 1] = g;
+                    data[idx + 2] = b;
+                    data[idx + 3] = a;
+                }
+            }
+        }
+    }
+}
+
+// Color Balance
+function applyColorBalance(imageData, shadows = {r: 0, g: 0, b: 0}, midtones = {r: 0, g: 0, b: 0}, highlights = {r: 0, g: 0, b: 0}) {
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // Calculate luminance
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const lumNorm = lum / 255;
+        
+        // Calculate weights for shadows, midtones, highlights
+        const shadowWeight = Math.pow(1 - lumNorm, 2);
+        const highlightWeight = Math.pow(lumNorm, 2);
+        const midtoneWeight = 1 - shadowWeight - highlightWeight;
+        
+        // Apply adjustments
+        data[i] += shadows.r * shadowWeight + midtones.r * midtoneWeight + highlights.r * highlightWeight;
+        data[i + 1] += shadows.g * shadowWeight + midtones.g * midtoneWeight + highlights.g * highlightWeight;
+        data[i + 2] += shadows.b * shadowWeight + midtones.b * midtoneWeight + highlights.b * highlightWeight;
+        
+        // Clamp values
+        data[i] = Math.min(255, Math.max(0, data[i]));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
+    }
+}
+
+// Hue/Saturation adjustment
+function applyHueSaturation(imageData, hueShift = 0, saturation = 0, lightness = 0) {
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i] / 255;
+        const g = data[i + 1] / 255;
+        const b = data[i + 2] / 255;
+        
+        // RGB to HSL
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            
+            switch (max) {
+                case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                case g: h = ((b - r) / d + 2) / 6; break;
+                case b: h = ((r - g) / d + 4) / 6; break;
+            }
+        }
+        
+        // Apply adjustments
+        h = (h + hueShift / 360) % 1;
+        if (h < 0) h += 1;
+        s = Math.max(0, Math.min(1, s + saturation / 100));
+        l = Math.max(0, Math.min(1, l + lightness / 100));
+        
+        // HSL to RGB
+        let r2, g2, b2;
+        if (s === 0) {
+            r2 = g2 = b2 = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r2 = hue2rgb(p, q, h + 1/3);
+            g2 = hue2rgb(p, q, h);
+            b2 = hue2rgb(p, q, h - 1/3);
+        }
+        
+        data[i] = r2 * 255;
+        data[i + 1] = g2 * 255;
+        data[i + 2] = b2 * 255;
+    }
+}
+
+// Pinch/Bulge
+function applyPinchBulge(imageData, centerX, centerY, radius, strength) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    const cx = centerX || width / 2;
+    const cy = centerY || height / 2;
+    const r = radius || Math.min(width, height) / 4;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const dx = x - cx;
+            const dy = y - cy;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < r) {
+                const amount = Math.pow(distance / r, 2);
+                const distort = 1 - strength * (1 - amount);
+                
+                const nx = Math.floor(cx + dx * distort);
+                const ny = Math.floor(cy + dy * distort);
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const srcIdx = (ny * width + nx) * 4;
+                    const dstIdx = (y * width + x) * 4;
+                    data[dstIdx] = tempData[srcIdx];
+                    data[dstIdx + 1] = tempData[srcIdx + 1];
+                    data[dstIdx + 2] = tempData[srcIdx + 2];
+                    data[dstIdx + 3] = tempData[srcIdx + 3];
+                }
+            }
+        }
+    }
+}
+
+// Twirl
+function applyTwirl(imageData, centerX, centerY, radius, angle) {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    const cx = centerX || width / 2;
+    const cy = centerY || height / 2;
+    const r = radius || Math.min(width, height) / 4;
+    const angleRad = angle * Math.PI / 180;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const dx = x - cx;
+            const dy = y - cy;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < r) {
+                const factor = 1 - distance / r;
+                const twist = factor * angleRad;
+                
+                const cos = Math.cos(twist);
+                const sin = Math.sin(twist);
+                
+                const nx = Math.floor(cx + dx * cos - dy * sin);
+                const ny = Math.floor(cy + dx * sin + dy * cos);
+                
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const srcIdx = (ny * width + nx) * 4;
+                    const dstIdx = (y * width + x) * 4;
+                    data[dstIdx] = tempData[srcIdx];
+                    data[dstIdx + 1] = tempData[srcIdx + 1];
+                    data[dstIdx + 2] = tempData[srcIdx + 2];
+                    data[dstIdx + 3] = tempData[srcIdx + 3];
+                }
+            }
+        }
+    }
+}
+
+// Wave
+function applyWave(imageData, amplitude = 10, wavelength = 50, direction = 'horizontal') {
+    const width = imageData.width;
+    const height = imageData.height;
+    const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let nx, ny;
+            
+            if (direction === 'horizontal') {
+                const offset = Math.sin(x / wavelength * 2 * Math.PI) * amplitude;
+                nx = x;
+                ny = Math.floor(y + offset);
+            } else {
+                const offset = Math.sin(y / wavelength * 2 * Math.PI) * amplitude;
+                nx = Math.floor(x + offset);
+                ny = y;
+            }
+            
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const srcIdx = (ny * width + nx) * 4;
+                const dstIdx = (y * width + x) * 4;
+                data[dstIdx] = tempData[srcIdx];
+                data[dstIdx + 1] = tempData[srcIdx + 1];
+                data[dstIdx + 2] = tempData[srcIdx + 2];
+                data[dstIdx + 3] = tempData[srcIdx + 3];
+            }
+        }
     }
 }
 
@@ -11411,6 +12014,112 @@ function setupMenuHandlers() {
         applyFilter('invert');
     });
     
+    // Phase 9: Advanced Filters IPC handlers
+    ipcRenderer.on('filter-gaussian-blur', () => {
+        const radius = prompt('Enter Gaussian blur radius (1-20):', '5');
+        if (radius !== null) {
+            applyFilter('gaussian-blur', { radius: parseInt(radius) });
+        }
+    });
+    ipcRenderer.on('filter-motion-blur', () => {
+        const distance = prompt('Enter motion blur distance (1-50):', '10');
+        if (distance !== null) {
+            const angle = prompt('Enter motion blur angle (0-360):', '0');
+            if (angle !== null) {
+                applyFilter('motion-blur', { distance: parseInt(distance), angle: parseInt(angle) });
+            }
+        }
+    });
+    ipcRenderer.on('filter-radial-blur', () => {
+        const strength = prompt('Enter radial blur strength (0.01-0.5):', '0.1');
+        if (strength !== null) {
+            applyFilter('radial-blur', { strength: parseFloat(strength) });
+        }
+    });
+    ipcRenderer.on('filter-add-noise', () => {
+        const amount = prompt('Enter noise amount (1-100):', '25');
+        if (amount !== null) {
+            applyFilter('add-noise', { amount: parseInt(amount) });
+        }
+    });
+    ipcRenderer.on('filter-reduce-noise', () => {
+        const radius = prompt('Enter noise reduction radius (1-5):', '1');
+        if (radius !== null) {
+            applyFilter('reduce-noise', { radius: parseInt(radius) });
+        }
+    });
+    ipcRenderer.on('filter-oil-painting', () => {
+        const radius = prompt('Enter oil painting radius (1-10):', '4');
+        if (radius !== null) {
+            const intensity = prompt('Enter intensity (10-100):', '50');
+            if (intensity !== null) {
+                applyFilter('oil-painting', { radius: parseInt(radius), intensity: parseInt(intensity) });
+            }
+        }
+    });
+    ipcRenderer.on('filter-watercolor', () => {
+        const smoothness = prompt('Enter smoothness (1-15):', '5');
+        if (smoothness !== null) {
+            applyFilter('watercolor', { smoothness: parseInt(smoothness) });
+        }
+    });
+    ipcRenderer.on('filter-posterize', () => {
+        const levels = prompt('Enter posterize levels (2-16):', '4');
+        if (levels !== null) {
+            applyFilter('posterize', { levels: parseInt(levels) });
+        }
+    });
+    ipcRenderer.on('filter-mosaic', () => {
+        const blockSize = prompt('Enter mosaic block size (2-50):', '10');
+        if (blockSize !== null) {
+            applyFilter('mosaic', { blockSize: parseInt(blockSize) });
+        }
+    });
+    ipcRenderer.on('filter-hue-saturation', () => {
+        const hue = prompt('Enter hue shift (-180 to 180):', '0');
+        if (hue !== null) {
+            const saturation = prompt('Enter saturation adjustment (-100 to 100):', '0');
+            if (saturation !== null) {
+                const lightness = prompt('Enter lightness adjustment (-100 to 100):', '0');
+                if (lightness !== null) {
+                    applyFilter('hue-saturation', { 
+                        hue: parseInt(hue), 
+                        saturation: parseInt(saturation),
+                        lightness: parseInt(lightness)
+                    });
+                }
+            }
+        }
+    });
+    ipcRenderer.on('filter-pinch-bulge', () => {
+        const strength = prompt('Enter strength (-1 for pinch, 1 for bulge):', '0.5');
+        if (strength !== null) {
+            applyFilter('pinch-bulge', { strength: parseFloat(strength) });
+        }
+    });
+    ipcRenderer.on('filter-twirl', () => {
+        const angle = prompt('Enter twirl angle (0-360):', '90');
+        if (angle !== null) {
+            applyFilter('twirl', { angle: parseInt(angle) });
+        }
+    });
+    ipcRenderer.on('filter-wave', () => {
+        const amplitude = prompt('Enter wave amplitude (1-50):', '10');
+        if (amplitude !== null) {
+            const wavelength = prompt('Enter wavelength (10-200):', '50');
+            if (wavelength !== null) {
+                const direction = prompt('Enter direction (horizontal/vertical):', 'horizontal');
+                if (direction !== null) {
+                    applyFilter('wave', { 
+                        amplitude: parseInt(amplitude), 
+                        wavelength: parseInt(wavelength),
+                        direction: direction
+                    });
+                }
+            }
+        }
+    });
+    
     // Help menu handlers
     ipcRenderer.on('help-about', () => showAboutDialog());
     
@@ -11432,6 +12141,9 @@ function setupMenuHandlers() {
     ipcRenderer.on('workspace-save', () => showSaveWorkspaceDialog());
     ipcRenderer.on('workspace-load', () => showLoadWorkspaceDialog());
     ipcRenderer.on('workspace-manage', () => showManageWorkspacesDialog());
+    ipcRenderer.on('workspace-preset', (event, preset) => loadWorkspacePreset(preset));
+    ipcRenderer.on('shortcuts-customize', () => showShortcutCustomizationDialog());
+    ipcRenderer.on('theme-toggle', () => toggleTheme());
     
     // Windows menu handlers
     ipcRenderer.on('window-toggle-panel', (event, panelSide, checked) => {
@@ -12629,7 +13341,7 @@ function showShortcutCustomizationDialog() {
             
             keyDisplay.classList.add('editing');
             keyDisplay.textContent = 'Press a key...';
-            shortcutEditingKey = tool;
+            shortcutEditingKey = action;
         });
         
         item.appendChild(label);
@@ -12648,6 +13360,9 @@ function setupShortcutDialogButtons() {
     const closeBtn = document.getElementById('shortcut-customization-close');
     const cancelBtn = document.getElementById('shortcut-customization-cancel');
     const saveBtn = document.getElementById('shortcut-customization-save');
+    const importBtn = document.getElementById('shortcut-import');
+    const exportBtn = document.getElementById('shortcut-export');
+    const resetBtn = document.getElementById('shortcut-reset');
     
     const closeDialog = () => {
         dialog.classList.add('hidden');
@@ -12668,10 +13383,66 @@ function setupShortcutDialogButtons() {
         saveBtn.removeEventListener('click', saveShortcuts);
         saveBtn.addEventListener('click', saveShortcuts);
     }
+    if (importBtn) {
+        importBtn.removeEventListener('click', importShortcuts);
+        importBtn.addEventListener('click', importShortcuts);
+    }
+    if (exportBtn) {
+        exportBtn.removeEventListener('click', exportShortcuts);
+        exportBtn.addEventListener('click', exportShortcuts);
+    }
+    if (resetBtn) {
+        resetBtn.removeEventListener('click', resetShortcuts);
+        resetBtn.addEventListener('click', resetShortcuts);
+    }
     
     // Listen for key presses when editing
     document.removeEventListener('keydown', handleShortcutKeyPress);
     document.addEventListener('keydown', handleShortcutKeyPress);
+}
+
+function importShortcuts() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const imported = JSON.parse(event.target.result);
+                tempShortcuts = { ...imported };
+                showShortcutCustomizationDialog();
+                alert('Shortcuts imported successfully! Click "Save Changes" to apply them.');
+            } catch (err) {
+                alert('Error importing shortcuts: Invalid file format');
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportShortcuts() {
+    const data = JSON.stringify(tempShortcuts, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'artemis-shortcuts.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Shortcuts exported successfully!');
+}
+
+function resetShortcuts() {
+    if (confirm('Reset all keyboard shortcuts to defaults? This will discard any custom changes.')) {
+        tempShortcuts = { ...defaultKeyboardShortcuts };
+        showShortcutCustomizationDialog();
+    }
 }
 
 function handleShortcutKeyPress(e) {
@@ -13446,6 +14217,87 @@ function deleteWorkspace(name) {
     localStorage.setItem('artemis-workspaces', JSON.stringify(workspaces));
 }
 
+// Phase 10: Workspace Presets
+const workspacePresets = {
+    'painting': {
+        name: 'Painting',
+        leftPanelWidth: 300,
+        rightPanelWidth: 300,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Optimized for digital painting with full access to brushes and layers'
+    },
+    'illustration': {
+        name: 'Illustration',
+        leftPanelWidth: 250,
+        rightPanelWidth: 350,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Balanced workspace for illustration work with emphasis on layers panel'
+    },
+    'photo-editing': {
+        name: 'Photo Editing',
+        leftPanelWidth: 200,
+        rightPanelWidth: 350,
+        leftPanelCollapsed: false,
+        rightPanelCollapsed: false,
+        description: 'Focused on photo editing tools and adjustment layers'
+    },
+    'minimal': {
+        name: 'Minimal',
+        leftPanelWidth: 280,
+        rightPanelWidth: 280,
+        leftPanelCollapsed: true,
+        rightPanelCollapsed: true,
+        description: 'Minimal workspace with maximum canvas space'
+    }
+};
+
+function loadWorkspacePreset(presetName) {
+    const preset = workspacePresets[presetName];
+    if (!preset) {
+        alert('Workspace preset not found');
+        return false;
+    }
+    
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    
+    // Apply preset settings
+    leftPanel.style.width = preset.leftPanelWidth + 'px';
+    rightPanel.style.width = preset.rightPanelWidth + 'px';
+    
+    if (preset.leftPanelCollapsed) {
+        leftPanel.classList.add('collapsed');
+    } else {
+        leftPanel.classList.remove('collapsed');
+    }
+    
+    if (preset.rightPanelCollapsed) {
+        rightPanel.classList.add('collapsed');
+    } else {
+        rightPanel.classList.remove('collapsed');
+    }
+    
+    alert(`Workspace preset "${preset.name}" loaded successfully!`);
+    return true;
+}
+
+function showWorkspacePresetsDialog() {
+    const presetList = Object.entries(workspacePresets)
+        .map(([key, preset]) => `• ${preset.name}: ${preset.description}`)
+        .join('\n');
+    
+    const selection = prompt(
+        `Available Workspace Presets:\n\n${presetList}\n\nEnter preset name (painting, illustration, photo-editing, minimal):`,
+        'painting'
+    );
+    
+    if (selection && selection.trim()) {
+        loadWorkspacePreset(selection.trim().toLowerCase());
+    }
+}
+
 function showSaveWorkspaceDialog() {
     const name = prompt('Enter workspace name:', 'My Workspace');
     if (name && name.trim()) {
@@ -13498,6 +14350,90 @@ function showManageWorkspacesDialog() {
             deleteWorkspace(action.trim());
             alert(`Workspace "${action}" deleted.`);
         }
+    }
+}
+
+// Phase 10: Theme Customization
+function toggleTheme() {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(state.theme);
+    localStorage.setItem('artemis-theme', state.theme);
+}
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    
+    if (theme === 'light') {
+        // Light theme colors
+        root.style.setProperty('--bg-primary', '#f3f3f3');
+        root.style.setProperty('--bg-secondary', '#ffffff');
+        root.style.setProperty('--bg-tertiary', '#e8e8e8');
+        root.style.setProperty('--border-color', '#d0d0d0');
+        root.style.setProperty('--text-primary', '#1e1e1e');
+        root.style.setProperty('--text-secondary', '#4a4a4a');
+        root.style.setProperty('--hover-bg', '#e0e0e0');
+        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.15)');
+        
+        document.body.style.background = '#f3f3f3';
+        document.body.style.color = '#1e1e1e';
+    } else {
+        // Dark theme colors (default)
+        root.style.setProperty('--bg-primary', '#1e1e1e');
+        root.style.setProperty('--bg-secondary', '#2d2d30');
+        root.style.setProperty('--bg-tertiary', '#252526');
+        root.style.setProperty('--border-color', '#3e3e42');
+        root.style.setProperty('--text-primary', '#cccccc');
+        root.style.setProperty('--text-secondary', '#969696');
+        root.style.setProperty('--hover-bg', '#3e3e42');
+        root.style.setProperty('--shadow', 'rgba(0, 0, 0, 0.5)');
+        
+        document.body.style.background = '#1e1e1e';
+        document.body.style.color = '#cccccc';
+    }
+    
+    // Update all elements that use these colors
+    updateThemeColors();
+}
+
+function updateThemeColors() {
+    // Update menu bar
+    const menuBar = document.getElementById('menu-bar');
+    if (menuBar) {
+        menuBar.style.background = state.theme === 'light' ? '#ffffff' : '#252526';
+        menuBar.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update toolbar
+    const toolbar = document.getElementById('toolbar');
+    if (toolbar) {
+        toolbar.style.background = state.theme === 'light' ? '#e8e8e8' : '#2d2d30';
+        toolbar.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update panels
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    if (leftPanel) {
+        leftPanel.style.background = state.theme === 'light' ? '#f3f3f3' : '#1e1e1e';
+        leftPanel.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    if (rightPanel) {
+        rightPanel.style.background = state.theme === 'light' ? '#f3f3f3' : '#1e1e1e';
+        rightPanel.style.borderColor = state.theme === 'light' ? '#d0d0d0' : '#3e3e42';
+    }
+    
+    // Update all labels and text
+    const textColor = state.theme === 'light' ? '#1e1e1e' : '#cccccc';
+    document.querySelectorAll('.menu-label, .menu-btn, label, .tab').forEach(el => {
+        el.style.color = textColor;
+    });
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('artemis-theme');
+    if (savedTheme) {
+        state.theme = savedTheme;
+        applyTheme(savedTheme);
     }
 }
 
