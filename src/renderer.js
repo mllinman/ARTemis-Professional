@@ -969,6 +969,9 @@ function init() {
     enhancePanelDockingWithNesting();
     enhancePanelDragging();
     
+    // Phase 15: Initialize Performance & Export features
+    initPhase15Features();
+    
     // Create initial layer
     addLayer('Background');
     
@@ -18139,6 +18142,675 @@ async function visualTestBrush(brushName, testCanvas, testCtx) {
             });
         }, 100);
     });
+}
+
+// ============================================================================
+// PHASE 15: PERFORMANCE & EXPORT ENHANCEMENTS
+// ============================================================================
+
+// Export Presets Storage
+let exportPresets = {
+    'web-standard': {
+        name: 'Web Standard',
+        format: 'png',
+        resize: false,
+        quality: 95
+    },
+    'web-optimized': {
+        name: 'Web Optimized',
+        format: 'webp',
+        resize: true,
+        width: 1920,
+        height: 1080,
+        quality: 90
+    },
+    'social-media': {
+        name: 'Social Media',
+        format: 'jpeg',
+        resize: true,
+        width: 1200,
+        height: 1200,
+        quality: 85
+    },
+    'print-quality': {
+        name: 'Print Quality',
+        format: 'png',
+        resize: false,
+        quality: 100
+    },
+    'thumbnail': {
+        name: 'Thumbnail',
+        format: 'jpeg',
+        resize: true,
+        width: 400,
+        height: 400,
+        quality: 80
+    }
+};
+
+// Load custom export presets from localStorage
+function loadExportPresets() {
+    try {
+        const saved = localStorage.getItem('artemis-export-presets');
+        if (saved) {
+            const custom = JSON.parse(saved);
+            exportPresets = { ...exportPresets, ...custom };
+        }
+    } catch (error) {
+        console.error('Failed to load export presets:', error);
+    }
+}
+
+// Save custom export presets to localStorage
+function saveExportPresets() {
+    try {
+        // Only save custom presets (not built-in ones)
+        const customPresets = {};
+        const builtInKeys = ['web-standard', 'web-optimized', 'social-media', 'print-quality', 'thumbnail'];
+        for (const key in exportPresets) {
+            if (!builtInKeys.includes(key)) {
+                customPresets[key] = exportPresets[key];
+            }
+        }
+        localStorage.setItem('artemis-export-presets', JSON.stringify(customPresets));
+    } catch (error) {
+        console.error('Failed to save export presets:', error);
+    }
+}
+
+// Setup Advanced Export Dialog
+function setupAdvancedExportDialog() {
+    loadExportPresets();
+    
+    const dialog = document.getElementById('advanced-export-dialog');
+    const closeBtn = document.getElementById('advanced-export-close');
+    const cancelBtn = document.getElementById('advanced-export-cancel');
+    const executeBtn = document.getElementById('advanced-export-execute');
+    
+    const exportSourceRadios = document.querySelectorAll('input[name="export-source"]');
+    const layerSelectionContainer = document.getElementById('layer-selection-container');
+    const exportLayerList = document.getElementById('export-layer-list');
+    
+    const formatSelect = document.getElementById('export-format-select');
+    const qualitySettings = document.getElementById('quality-settings');
+    const qualitySlider = document.getElementById('export-quality-slider');
+    const qualityValue = document.getElementById('export-quality-value');
+    
+    const webOptimization = document.getElementById('enable-web-optimization');
+    const webOptimizationOptions = document.getElementById('web-optimization-options');
+    const resizeOnExport = document.getElementById('resize-on-export');
+    const resizeOptions = document.getElementById('resize-options');
+    const widthInput = document.getElementById('export-width');
+    const heightInput = document.getElementById('export-height');
+    const maintainAspectRatio = document.getElementById('maintain-aspect-ratio');
+    
+    const presetSelect = document.getElementById('export-preset-select');
+    const savePresetBtn = document.getElementById('save-export-preset');
+    
+    const estimatedSizeDisplay = document.getElementById('estimated-export-size');
+    const memoryUsageDisplay = document.getElementById('current-memory-usage');
+    
+    // Close handlers
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            dialog.classList.add('hidden');
+        });
+    }
+    
+    // Export source change handler
+    exportSourceRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'selected' || e.target.value === 'batch') {
+                layerSelectionContainer.classList.remove('hidden');
+                populateExportLayerList();
+            } else {
+                layerSelectionContainer.classList.add('hidden');
+            }
+            updateExportEstimates();
+        });
+    });
+    
+    // Format change handler
+    if (formatSelect) {
+        formatSelect.addEventListener('change', () => {
+            const format = formatSelect.value;
+            if (format === 'jpeg' || format === 'webp') {
+                qualitySettings.classList.remove('hidden');
+            } else {
+                qualitySettings.classList.add('hidden');
+            }
+            updateFormatRecommendation();
+            updateExportEstimates();
+        });
+    }
+    
+    // Quality slider
+    if (qualitySlider) {
+        qualitySlider.addEventListener('input', () => {
+            qualityValue.textContent = qualitySlider.value;
+            updateExportEstimates();
+        });
+    }
+    
+    // Web optimization toggle
+    if (webOptimization) {
+        webOptimization.addEventListener('change', () => {
+            if (webOptimization.checked) {
+                webOptimizationOptions.classList.remove('hidden');
+            } else {
+                webOptimizationOptions.classList.add('hidden');
+            }
+            updateFormatRecommendation();
+        });
+    }
+    
+    // Resize toggle
+    if (resizeOnExport) {
+        resizeOnExport.addEventListener('change', () => {
+            if (resizeOnExport.checked) {
+                resizeOptions.classList.remove('hidden');
+                // Set current canvas size
+                widthInput.value = mainCanvas.width;
+                heightInput.value = mainCanvas.height;
+            } else {
+                resizeOptions.classList.add('hidden');
+            }
+            updateExportEstimates();
+        });
+    }
+    
+    // Dimension inputs with aspect ratio lock
+    if (widthInput && heightInput && maintainAspectRatio) {
+        const aspectRatio = mainCanvas.width / mainCanvas.height;
+        
+        widthInput.addEventListener('input', () => {
+            if (maintainAspectRatio.checked) {
+                heightInput.value = Math.round(widthInput.value / aspectRatio);
+            }
+            updateExportEstimates();
+        });
+        
+        heightInput.addEventListener('input', () => {
+            if (maintainAspectRatio.checked) {
+                widthInput.value = Math.round(heightInput.value * aspectRatio);
+            }
+            updateExportEstimates();
+        });
+    }
+    
+    // Preset selection
+    if (presetSelect) {
+        presetSelect.addEventListener('change', () => {
+            const presetKey = presetSelect.value;
+            if (presetKey && exportPresets[presetKey]) {
+                applyExportPreset(exportPresets[presetKey]);
+            }
+        });
+    }
+    
+    // Save preset
+    if (savePresetBtn) {
+        savePresetBtn.addEventListener('click', () => {
+            const name = prompt('Enter a name for this export preset:');
+            if (name) {
+                const preset = getCurrentExportSettings();
+                const key = name.toLowerCase().replace(/\s+/g, '-');
+                exportPresets[key] = { ...preset, name };
+                saveExportPresets();
+                
+                // Add to select
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = name;
+                presetSelect.appendChild(option);
+                
+                alert('Export preset saved successfully!');
+            }
+        });
+    }
+    
+    // Execute export
+    if (executeBtn) {
+        executeBtn.addEventListener('click', async () => {
+            await executeAdvancedExport();
+            dialog.classList.add('hidden');
+        });
+    }
+}
+
+// Populate layer list for selection
+function populateExportLayerList() {
+    const exportLayerList = document.getElementById('export-layer-list');
+    if (!exportLayerList) return;
+    
+    exportLayerList.innerHTML = '';
+    
+    state.layers.forEach((layer, index) => {
+        const layerItem = document.createElement('label');
+        layerItem.style.display = 'block';
+        layerItem.style.marginBottom = '5px';
+        layerItem.innerHTML = `
+            <input type="checkbox" class="export-layer-checkbox" data-layer-index="${index}" checked>
+            ${layer.name || `Layer ${index + 1}`} ${layer.visible ? '' : '(Hidden)'}
+        `;
+        exportLayerList.appendChild(layerItem);
+    });
+}
+
+// Apply export preset
+function applyExportPreset(preset) {
+    const formatSelect = document.getElementById('export-format-select');
+    const qualitySlider = document.getElementById('export-quality-slider');
+    const qualityValue = document.getElementById('export-quality-value');
+    const resizeOnExport = document.getElementById('resize-on-export');
+    const widthInput = document.getElementById('export-width');
+    const heightInput = document.getElementById('export-height');
+    const webOptimization = document.getElementById('enable-web-optimization');
+    
+    if (formatSelect) formatSelect.value = preset.format;
+    
+    if (preset.format === 'jpeg' || preset.format === 'webp') {
+        document.getElementById('quality-settings').classList.remove('hidden');
+        if (qualitySlider) {
+            qualitySlider.value = preset.quality || 95;
+            qualityValue.textContent = preset.quality || 95;
+        }
+    } else {
+        document.getElementById('quality-settings').classList.add('hidden');
+    }
+    
+    if (resizeOnExport) {
+        resizeOnExport.checked = preset.resize || false;
+        if (preset.resize) {
+            document.getElementById('resize-options').classList.remove('hidden');
+            if (widthInput) widthInput.value = preset.width || mainCanvas.width;
+            if (heightInput) heightInput.value = preset.height || mainCanvas.height;
+        } else {
+            document.getElementById('resize-options').classList.add('hidden');
+        }
+    }
+    
+    if (webOptimization && preset.resize) {
+        webOptimization.checked = true;
+        document.getElementById('web-optimization-options').classList.remove('hidden');
+    }
+    
+    updateFormatRecommendation();
+    updateExportEstimates();
+}
+
+// Get current export settings
+function getCurrentExportSettings() {
+    const formatSelect = document.getElementById('export-format-select');
+    const qualitySlider = document.getElementById('export-quality-slider');
+    const resizeOnExport = document.getElementById('resize-on-export');
+    const widthInput = document.getElementById('export-width');
+    const heightInput = document.getElementById('export-height');
+    
+    return {
+        format: formatSelect ? formatSelect.value : 'png',
+        quality: qualitySlider ? parseInt(qualitySlider.value) : 95,
+        resize: resizeOnExport ? resizeOnExport.checked : false,
+        width: widthInput ? parseInt(widthInput.value) : mainCanvas.width,
+        height: heightInput ? parseInt(heightInput.value) : mainCanvas.height
+    };
+}
+
+// Update format recommendation
+function updateFormatRecommendation() {
+    const recommendationEl = document.getElementById('format-recommendation');
+    if (!recommendationEl) return;
+    
+    const settings = getCurrentExportSettings();
+    const webOptimization = document.getElementById('enable-web-optimization');
+    
+    let recommendation = '';
+    
+    if (webOptimization && webOptimization.checked) {
+        if (settings.format === 'png') {
+            recommendation = 'For web use, consider WebP format for better compression while maintaining quality.';
+        } else if (settings.format === 'jpeg') {
+            recommendation = 'JPEG is good for photos. Quality 85-90% is usually sufficient for web.';
+        } else if (settings.format === 'webp') {
+            recommendation = 'WebP offers the best compression for web use. Quality 85-90% recommended.';
+        }
+    } else {
+        if (settings.format === 'png') {
+            recommendation = 'PNG provides lossless quality and supports transparency.';
+        } else if (settings.format === 'jpeg') {
+            recommendation = 'JPEG is best for photographs without transparency. Use 90-95% quality for print.';
+        } else if (settings.format === 'webp') {
+            recommendation = 'WebP is a modern format with excellent compression.';
+        }
+    }
+    
+    recommendationEl.textContent = recommendation;
+}
+
+// Update export size estimates
+function updateExportEstimates() {
+    const estimatedSizeDisplay = document.getElementById('estimated-export-size');
+    const memoryUsageDisplay = document.getElementById('current-memory-usage');
+    
+    if (!estimatedSizeDisplay || !memoryUsageDisplay) return;
+    
+    const settings = getCurrentExportSettings();
+    const width = settings.resize ? settings.width : mainCanvas.width;
+    const height = settings.resize ? settings.height : mainCanvas.height;
+    
+    // Estimate file size based on format and settings
+    let estimatedBytes = width * height * 4; // Base RGBA
+    
+    if (settings.format === 'png') {
+        estimatedBytes = estimatedBytes * 0.5; // PNG compression roughly 50%
+    } else if (settings.format === 'jpeg') {
+        estimatedBytes = estimatedBytes * (settings.quality / 100) * 0.15; // JPEG compression
+    } else if (settings.format === 'webp') {
+        estimatedBytes = estimatedBytes * (settings.quality / 100) * 0.12; // WebP better compression
+    }
+    
+    estimatedSizeDisplay.textContent = formatBytes(estimatedBytes);
+    
+    // Calculate current memory usage
+    const layerMemory = state.layers.length * mainCanvas.width * mainCanvas.height * 4;
+    const historyMemory = state.history.length * mainCanvas.width * mainCanvas.height * 4;
+    const totalMemory = layerMemory + historyMemory;
+    
+    memoryUsageDisplay.textContent = formatBytes(totalMemory);
+}
+
+// Format bytes to human-readable string
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Execute advanced export
+async function executeAdvancedExport() {
+    try {
+        const exportSource = document.querySelector('input[name="export-source"]:checked').value;
+        const settings = getCurrentExportSettings();
+        
+        // Determine what to export
+        let canvasesToExport = [];
+        
+        if (exportSource === 'all') {
+            // Export flattened canvas
+            canvasesToExport.push({ canvas: mainCanvas, name: 'export' });
+        } else if (exportSource === 'current') {
+            // Export current layer only
+            const currentLayer = state.layers[state.activeLayer];
+            if (currentLayer) {
+                canvasesToExport.push({ canvas: currentLayer.canvas, name: currentLayer.name || `layer-${state.activeLayer}` });
+            }
+        } else if (exportSource === 'visible') {
+            // Create temporary canvas with visible layers
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = mainCanvas.width;
+            tempCanvas.height = mainCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            state.layers.forEach(layer => {
+                if (layer.visible) {
+                    tempCtx.globalAlpha = layer.opacity / 100;
+                    tempCtx.drawImage(layer.canvas, 0, 0);
+                }
+            });
+            
+            canvasesToExport.push({ canvas: tempCanvas, name: 'visible-layers' });
+        } else if (exportSource === 'selected') {
+            // Export selected layers merged
+            const checkboxes = document.querySelectorAll('.export-layer-checkbox:checked');
+            const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.layerIndex));
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = mainCanvas.width;
+            tempCanvas.height = mainCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            selectedIndices.forEach(index => {
+                const layer = state.layers[index];
+                if (layer) {
+                    tempCtx.globalAlpha = layer.opacity / 100;
+                    tempCtx.drawImage(layer.canvas, 0, 0);
+                }
+            });
+            
+            canvasesToExport.push({ canvas: tempCanvas, name: 'selected-layers' });
+        } else if (exportSource === 'batch') {
+            // Export each selected layer separately
+            const checkboxes = document.querySelectorAll('.export-layer-checkbox:checked');
+            const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.layerIndex));
+            
+            selectedIndices.forEach(index => {
+                const layer = state.layers[index];
+                if (layer) {
+                    canvasesToExport.push({ 
+                        canvas: layer.canvas, 
+                        name: layer.name || `layer-${index}` 
+                    });
+                }
+            });
+        }
+        
+        // Export each canvas
+        for (const { canvas, name } of canvasesToExport) {
+            await exportCanvasAdvanced(canvas, name, settings);
+        }
+        
+        if (canvasesToExport.length > 1) {
+            alert(`Successfully exported ${canvasesToExport.length} files!`);
+        } else if (canvasesToExport.length === 1) {
+            alert('Image exported successfully!');
+        } else {
+            alert('No layers selected for export.');
+        }
+        
+    } catch (error) {
+        console.error('Export failed:', error);
+        alert('Export failed: ' + error.message);
+    }
+}
+
+// Export canvas with advanced settings
+async function exportCanvasAdvanced(sourceCanvas, filename, settings) {
+    let exportCanvas = sourceCanvas;
+    
+    // Resize if needed
+    if (settings.resize && (settings.width !== sourceCanvas.width || settings.height !== sourceCanvas.height)) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = settings.width;
+        tempCanvas.height = settings.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Use high-quality image smoothing
+        tempCtx.imageSmoothingEnabled = true;
+        tempCtx.imageSmoothingQuality = 'high';
+        tempCtx.drawImage(sourceCanvas, 0, 0, settings.width, settings.height);
+        
+        exportCanvas = tempCanvas;
+    }
+    
+    // Generate data URL
+    let dataUrl;
+    const format = settings.format;
+    
+    if (format === 'png') {
+        dataUrl = exportCanvas.toDataURL('image/png');
+    } else if (format === 'jpeg') {
+        dataUrl = exportCanvas.toDataURL('image/jpeg', settings.quality / 100);
+    } else if (format === 'webp') {
+        dataUrl = exportCanvas.toDataURL('image/webp', settings.quality / 100);
+    }
+    
+    // Download the file
+    const link = document.createElement('a');
+    link.download = `${filename}.${format}`;
+    link.href = dataUrl;
+    link.click();
+}
+
+// Show advanced export dialog
+function showAdvancedExportDialog() {
+    const dialog = document.getElementById('advanced-export-dialog');
+    if (dialog) {
+        dialog.classList.remove('hidden');
+        
+        // Initialize with current canvas size
+        const widthInput = document.getElementById('export-width');
+        const heightInput = document.getElementById('export-height');
+        if (widthInput) widthInput.value = mainCanvas.width;
+        if (heightInput) heightInput.value = mainCanvas.height;
+        
+        updateExportEstimates();
+        updateFormatRecommendation();
+    }
+}
+
+// ============================================================================
+// MEMORY MONITORING & MANAGEMENT
+// ============================================================================
+
+// Setup Memory Monitor Dialog
+function setupMemoryMonitorDialog() {
+    const dialog = document.getElementById('memory-monitor-dialog');
+    const closeBtn = document.getElementById('memory-monitor-close');
+    const okBtn = document.getElementById('memory-monitor-ok');
+    
+    const enableMemoryCleanup = document.getElementById('enable-memory-cleanup');
+    const maxHistorySlider = document.getElementById('max-history-slider');
+    const maxHistoryValue = document.getElementById('max-history-value');
+    
+    const cleanupHistoryBtn = document.getElementById('cleanup-history-btn');
+    const cleanupThumbnailsBtn = document.getElementById('cleanup-thumbnails-btn');
+    const forceGcBtn = document.getElementById('force-gc-btn');
+    
+    // Close handlers
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => dialog.classList.add('hidden'));
+    }
+    if (okBtn) {
+        okBtn.addEventListener('click', () => dialog.classList.add('hidden'));
+    }
+    
+    // Max history slider
+    if (maxHistorySlider) {
+        maxHistorySlider.addEventListener('input', () => {
+            maxHistoryValue.textContent = maxHistorySlider.value;
+            state.maxHistoryStates = parseInt(maxHistorySlider.value);
+            
+            // Trim history if needed
+            if (state.history.length > state.maxHistoryStates) {
+                state.history = state.history.slice(-state.maxHistoryStates);
+                state.historyIndex = Math.min(state.historyIndex, state.history.length - 1);
+            }
+        });
+    }
+    
+    // Cleanup handlers
+    if (cleanupHistoryBtn) {
+        cleanupHistoryBtn.addEventListener('click', () => {
+            if (confirm('Clear undo history? Current state will be preserved.')) {
+                // Save current state
+                const currentState = captureState();
+                // Clear history
+                state.history = [currentState];
+                state.historyIndex = 0;
+                updateMemoryStats();
+                alert('Undo history cleared!');
+            }
+        });
+    }
+    
+    if (cleanupThumbnailsBtn) {
+        cleanupThumbnailsBtn.addEventListener('click', () => {
+            updateLayerThumbnails();
+            alert('Layer thumbnails regenerated!');
+        });
+    }
+    
+    if (forceGcBtn) {
+        forceGcBtn.addEventListener('click', () => {
+            // Clear temporary canvases and force browser GC
+            if (window.gc) {
+                window.gc(); // Only works with --expose-gc flag
+                alert('Garbage collection triggered!');
+            } else {
+                alert('Garbage collection is not available in this browser. Memory will be cleaned up automatically.');
+            }
+            updateMemoryStats();
+        });
+    }
+}
+
+// Show memory monitor dialog
+function showMemoryMonitorDialog() {
+    const dialog = document.getElementById('memory-monitor-dialog');
+    if (dialog) {
+        dialog.classList.remove('hidden');
+        updateMemoryStats();
+    }
+}
+
+// Update memory statistics
+function updateMemoryStats() {
+    const canvasMemoryEl = document.getElementById('canvas-memory');
+    const layerCountEl = document.getElementById('layer-count-display');
+    const historyCountEl = document.getElementById('history-count-display');
+    const totalMemoryEl = document.getElementById('total-memory-estimate');
+    
+    if (!canvasMemoryEl) return;
+    
+    // Calculate memory usage
+    const bytesPerPixel = 4; // RGBA
+    const canvasPixels = mainCanvas.width * mainCanvas.height;
+    const canvasMemory = canvasPixels * bytesPerPixel;
+    const layerMemory = state.layers.length * canvasMemory;
+    const historyMemory = state.history.length * canvasMemory;
+    const totalMemory = layerMemory + historyMemory;
+    
+    canvasMemoryEl.textContent = formatBytes(canvasMemory);
+    layerCountEl.textContent = state.layers.length;
+    historyCountEl.textContent = state.history.length;
+    totalMemoryEl.textContent = formatBytes(totalMemory);
+}
+
+// Add menu action handlers for Phase 15 features
+function initPhase15MenuActions() {
+    // Advanced export action
+    const advancedExportBtn = document.querySelector('[data-action="file-export-advanced"]');
+    if (advancedExportBtn) {
+        advancedExportBtn.addEventListener('click', showAdvancedExportDialog);
+    }
+    
+    // Memory monitor action
+    const memoryMonitorBtn = document.querySelector('[data-action="file-memory-monitor"]');
+    if (memoryMonitorBtn) {
+        memoryMonitorBtn.addEventListener('click', showMemoryMonitorDialog);
+    }
+    
+    // Add Ctrl+Shift+E shortcut for advanced export
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+            e.preventDefault();
+            showAdvancedExportDialog();
+        }
+    });
+}
+
+// Initialize Phase 15 features
+function initPhase15Features() {
+    setupAdvancedExportDialog();
+    setupMemoryMonitorDialog();
+    initPhase15MenuActions();
+    console.log('Phase 15: Performance & Export features initialized');
 }
 
 // Initialize on load
