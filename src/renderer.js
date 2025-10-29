@@ -378,9 +378,29 @@ const state = {
         fontSize: 24,
         bold: false,
         italic: false,
+        underline: false,
         alignment: 'left', // 'left', 'center', 'right'
         letterSpacing: 0,  // Kerning in pixels
-        lineHeight: 1.2    // Leading as multiplier
+        lineHeight: 1.2,   // Leading as multiplier
+        // Phase 7 enhancements - Text effects
+        stroke: {
+            enabled: false,
+            color: '#000000',
+            width: 2
+        },
+        shadow: {
+            enabled: false,
+            color: '#00000080',
+            blur: 4,
+            offsetX: 2,
+            offsetY: 2
+        },
+        gradient: {
+            enabled: false,
+            type: 'linear', // 'linear' or 'radial'
+            colors: ['#ff0000', '#0000ff'],
+            angle: 0 // for linear gradient
+        }
     },
     blendMode: 'normal',
     customBrushes: [],
@@ -416,6 +436,7 @@ const state = {
         verticalCanvas: null,
         // NEW: Guide and ruler tools
         guides: [],          // Array of guide lines {type: 'horizontal'|'vertical', position: number}
+        guidesVisible: false, // Show/hide guides
         snapToGuides: true,  // Snap drawing to guides
         snapDistance: 10,    // Snap distance in pixels
         rulerTool: 'none',   // 'none', 'line', 'ellipse', 'curve', 'perspective'
@@ -425,6 +446,12 @@ const state = {
             vanishingPoints: [], // Array of {x, y} vanishing points
             horizonY: null   // Horizon line Y position
         }
+    },
+    // Phase 11: Grid system
+    grid: {
+        visible: false,
+        size: 50,
+        snapToGrid: false
     },
     // Eyedropper settings
     eyedropper: {
@@ -554,7 +581,10 @@ const state = {
         y: 0,
         width: 300,
         height: 300,
-        opacity: 0.7
+        opacity: 0.7,
+        scale: 1.0,  // Phase 11: Scale factor
+        originalWidth: 300,
+        originalHeight: 300
     },
     // Canvas texture overlay
     canvasTexture: {
@@ -2553,7 +2583,8 @@ function setupAdvancedFeatures() {
         symmetryModeSelect.addEventListener('change', (e) => {
             state.symmetry.mode = e.target.value;
             if (radialSegmentsGroup) {
-                if (e.target.value === 'radial') {
+                // Phase 11: Show segments for radial and kaleidoscope modes
+                if (e.target.value === 'radial' || e.target.value === 'kaleidoscope') {
                     radialSegmentsGroup.classList.remove('hidden');
                 } else {
                     radialSegmentsGroup.classList.add('hidden');
@@ -2569,6 +2600,116 @@ function setupAdvancedFeatures() {
             state.symmetry.segments = parseInt(e.target.value);
             symmetrySegmentsValue.textContent = state.symmetry.segments;
         });
+        
+        // Phase 11: Show/hide segments control for radial, kaleidoscope modes
+        if (radialSegmentsGroup) {
+            if (state.symmetry.mode === 'radial' || state.symmetry.mode === 'kaleidoscope') {
+                radialSegmentsGroup.classList.remove('hidden');
+            } else {
+                radialSegmentsGroup.classList.add('hidden');
+            }
+        }
+    }
+    
+    // Phase 11: Guides System
+    const guidesCheckbox = document.getElementById('guides-enabled');
+    const guidesSettings = document.getElementById('guides-settings');
+    if (guidesCheckbox && guidesSettings) {
+        guidesCheckbox.addEventListener('change', (e) => {
+            state.rulers.guidesVisible = e.target.checked;
+            if (e.target.checked) {
+                guidesSettings.classList.remove('hidden');
+            } else {
+                guidesSettings.classList.add('hidden');
+            }
+            compositeAllLayers();
+        });
+    }
+    
+    const addHorizontalGuideBtn = document.getElementById('add-horizontal-guide');
+    if (addHorizontalGuideBtn) {
+        addHorizontalGuideBtn.addEventListener('click', () => {
+            const position = prompt('Enter Y position for horizontal guide:', Math.floor(state.canvas.height / 2));
+            if (position !== null) {
+                state.rulers.guides.push({
+                    type: 'horizontal',
+                    position: parseInt(position)
+                });
+                compositeAllLayers();
+            }
+        });
+    }
+    
+    const addVerticalGuideBtn = document.getElementById('add-vertical-guide');
+    if (addVerticalGuideBtn) {
+        addVerticalGuideBtn.addEventListener('click', () => {
+            const position = prompt('Enter X position for vertical guide:', Math.floor(state.canvas.width / 2));
+            if (position !== null) {
+                state.rulers.guides.push({
+                    type: 'vertical',
+                    position: parseInt(position)
+                });
+                compositeAllLayers();
+            }
+        });
+    }
+    
+    const clearGuidesBtn = document.getElementById('clear-guides');
+    if (clearGuidesBtn) {
+        clearGuidesBtn.addEventListener('click', () => {
+            if (confirm('Clear all guides?')) {
+                state.rulers.guides = [];
+                compositeAllLayers();
+            }
+        });
+    }
+    
+    const snapToGuidesCheckbox = document.getElementById('snap-to-guides');
+    if (snapToGuidesCheckbox) {
+        snapToGuidesCheckbox.addEventListener('change', (e) => {
+            state.rulers.snapToGuides = e.target.checked;
+        });
+        snapToGuidesCheckbox.checked = state.rulers.snapToGuides;
+    }
+    
+    const snapDistanceInput = document.getElementById('snap-distance');
+    if (snapDistanceInput) {
+        snapDistanceInput.addEventListener('input', (e) => {
+            state.rulers.snapDistance = parseInt(e.target.value);
+        });
+        snapDistanceInput.value = state.rulers.snapDistance;
+    }
+    
+    // Phase 11: Grid System
+    const gridCheckbox = document.getElementById('grid-enabled');
+    const gridSettings = document.getElementById('grid-settings');
+    if (gridCheckbox && gridSettings) {
+        gridCheckbox.addEventListener('change', (e) => {
+            state.grid.visible = e.target.checked;
+            if (e.target.checked) {
+                gridSettings.classList.remove('hidden');
+            } else {
+                gridSettings.classList.add('hidden');
+            }
+            compositeAllLayers();
+        });
+    }
+    
+    const gridSizeInput = document.getElementById('grid-size');
+    if (gridSizeInput) {
+        gridSizeInput.addEventListener('input', (e) => {
+            state.grid.size = parseInt(e.target.value);
+            compositeAllLayers();
+        });
+        gridSizeInput.value = state.grid.size;
+    }
+    
+    const snapToGridCheckbox = document.getElementById('snap-to-grid');
+    if (snapToGridCheckbox) {
+        snapToGridCheckbox.addEventListener('change', (e) => {
+            state.grid.snapToGrid = e.target.checked;
+        });
+        snapToGridCheckbox.checked = state.grid.snapToGrid;
     }
     
     // Canvas Texture
@@ -2737,6 +2878,57 @@ function setupAdvancedFeatures() {
             state.reference.opacity = parseInt(e.target.value) / 100;
             referenceOpacityValue.textContent = e.target.value + '%';
             compositeAllLayers();
+        });
+    }
+    
+    // Phase 11: Reference image position controls
+    const referenceXInput = document.getElementById('reference-x');
+    const referenceXValue = document.getElementById('reference-x-value');
+    if (referenceXInput && referenceXValue) {
+        referenceXInput.addEventListener('input', (e) => {
+            state.reference.x = parseInt(e.target.value);
+            referenceXValue.textContent = e.target.value;
+            compositeAllLayers();
+        });
+    }
+    
+    const referenceYInput = document.getElementById('reference-y');
+    const referenceYValue = document.getElementById('reference-y-value');
+    if (referenceYInput && referenceYValue) {
+        referenceYInput.addEventListener('input', (e) => {
+            state.reference.y = parseInt(e.target.value);
+            referenceYValue.textContent = e.target.value;
+            compositeAllLayers();
+        });
+    }
+    
+    const referenceScaleSlider = document.getElementById('reference-scale');
+    const referenceScaleValue = document.getElementById('reference-scale-value');
+    if (referenceScaleSlider && referenceScaleValue) {
+        referenceScaleSlider.addEventListener('input', (e) => {
+            state.reference.scale = parseInt(e.target.value) / 100;
+            referenceScaleValue.textContent = e.target.value + '%';
+            compositeAllLayers();
+        });
+    }
+    
+    const centerReferenceBtn = document.getElementById('center-reference-btn');
+    if (centerReferenceBtn) {
+        centerReferenceBtn.addEventListener('click', () => {
+            if (state.reference.image) {
+                const scaledWidth = state.reference.originalWidth * state.reference.scale;
+                const scaledHeight = state.reference.originalHeight * state.reference.scale;
+                state.reference.x = (state.canvas.width - scaledWidth) / 2;
+                state.reference.y = (state.canvas.height - scaledHeight) / 2;
+                
+                // Update UI
+                if (referenceXInput) referenceXInput.value = Math.floor(state.reference.x);
+                if (referenceXValue) referenceXValue.textContent = Math.floor(state.reference.x);
+                if (referenceYInput) referenceYInput.value = Math.floor(state.reference.y);
+                if (referenceYValue) referenceYValue.textContent = Math.floor(state.reference.y);
+                
+                compositeAllLayers();
+            }
         });
     }
     
@@ -4167,13 +4359,67 @@ function compositeAllLayers() {
     if (state.reference.visible && state.reference.image) {
         mainCtx.save();
         mainCtx.globalAlpha = state.reference.opacity;
+        // Phase 11: Apply scale to reference image
+        const scaledWidth = state.reference.originalWidth * state.reference.scale;
+        const scaledHeight = state.reference.originalHeight * state.reference.scale;
         mainCtx.drawImage(
             state.reference.image,
             state.reference.x,
             state.reference.y,
-            state.reference.width,
-            state.reference.height
+            scaledWidth,
+            scaledHeight
         );
+        mainCtx.restore();
+    }
+    
+    // Phase 11: Draw grid
+    if (state.grid.visible) {
+        mainCtx.save();
+        mainCtx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
+        mainCtx.lineWidth = 1;
+        
+        const gridSize = state.grid.size;
+        
+        // Draw vertical lines
+        for (let x = 0; x <= mainCanvas.width; x += gridSize) {
+            mainCtx.beginPath();
+            mainCtx.moveTo(x, 0);
+            mainCtx.lineTo(x, mainCanvas.height);
+            mainCtx.stroke();
+        }
+        
+        // Draw horizontal lines
+        for (let y = 0; y <= mainCanvas.height; y += gridSize) {
+            mainCtx.beginPath();
+            mainCtx.moveTo(0, y);
+            mainCtx.lineTo(mainCanvas.width, y);
+            mainCtx.stroke();
+        }
+        
+        mainCtx.restore();
+    }
+    
+    // Phase 11: Draw guides
+    if (state.rulers.guidesVisible && state.rulers.guides && state.rulers.guides.length > 0) {
+        mainCtx.save();
+        mainCtx.strokeStyle = '#00BFFF';
+        mainCtx.lineWidth = 1;
+        mainCtx.setLineDash([5, 5]);
+        
+        state.rulers.guides.forEach(guide => {
+            if (guide.type === 'horizontal') {
+                mainCtx.beginPath();
+                mainCtx.moveTo(0, guide.position);
+                mainCtx.lineTo(mainCanvas.width, guide.position);
+                mainCtx.stroke();
+            } else if (guide.type === 'vertical') {
+                mainCtx.beginPath();
+                mainCtx.moveTo(guide.position, 0);
+                mainCtx.lineTo(guide.position, mainCanvas.height);
+                mainCtx.stroke();
+            }
+        });
+        
         mainCtx.restore();
     }
     
@@ -5605,6 +5851,49 @@ function applySymmetry(x, y, pressure, angle) {
             const newY = centerY + Math.sin(newAngle) * radius;
             drawDotInternal(newX, newY, pressure, angle);
         }
+    } else if (state.symmetry.mode === 'kaleidoscope') {
+        // Phase 11: Kaleidoscope mode - radial symmetry with mirroring
+        const segments = state.symmetry.segments;
+        const angleStep = (Math.PI * 2) / segments;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const radius = Math.sqrt(dx * dx + dy * dy);
+        const baseAngle = Math.atan2(dy, dx);
+        
+        for (let i = 0; i < segments; i++) {
+            const newAngle = baseAngle + angleStep * i;
+            const newX = centerX + Math.cos(newAngle) * radius;
+            const newY = centerY + Math.sin(newAngle) * radius;
+            
+            // Draw original
+            if (i > 0) drawDotInternal(newX, newY, pressure, angle);
+            
+            // Draw mirrored version for kaleidoscope effect
+            const mirrorAngle = baseAngle - angleStep * i;
+            const mirrorX = centerX + Math.cos(mirrorAngle) * radius;
+            const mirrorY = centerY + Math.sin(mirrorAngle) * radius;
+            drawDotInternal(mirrorX, mirrorY, pressure, angle);
+        }
+    } else if (state.symmetry.mode === 'tile') {
+        // Phase 11: Tile mode - repeat in a grid pattern for seamless textures
+        const tileWidth = state.canvas.width;
+        const tileHeight = state.canvas.height;
+        
+        // Draw in adjacent tiles
+        const offsets = [
+            [-tileWidth, -tileHeight], [0, -tileHeight], [tileWidth, -tileHeight],
+            [-tileWidth, 0],                              [tileWidth, 0],
+            [-tileWidth, tileHeight],  [0, tileHeight],  [tileWidth, tileHeight]
+        ];
+        
+        offsets.forEach(([dx, dy]) => {
+            const tileX = x + dx;
+            const tileY = y + dy;
+            // Only draw if the tile position would be visible on canvas
+            if (tileX >= 0 && tileX < tileWidth && tileY >= 0 && tileY < tileHeight) {
+                drawDotInternal(tileX, tileY, pressure, angle);
+            }
+        });
     }
 }
 
@@ -7755,8 +8044,6 @@ function renderText(text, x, y) {
     
     // Set text properties
     ctx.font = `${fontStyle}${state.text.fontSize}px ${state.text.fontFamily}`;
-    ctx.fillStyle = state.color;
-    ctx.globalAlpha = state.brush.opacity / 100;
     ctx.textAlign = state.text.alignment;
     
     // Apply letter spacing if supported
@@ -7768,9 +8055,81 @@ function renderText(text, x, y) {
     const lines = text.split('\n');
     const lineHeightPx = state.text.fontSize * state.text.lineHeight;
     
+    // Phase 7: Apply text effects
     lines.forEach((line, index) => {
         const yPos = y + (index * lineHeightPx);
+        
+        // Apply shadow effect (Phase 7)
+        if (state.text.shadow.enabled) {
+            ctx.save();
+            ctx.shadowColor = state.text.shadow.color;
+            ctx.shadowBlur = state.text.shadow.blur;
+            ctx.shadowOffsetX = state.text.shadow.offsetX;
+            ctx.shadowOffsetY = state.text.shadow.offsetY;
+        }
+        
+        // Apply gradient fill (Phase 7)
+        if (state.text.gradient.enabled) {
+            const metrics = ctx.measureText(line);
+            const textWidth = metrics.width;
+            let gradient;
+            
+            if (state.text.gradient.type === 'linear') {
+                const angle = state.text.gradient.angle * Math.PI / 180;
+                const x1 = x - Math.cos(angle) * textWidth / 2;
+                const y1 = yPos - Math.sin(angle) * textWidth / 2;
+                const x2 = x + Math.cos(angle) * textWidth / 2;
+                const y2 = yPos + Math.sin(angle) * textWidth / 2;
+                gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+            } else {
+                gradient = ctx.createRadialGradient(x, yPos, 0, x, yPos, textWidth / 2);
+            }
+            
+            state.text.gradient.colors.forEach((color, i) => {
+                gradient.addColorStop(i / (state.text.gradient.colors.length - 1), color);
+            });
+            ctx.fillStyle = gradient;
+        } else {
+            ctx.fillStyle = state.color;
+        }
+        
+        ctx.globalAlpha = state.brush.opacity / 100;
+        
+        // Draw the text fill
         ctx.fillText(line, x, yPos);
+        
+        if (state.text.shadow.enabled) {
+            ctx.restore();
+        }
+        
+        // Apply stroke effect (Phase 7)
+        if (state.text.stroke.enabled) {
+            ctx.strokeStyle = state.text.stroke.color;
+            ctx.lineWidth = state.text.stroke.width;
+            ctx.lineJoin = 'round';
+            ctx.strokeText(line, x, yPos);
+        }
+        
+        // Apply underline effect (Phase 7)
+        if (state.text.underline) {
+            const metrics = ctx.measureText(line);
+            const textWidth = metrics.width;
+            let underlineX = x;
+            
+            // Adjust underline position based on alignment
+            if (state.text.alignment === 'center') {
+                underlineX = x - textWidth / 2;
+            } else if (state.text.alignment === 'right') {
+                underlineX = x - textWidth;
+            }
+            
+            ctx.strokeStyle = ctx.fillStyle;
+            ctx.lineWidth = Math.max(1, state.text.fontSize / 16);
+            ctx.beginPath();
+            ctx.moveTo(underlineX, yPos + state.text.fontSize / 10);
+            ctx.lineTo(underlineX + textWidth, yPos + state.text.fontSize / 10);
+            ctx.stroke();
+        }
     });
     
     ctx.restore();
@@ -7784,10 +8143,15 @@ function renderText(text, x, y) {
         fontFamily: state.text.fontFamily,
         bold: state.text.bold,
         italic: state.text.italic,
+        underline: state.text.underline,
         alignment: state.text.alignment,
         letterSpacing: state.text.letterSpacing,
         lineHeight: state.text.lineHeight,
-        color: state.color
+        color: state.color,
+        // Phase 7: Store text effect settings
+        stroke: { ...state.text.stroke },
+        shadow: { ...state.text.shadow },
+        gradient: { ...state.text.gradient }
     };
 }
 
@@ -7802,10 +8166,16 @@ function editTextLayer() {
     state.text.fontFamily = textData.fontFamily;
     state.text.bold = textData.bold;
     state.text.italic = textData.italic;
+    state.text.underline = textData.underline || false;
     state.text.alignment = textData.alignment;
     state.text.letterSpacing = textData.letterSpacing;
     state.text.lineHeight = textData.lineHeight;
     state.color = textData.color;
+    
+    // Phase 7: Restore text effect settings
+    if (textData.stroke) state.text.stroke = { ...textData.stroke };
+    if (textData.shadow) state.text.shadow = { ...textData.shadow };
+    if (textData.gradient) state.text.gradient = { ...textData.gradient };
     
     // Update UI controls to reflect current text settings
     updateTextControls();
@@ -7841,12 +8211,26 @@ function updateTextControls() {
     const italicBtn = document.querySelector('[data-action="text-italic"]');
     if (italicBtn) italicBtn.classList.toggle('active', state.text.italic);
     
+    // Phase 7: Update underline button
+    const underlineBtn = document.querySelector('[data-action="text-underline"]');
+    if (underlineBtn) underlineBtn.classList.toggle('active', state.text.underline);
+    
     // Update alignment buttons
     document.querySelectorAll('[data-action^="text-align-"]').forEach(btn => {
         btn.classList.remove('active');
     });
     const alignBtn = document.querySelector(`[data-action="text-align-${state.text.alignment}"]`);
     if (alignBtn) alignBtn.classList.add('active');
+    
+    // Phase 7: Update text effect buttons
+    const strokeBtn = document.querySelector('[data-action="text-stroke"]');
+    if (strokeBtn) strokeBtn.classList.toggle('active', state.text.stroke.enabled);
+    
+    const shadowBtn = document.querySelector('[data-action="text-shadow"]');
+    if (shadowBtn) shadowBtn.classList.toggle('active', state.text.shadow.enabled);
+    
+    const gradientBtn = document.querySelector('[data-action="text-gradient"]');
+    if (gradientBtn) gradientBtn.classList.toggle('active', state.text.gradient.enabled);
     
     // Update left panel controls if they exist
     const letterSpacingInput = document.getElementById('text-letter-spacing');
@@ -12266,6 +12650,80 @@ function setupContextualTaskbar() {
         textLeadingInput.value = state.text.lineHeight;
     }
     
+    // Phase 7: Text underline button
+    document.querySelector('[data-action="text-underline"]')?.addEventListener('click', (e) => {
+        state.text.underline = !state.text.underline;
+        e.target.classList.toggle('active', state.text.underline);
+        applyTextSettingsToActiveLayer();
+    });
+    
+    // Phase 7: Text stroke/outline button
+    document.querySelector('[data-action="text-stroke"]')?.addEventListener('click', (e) => {
+        state.text.stroke.enabled = !state.text.stroke.enabled;
+        e.target.classList.toggle('active', state.text.stroke.enabled);
+        
+        if (state.text.stroke.enabled) {
+            // Show a dialog to configure stroke
+            const strokeColor = prompt('Enter stroke color (hex):', state.text.stroke.color);
+            if (strokeColor) state.text.stroke.color = strokeColor;
+            
+            const strokeWidth = prompt('Enter stroke width (px):', state.text.stroke.width);
+            if (strokeWidth) state.text.stroke.width = parseFloat(strokeWidth);
+        }
+        
+        applyTextSettingsToActiveLayer();
+    });
+    
+    // Phase 7: Text shadow button
+    document.querySelector('[data-action="text-shadow"]')?.addEventListener('click', (e) => {
+        state.text.shadow.enabled = !state.text.shadow.enabled;
+        e.target.classList.toggle('active', state.text.shadow.enabled);
+        
+        if (state.text.shadow.enabled) {
+            // Show a dialog to configure shadow
+            const shadowColor = prompt('Enter shadow color (hex with alpha, e.g., #00000080):', state.text.shadow.color);
+            if (shadowColor) state.text.shadow.color = shadowColor;
+            
+            const shadowBlur = prompt('Enter shadow blur (px):', state.text.shadow.blur);
+            if (shadowBlur) state.text.shadow.blur = parseFloat(shadowBlur);
+            
+            const shadowOffsetX = prompt('Enter shadow X offset (px):', state.text.shadow.offsetX);
+            if (shadowOffsetX) state.text.shadow.offsetX = parseFloat(shadowOffsetX);
+            
+            const shadowOffsetY = prompt('Enter shadow Y offset (px):', state.text.shadow.offsetY);
+            if (shadowOffsetY) state.text.shadow.offsetY = parseFloat(shadowOffsetY);
+        }
+        
+        applyTextSettingsToActiveLayer();
+    });
+    
+    // Phase 7: Text gradient button
+    document.querySelector('[data-action="text-gradient"]')?.addEventListener('click', (e) => {
+        state.text.gradient.enabled = !state.text.gradient.enabled;
+        e.target.classList.toggle('active', state.text.gradient.enabled);
+        
+        if (state.text.gradient.enabled) {
+            // Show a dialog to configure gradient
+            const gradientType = prompt('Enter gradient type (linear/radial):', state.text.gradient.type);
+            if (gradientType && (gradientType === 'linear' || gradientType === 'radial')) {
+                state.text.gradient.type = gradientType;
+            }
+            
+            const color1 = prompt('Enter first color (hex):', state.text.gradient.colors[0]);
+            if (color1) state.text.gradient.colors[0] = color1;
+            
+            const color2 = prompt('Enter second color (hex):', state.text.gradient.colors[1]);
+            if (color2) state.text.gradient.colors[1] = color2;
+            
+            if (state.text.gradient.type === 'linear') {
+                const angle = prompt('Enter gradient angle (0-360):', state.text.gradient.angle);
+                if (angle) state.text.gradient.angle = parseFloat(angle);
+            }
+        }
+        
+        applyTextSettingsToActiveLayer();
+    });
+    
     // Fill tolerance buttons
     const toleranceButtons = {
         'tolerance-low': 10,
@@ -16067,6 +16525,10 @@ function loadReferenceImage() {
                         state.reference.image = img;
                         state.reference.width = img.width;
                         state.reference.height = img.height;
+                        // Phase 11: Store original dimensions
+                        state.reference.originalWidth = img.width;
+                        state.reference.originalHeight = img.height;
+                        state.reference.scale = 1.0;
                         state.reference.visible = true;
                         
                         const checkbox = document.getElementById('reference-visible');
@@ -16074,6 +16536,22 @@ function loadReferenceImage() {
                         
                         const settings = document.getElementById('reference-settings');
                         if (settings) settings.classList.remove('hidden');
+                        
+                        // Phase 11: Update position and scale UI
+                        const refX = document.getElementById('reference-x');
+                        const refXVal = document.getElementById('reference-x-value');
+                        if (refX) refX.value = state.reference.x;
+                        if (refXVal) refXVal.textContent = state.reference.x;
+                        
+                        const refY = document.getElementById('reference-y');
+                        const refYVal = document.getElementById('reference-y-value');
+                        if (refY) refY.value = state.reference.y;
+                        if (refYVal) refYVal.textContent = state.reference.y;
+                        
+                        const refScale = document.getElementById('reference-scale');
+                        const refScaleVal = document.getElementById('reference-scale-value');
+                        if (refScale) refScale.value = 100;
+                        if (refScaleVal) refScaleVal.textContent = '100%';
                         
                         compositeAllLayers();
                     };
