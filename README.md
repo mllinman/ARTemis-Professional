@@ -295,8 +295,10 @@ ARTemis includes a comprehensive set of professional digital painting features!
   - Zoom in/out/fit to screen
 - **File Operations**
   - Save/Load projects (.artemis format)
-  - Export to PNG/JPEG
+  - Export to PNG/JPEG/WebP
+  - **⭐ NEW: Advanced Export** - Layer selection, batch export, web optimization ✅ PHASE 15
   - New canvas creation
+- **⭐ NEW: Memory Monitor** - Real-time memory tracking and optimization tools ✅ PHASE 15
 - **Keyboard Shortcuts** - Professional workflow efficiency
 
 ## Installation
@@ -364,6 +366,7 @@ npm start
 - `Ctrl/Cmd + S` - Save project
 - `Ctrl/Cmd + Shift + S` - Save as
 - `Ctrl/Cmd + E` - Export image
+- `Ctrl/Cmd + Shift + E` - Advanced export ⭐ NEW (Phase 15)
 
 ### Edit
 - `Ctrl/Cmd + Z` - Undo
@@ -463,6 +466,7 @@ The advanced brush engine features:
 ### User Documentation
 - **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
 - **[⭐ ADVANCED-COLOR-WHEEL.md](ADVANCED-COLOR-WHEEL.md)** - NEW! Coolorus-style color picker with 5 color spaces, gamut lock, palettes
+- **[⭐ PHASE_15_FEATURES.md](PHASE_15_FEATURES.md)** - NEW! Advanced export options and memory monitoring (Phase 15)
 - **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization
 - **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the brush system basics
 - **[LAYER-ORGANIZATION-FEATURES.md](LAYER-ORGANIZATION-FEATURES.md)** - Layer types, ordering, and flattening guide
