@@ -13341,7 +13341,7 @@ function showShortcutCustomizationDialog() {
             
             keyDisplay.classList.add('editing');
             keyDisplay.textContent = 'Press a key...';
-            shortcutEditingKey = tool;
+            shortcutEditingKey = action;
         });
         
         item.appendChild(label);
