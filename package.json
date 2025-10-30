@@ -24,5 +24,9 @@
   },
   "devDependencies": {
     "canvas": "^3.2.0"
+  },
+  "dependencies": {
+    "ag-psd": "^28.4.1",
+    "utif": "^3.1.0"
   }
 }

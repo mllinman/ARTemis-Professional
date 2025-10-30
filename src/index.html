@@ -1958,17 +1958,49 @@
                     </div>
                 </div>
 
+                <!-- Performance & Rendering (Phase 15 Enhancements) -->
+                <div class="settings-section">
+                    <h4>Performance & Rendering</h4>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-webgl-acceleration">
+                            Enable WebGL Acceleration (Experimental)
+                        </label>
+                        <p class="setting-description">Use GPU-accelerated rendering for faster brush strokes. May not be supported on all devices. <span id="webgl-support-status"></span></p>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-tiled-rendering">
+                            Enable Tiled Rendering for Large Canvases (4K+)
+                        </label>
+                        <p class="setting-description">Use tiled rendering for canvases larger than 4K resolution to reduce memory usage. Automatically enabled for large canvases.</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-progressive-loading" checked>
+                            Enable Progressive Image Loading
+                        </label>
+                        <p class="setting-description">Load large images progressively with preview to improve responsiveness.</p>
+                    </div>
+                </div>
+
                 <!-- Application Info -->
                 <div class="settings-section">
                     <h4>Application Information</h4>
                     <div class="info-item">
-                        <strong>Version:</strong> 1.0.0
+                        <strong>Version:</strong> 1.0.0 (Phase 15 Enhanced)
                     </div>
                     <div class="info-item">
                         <strong>Current Canvas:</strong> <span id="settings-canvas-info"></span>
                     </div>
                     <div class="info-item">
                         <strong>Active Layers:</strong> <span id="settings-layers-info"></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>WebGL Support:</strong> <span id="webgl-info-status">Checking...</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Tiled Rendering:</strong> <span id="tiled-rendering-status">Not active</span>
                     </div>
                 </div>
             </div>
@@ -2265,6 +2297,14 @@
     <script src="auth.js"></script>
     <script src="subscription-ui.js"></script>
     <script src="advanced-colorwheel.js"></script>
+    
+    <!-- Phase 15 Enhancement Modules -->
+    <script src="psd-exporter.js"></script>
+    <script src="tiff-exporter.js"></script>
+    <script src="progressive-loader.js"></script>
+    <script src="webgl-renderer.js"></script>
+    <script src="tiled-canvas.js"></script>
+    
     <script src="renderer.js"></script>
 </body>
 </html>

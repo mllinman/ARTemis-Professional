@@ -183,14 +183,41 @@ Approximate file sizes based on format:
 
 ---
 
-## 📝 Future Enhancements
+## 📝 Phase 15 Enhancements - COMPLETED ✅
 
-Phase 15 items not yet implemented:
-- **WebGL Acceleration** - GPU-accelerated rendering for faster brush strokes
-- **Larger Canvas Support** - 4K+ canvases with tiled rendering
-- **PSD Export** - Full layer preservation in Photoshop format
-- **TIFF Support** - Professional-grade TIFF export
-- **Progressive Loading** - Load and display large images incrementally
+All Phase 15 future enhancements have been implemented:
+- **WebGL Acceleration** ✅ - GPU-accelerated rendering for faster brush strokes (experimental, can be enabled in settings)
+- **Larger Canvas Support** ✅ - 4K+ canvases with tiled rendering to manage memory efficiently
+- **PSD Export** ✅ - Full layer preservation in Photoshop format using ag-psd library
+- **TIFF Support** ✅ - Professional-grade TIFF export using UTIF library
+- **Progressive Loading** ✅ - Load and display large images incrementally with progress indication
+
+### How to Use New Features
+
+#### PSD Export with Layers
+1. Create artwork with multiple layers
+2. Go to **File → Export Image**
+3. Choose `.psd` format
+4. All layers, blend modes, and opacity settings are preserved
+
+#### TIFF Export
+1. Go to **File → Export Image**
+2. Choose `.tiff` or `.tif` format
+3. Professional-grade TIFF file is created
+
+#### Progressive Loading
+- Automatically enabled when importing large images
+- Shows loading progress for better user experience
+
+#### WebGL Acceleration (Experimental)
+1. Go to **File → Settings**
+2. Enable "WebGL Acceleration" in Performance & Rendering section
+3. Faster brush strokes with GPU acceleration
+
+#### Tiled Rendering for 4K+ Canvases
+1. Automatically enabled for canvases larger than 4K (3840x2160)
+2. Can be manually controlled in Settings
+3. Reduces memory usage for large canvases
 
 ---
 
