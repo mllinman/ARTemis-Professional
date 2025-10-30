@@ -6636,15 +6636,34 @@ function applyCanvasWeave(ctx, size) {
     ctx.fillRect(-size/2, -size/2, size, size);
 }
 
-// Pigment-based color mixing simulation
-function applyPigmentMixing(baseColor, canvasColor, mixAmount) {
-    if (state.brush.pigmentMixing !== 'authentic') {
-        return baseColor; // Use standard RGB mixing
+// Helper function to convert color to RGBA with alpha
+function colorToRGBA(color, alpha) {
+    // If color is already rgba format, return it
+    if (color.startsWith('rgba')) return color;
+    if (color.startsWith('rgb')) {
+        // Convert rgb to rgba
+        return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
     }
     
+    // Convert hex to rgba
+    const rgb = hexToRgb(color);
+    if (!rgb) return `rgba(0,0,0,${alpha})`;
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+}
+
+// Pigment-based color mixing simulation
+function applyPigmentMixing(baseColor, canvasColor, mixAmount) {
+    if (state.brush.pigmentMixing === 'rgb') {
+        // Use standard RGB mixing
+        return baseColor;
+    }
+    
+    // For 'authentic' or 'advanced' modes, use pigment-based mixing
     // Convert to pigment-based RYB color space for authentic mixing
     const base = hexToRgb(baseColor);
     const canvas = hexToRgb(canvasColor);
+    
+    if (!base || !canvas) return baseColor;
     
     // Simplified pigment mixing (authentic pigment behavior)
     const mixed = {
@@ -6737,8 +6756,8 @@ function applyAirbrushEffect(ctx, x, y, size, pressure) {
     const alpha = pressure * airPressure;
     
     gradient.addColorStop(0, state.color);
-    gradient.addColorStop(0.5, state.color + Math.floor(alpha * 128).toString(16).padStart(2, '0'));
-    gradient.addColorStop(1, state.color + '00');
+    gradient.addColorStop(0.5, colorToRGBA(state.color, alpha * 0.5));
+    gradient.addColorStop(1, colorToRGBA(state.color, 0));
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -6777,14 +6796,21 @@ function applySpongeEffect(ctx, x, y, size) {
     const spongeType = state.brush.spongeType;
     const randomTexture = state.brush.spongeRandomTexture / 100;
     
-    // Create random sponge-like texture
-    for (let i = 0; i < size * randomTexture; i++) {
-        const offsetX = (Math.random() - 0.5) * size;
-        const offsetY = (Math.random() - 0.5) * size;
-        const dotSize = Math.random() * size * 0.1;
+    // Create pseudo-random sponge-like texture (deterministic for consistent strokes)
+    const numDots = Math.floor(size * randomTexture);
+    for (let i = 0; i < numDots; i++) {
+        // Use position-based pseudo-random for consistent results
+        const seed = x * 12.9898 + y * 78.233 + i * 37.719;
+        const rand1 = (Math.sin(seed) * 43758.5453) % 1;
+        const rand2 = (Math.sin(seed * 1.1) * 43758.5453) % 1;
+        const rand3 = (Math.sin(seed * 1.3) * 43758.5453) % 1;
+        
+        const offsetX = (rand1 - 0.5) * size;
+        const offsetY = (rand2 - 0.5) * size;
+        const dotSize = rand3 * size * 0.1;
         
         ctx.save();
-        ctx.globalAlpha *= Math.random() * 0.3;
+        ctx.globalAlpha *= rand1 * 0.3;
         ctx.beginPath();
         ctx.arc(x + offsetX, y + offsetY, dotSize, 0, Math.PI * 2);
         ctx.fill();
@@ -6887,7 +6913,7 @@ function applyEnhancedColorBleeding(ctx, x, y, size, pressure) {
         ctx.save();
         gradient.addColorStop(0, 'rgba(0,0,0,0)');
         gradient.addColorStop(0.7, 'rgba(0,0,0,0)');
-        gradient.addColorStop(1, state.color + Math.floor(bleeding * 50).toString(16).padStart(2, '0'));
+        gradient.addColorStop(1, colorToRGBA(state.color, bleeding * 0.2));
         
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -6897,7 +6923,9 @@ function applyEnhancedColorBleeding(ctx, x, y, size, pressure) {
     }
     
     // Backruns (cauliflower effect in watercolor)
-    if (backruns > 0.3 && Math.random() < backruns * 0.1) {
+    // Use deterministic pseudo-random based on position for consistent results
+    const pseudoRandom = (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+    if (backruns > 0.3 && pseudoRandom < backruns * 0.1) {
         ctx.save();
         ctx.globalAlpha *= 0.2;
         ctx.beginPath();
