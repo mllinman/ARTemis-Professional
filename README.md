@@ -487,6 +487,7 @@ The advanced brush engine features:
 - **[UI-IMPROVEMENTS.md](UI-IMPROVEMENTS.md)** - Modern UI features documentation
 - **[USAGE.md](USAGE.md)** - General usage guide
 - **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Comprehensive roadmap of planned features
+- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - ⭐ NEW! Second round of enhancements with 230+ features from industry research
 
 ### Business Documentation
 - **[BUSINESS_PLAN.md](BUSINESS_PLAN.md)** - Complete business plan for BulletDrop Studios LLC ⭐ NEW
@@ -498,7 +499,9 @@ The advanced brush engine features:
 
 ## Future Enhancements
 
-For a complete, detailed roadmap of all planned features organized by priority and implementation phase, see **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)**.
+For detailed roadmaps of all planned features:
+- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Original comprehensive roadmap
+- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - ⭐ NEW! Second round with 230+ cutting-edge features from 2024-2025 industry research
 
 ### Quick Overview
 - ~~Gradient tool~~ ✅ COMPLETED
