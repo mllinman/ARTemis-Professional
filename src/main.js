@@ -502,6 +502,101 @@ function createWindow() {
       ]
     },
     {
+      label: 'Animation',
+      submenu: [
+        {
+          label: 'Show Animation Timeline',
+          accelerator: 'CmdOrCtrl+Alt+A',
+          click: () => { mainWindow.webContents.send('animation-show-timeline'); }
+        },
+        {
+          label: 'Add Frame',
+          accelerator: 'CmdOrCtrl+Alt+F',
+          click: () => { mainWindow.webContents.send('animation-add-frame'); }
+        },
+        {
+          label: 'Duplicate Frame',
+          click: () => { mainWindow.webContents.send('animation-duplicate-frame'); }
+        },
+        {
+          label: 'Delete Frame',
+          click: () => { mainWindow.webContents.send('animation-delete-frame'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Play Animation',
+          accelerator: 'CmdOrCtrl+Alt+P',
+          click: () => { mainWindow.webContents.send('animation-play'); }
+        },
+        {
+          label: 'Stop Animation',
+          click: () => { mainWindow.webContents.send('animation-stop'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Toggle Onion Skin',
+          accelerator: 'CmdOrCtrl+Alt+O',
+          click: () => { mainWindow.webContents.send('animation-toggle-onion-skin'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Export as GIF...',
+          click: () => { mainWindow.webContents.send('animation-export-gif'); }
+        },
+        {
+          label: 'Export Frame Sequence...',
+          click: () => { mainWindow.webContents.send('animation-export-frames'); }
+        },
+        {
+          label: 'Export Sprite Sheet...',
+          click: () => { mainWindow.webContents.send('animation-export-spritesheet'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Start Recording',
+          accelerator: 'CmdOrCtrl+Alt+R',
+          click: () => { mainWindow.webContents.send('recording-start'); }
+        },
+        {
+          label: 'Stop Recording',
+          click: () => { mainWindow.webContents.send('recording-stop'); }
+        }
+      ]
+    },
+    {
+      label: 'Cloud',
+      submenu: [
+        {
+          label: 'Cloud Sync Panel',
+          accelerator: 'CmdOrCtrl+Alt+C',
+          click: () => { mainWindow.webContents.send('cloud-show-panel'); }
+        },
+        {
+          label: 'Sync Now',
+          accelerator: 'CmdOrCtrl+Alt+S',
+          click: () => { mainWindow.webContents.send('cloud-sync-now'); }
+        },
+        {
+          label: 'Enable Auto-Sync',
+          click: () => { mainWindow.webContents.send('cloud-toggle-auto-sync'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Export Backup...',
+          click: () => { mainWindow.webContents.send('cloud-export-backup'); }
+        },
+        {
+          label: 'Import Backup...',
+          click: () => { mainWindow.webContents.send('cloud-import-backup'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Generate Share Link',
+          click: () => { mainWindow.webContents.send('cloud-generate-share-link'); }
+        }
+      ]
+    },
+    {
       label: 'Help',
       submenu: [
         {
