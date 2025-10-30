@@ -39,12 +39,12 @@
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">Professional Digital Art Tools for Everyone</h1>
-                <p class="hero-subtitle">Create stunning artwork with ARTemis - the browser-based painting application with 178+ professional brushes, unlimited layers, and zero barriers to entry.</p>
+                <p class="hero-subtitle">Create stunning artwork with ARTemis - the browser-based painting application with 178+ professional brushes, unlimited layers, PSD/TIFF export, and zero barriers to entry.</p>
                 <div class="hero-buttons">
                     <a href="../src/login.html" class="btn btn-large btn-primary">Start Creating Free</a>
                     <a href="pages/features.html" class="btn btn-large btn-secondary">Explore Features</a>
                 </div>
-                <p class="hero-note">✨ No download required • Works in any browser • Free tier available</p>
+                <p class="hero-note">✨ No download required • Works in any browser • Free tier available • Professional export formats</p>
             </div>
             <div class="hero-image">
                 <div class="app-preview">
@@ -89,6 +89,16 @@
                     <div class="feature-icon">🎯</div>
                     <h3>Professional Tools</h3>
                     <p>Advanced features like layer management, filters, transform tools, and photo editing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Export Formats</h3>
+                    <p>Export to PSD (with layers), TIFF, PNG, JPEG, and WebP. Batch export layers with custom presets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Performance</h3>
+                    <p>WebGL acceleration, memory management, 4K+ canvas support, and optimized rendering.</p>
                 </div>
             </div>
         </div>
@@ -168,6 +178,27 @@
                         <div class="visual-placeholder">🎨</div>
                     </div>
                 </div>
+
+                <div class="feature-row">
+                    <div class="feature-description">
+                        <h3>💾 Professional Export & Performance</h3>
+                        <p>Export your artwork in professional formats with full control. Advanced memory management and optimization for large projects and 4K+ canvases.</p>
+                        <ul>
+                            <li>PSD export with full layer preservation</li>
+                            <li>TIFF support for professional printing</li>
+                            <li>PNG, JPEG, WebP with quality control</li>
+                            <li>Batch export layers as separate files</li>
+                            <li>Custom export presets for repeated tasks</li>
+                            <li>Memory monitor with real-time statistics</li>
+                            <li>WebGL acceleration (experimental)</li>
+                            <li>Tiled rendering for 4K+ canvases</li>
+                            <li>Progressive loading for large images</li>
+                        </ul>
+                    </div>
+                    <div class="feature-visual">
+                        <div class="visual-placeholder">💾</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -200,12 +231,46 @@
                         <li>✓ 178+ brush presets</li>
                         <li>✓ All advanced tools</li>
                         <li>✓ Professional filters</li>
+                        <li>✓ PSD & TIFF export</li>
                         <li>✓ Priority support</li>
                     </ul>
                     <a href="pages/pricing.html" class="btn btn-primary">Upgrade to Pro</a>
                 </div>
             </div>
             <p class="pricing-note">All plans include free updates and cloud sync. No hidden fees.</p>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section style="padding: 80px 0; background: var(--bg-light);">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div style="margin-bottom: 2rem; background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">Does ARTemis work on my device?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">Yes! ARTemis works on any device with a modern web browser: Windows, macOS, Linux, iOS, Android, and ChromeOS. No installation required.</p>
+                </div>
+                <div style="margin-bottom: 2rem; background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">Do I need a stylus or drawing tablet?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">Not required! ARTemis works with mouse, touchpad, touch screens, and stylus/tablets. Full pressure sensitivity is supported with Wacom, XP-Pen, Huion, and other tablets.</p>
+                </div>
+                <div style="margin-bottom: 2rem; background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">Can I export my work to use in Photoshop or other software?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">Absolutely! Export to PSD (with all layers preserved), TIFF, PNG, JPEG, or WebP. Your layers, blend modes, and opacity settings are maintained in PSD exports.</p>
+                </div>
+                <div style="margin-bottom: 2rem; background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">What's the difference between Basic and Pro?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">Basic is free with 5 layers and 10 brushes - perfect for getting started. Pro ($5/month) unlocks unlimited layers, 178+ brushes, all advanced tools, professional filters, and export features.</p>
+                </div>
+                <div style="margin-bottom: 2rem; background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">Is my work saved automatically?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">You can save your projects locally using File → Save Project (Ctrl+S). Pro users get cloud sync for automatic backup and access across devices.</p>
+                </div>
+                <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--text-color); margin-bottom: 0.5rem; font-size: 1.2rem;">Can I cancel my Pro subscription anytime?</h3>
+                    <p style="color: var(--text-light); line-height: 1.6;">Yes! No annual commitment required. Cancel anytime and keep access until the end of your billing period.</p>
+                </div>
+            </div>
         </div>
     </section>
 
