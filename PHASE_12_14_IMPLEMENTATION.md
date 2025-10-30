@@ -270,15 +270,19 @@ const backup = await cloudSync.exportAllData();
 - Canvas API (native browser API)
 - MediaRecorder API (native browser API)
 
-### Optional (Not Included)
-- **gif.js** (v0.2.0+) - Required for GIF export
+### Optional (Not Included) - IMPORTANT
+- **gif.js** (v0.2.0+) - **REQUIRED for GIF export functionality**
+  - **WARNING**: GIF export will fail with an error if gif.js is not loaded
   - CDN: `https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js`
   - npm: `npm install gif.js`
+  - Without this library, only frame sequence and sprite sheet export will work
 
-To enable GIF export, add this to `index.html`:
+**To enable GIF export**, add this to `index.html` before the animation.js script:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
 ```
+
+**Alternative**: Users will see an error message if they try to export GIF without the library, and can use frame sequence or sprite sheet export instead.
 
 ---
 

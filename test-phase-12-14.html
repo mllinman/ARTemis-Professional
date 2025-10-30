@@ -264,6 +264,7 @@
                 };
                 await cloudSync.syncSettings(testSettings);
                 const loadedSettings = await cloudSync.loadSettings();
+                const settingsLoaded = loadedSettings !== null && typeof loadedSettings === 'object';
                 
                 // Test project save/load
                 const projectId = await cloudSync.saveProject({
@@ -291,7 +292,7 @@
                     <div class="test-result success">
                         ✓ CloudSync tests passed<br>
                         - IndexedDB initialized<br>
-                        - Settings synced (loaded: ${loadedSettings ? 'yes' : 'no'})<br>
+                        - Settings synced (loaded: ${settingsLoaded ? 'yes' : 'no'})<br>
                         - Project saved (ID: ${projectId.substring(0, 10)}...)<br>
                         - Project loaded (name: ${project.name})<br>
                         - Total projects: ${allProjects.length}<br>
