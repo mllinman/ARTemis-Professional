@@ -1770,11 +1770,11 @@ class GlyphsPanel {
         // Basic Latin alphabet
         for (let i = 32; i <= 126; i++) {
             const char = String.fromCharCode(i);
-            if (i >= 65 && i <= 90 || i >= 97 && i <= 122) {
+            if ((i >= 65 && i <= 90) || (i >= 97 && i <= 122)) {
                 this.categories.letters.push(char);
             } else if (i >= 48 && i <= 57) {
                 this.categories.numbers.push(char);
-            } else if (i >= 33 && i <= 47 || i >= 58 && i <= 64) {
+            } else if ((i >= 33 && i <= 47) || (i >= 58 && i <= 64)) {
                 this.categories.punctuation.push(char);
             }
         }
