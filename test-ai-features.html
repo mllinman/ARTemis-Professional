@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTemis AI Features Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+        
+        .feature-card p {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .feature-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .status-available {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .canvas-container {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            max-width: 100%;
+        }
+        
+        .test-log {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .test-log-entry {
+            margin-bottom: 5px;
+        }
+        
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .info { color: #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ARTemis AI Features Test Suite</h1>
+        
+        <div class="status">
+            <strong>Status:</strong> <span id="init-status">Initializing...</span>
+        </div>
+        
+        <div class="canvas-container">
+            <h2>Test Canvas</h2>
+            <canvas id="testCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <h2>Category 1: AI & Machine Learning Features</h2>
+        
+        <h3>Generative AI Tools (5 features)</h3>
+        <div class="feature-grid" id="generative-tools"></div>
+        
+        <h3>Neural Filters & Smart Enhancements (5 features)</h3>
+        <div class="feature-grid" id="neural-filters"></div>
+        
+        <h3>AI Workflow Assistants (5 features)</h3>
+        <div class="feature-grid" id="workflow-assistants"></div>
+        
+        <h3>Advanced AI Features (10 features)</h3>
+        <div class="feature-grid" id="advanced-features"></div>
+        
+        <div class="test-log" id="testLog">
+            <div class="test-log-entry info">Test log initialized...</div>
+        </div>
+    </div>
+    
+    <script src="src/ai-tools.js"></script>
+    <script>
+        // Test log utility
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = `test-log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Initialize canvas and AI tools
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw test pattern
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add some test content
+        ctx.fillStyle = '#667eea';
+        ctx.fillRect(100, 100, 200, 200);
+        
+        ctx.fillStyle = '#764ba2';
+        ctx.beginPath();
+        ctx.arc(500, 300, 100, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Create mock app object
+        const mockApp = {
+            canvas: canvas,
+            ctx: ctx
+        };
+        
+        // Initialize AI Tools
+        let aiTools;
+        try {
+            aiTools = new AITools(mockApp);
+            log('✓ AI Tools initialized successfully', 'success');
+            document.getElementById('init-status').textContent = 'Ready ✓';
+            document.getElementById('init-status').style.color = '#4caf50';
+        } catch (error) {
+            log(`✗ Failed to initialize AI Tools: ${error.message}`, 'error');
+            document.getElementById('init-status').textContent = 'Failed ✗';
+            document.getElementById('init-status').style.color = '#f44336';
+        }
+        
+        // Feature definitions
+        const features = {
+            generativeTools: [
+                { name: 'Generative Fill', key: 'generativeFill', test: async () => await aiTools.generativeFill({ x: 0, y: 0, width: 100, height: 100 }) },
+                { name: 'AI Background Removal', key: 'backgroundRemoval', test: async () => await aiTools.removeBackground() },
+                { name: 'Generative Expand', key: 'generativeExpand', test: async () => await aiTools.generativeExpand('right', 100) },
+                { name: 'AI Object Selection', key: 'objectSelection', test: async () => await aiTools.selectObject(100, 100) },
+                { name: 'Content-Aware Fill', key: 'contentAwareFill', test: async () => await aiTools.contentAwareFill(new Uint8Array(100)) }
+            ],
+            neuralFilters: [
+                { name: 'Neural Filters Suite', key: 'neuralFilters', test: async () => await aiTools.applyNeuralFilter('portrait-enhance') },
+                { name: 'AI-Powered Retouching', key: 'aiRetouching', test: async () => await aiTools.aiRetouch() },
+                { name: 'Smart Sharpen', key: 'smartSharpen', test: async () => await aiTools.smartSharpen() },
+                { name: 'AI Relighting', key: 'aiRelighting', test: async () => await aiTools.aiRelight() },
+                { name: 'Neural Upscaling', key: 'neuralUpscaling', test: async () => await aiTools.neuralUpscale(2) }
+            ],
+            workflowAssistants: [
+                { name: 'AI Assistant/Copilot', key: 'aiAssistant', test: async () => await aiTools.aiAssistant('test query') },
+                { name: 'Smart Recommendations', key: 'smartRecommendations', test: () => aiTools.getSmartRecommendations() },
+                { name: 'Auto-Enhance', key: 'autoEnhance', test: async () => await aiTools.autoEnhance() },
+                { name: 'AI-Assisted Composition', key: 'aiComposition', test: () => aiTools.getCompositionOverlay() },
+                { name: 'Intelligent Cropping', key: 'intelligentCrop', test: async () => await aiTools.suggestCrop() }
+            ],
+            advancedFeatures: [
+                { name: 'AI Inpainting', key: 'aiInpainting', test: async () => await aiTools.aiInpaint(new Uint8Array(100)) },
+                { name: 'Face Swap & Morphing', key: 'faceSwap', test: async () => await aiTools.faceSwap({}, {}) },
+                { name: 'AI Animation Interpolation', key: 'aiInterpolation', test: async () => await aiTools.aiInterpolate({}, {}) },
+                { name: 'Smart Pattern Generation', key: 'patternGeneration', test: async () => await aiTools.generatePattern() },
+                { name: 'AI Color Harmonization', key: 'colorHarmonization', test: async () => await aiTools.harmonizeColors({}, {}) },
+                { name: 'Pose Recognition', key: 'poseRecognition', test: async () => await aiTools.recognizePose({}) },
+                { name: 'AI Sketch to Line Art', key: 'sketchToLineArt', test: async () => await aiTools.sketchToLineArt() },
+                { name: 'Auto-Tagging', key: 'autoTagging', test: async () => await aiTools.autoTag({}) },
+                { name: 'Predictive Stroke', key: 'predictiveStroke', test: () => aiTools.predictStroke([{ x: 0, y: 0 }]) },
+                { name: 'Style Matching', key: 'styleMatching', test: async () => await aiTools.matchStyle({}) }
+            ]
+        };
+        
+        // Create feature cards
+        function createFeatureCard(feature, containerId) {
+            const container = document.getElementById(containerId);
+            const card = document.createElement('div');
+            card.className = 'feature-card';
+            
+            const available = aiTools && aiTools.features && aiTools.features[feature.key];
+            
+            card.innerHTML = `
+                <h3>${feature.name}</h3>
+                <p>
+                    <span class="feature-status status-available">
+                        ${available ? '✓ Available' : '○ Unavailable'}
+                    </span>
+                </p>
+                <button onclick="testFeature('${feature.name}', ${containerId.indexOf('generative') >= 0 ? 0 : containerId.indexOf('neural') >= 0 ? 1 : containerId.indexOf('workflow') >= 0 ? 2 : 3}, ${features[Object.keys(features)[0]].indexOf(feature)})" ${!available ? 'disabled' : ''}>
+                    Test Feature
+                </button>
+            `;
+            
+            container.appendChild(card);
+        }
+        
+        // Test a feature
+        window.testFeature = async function(featureName, categoryIndex, featureIndex) {
+            const categoryKeys = Object.keys(features);
+            const feature = features[categoryKeys[categoryIndex]][featureIndex];
+            
+            log(`Testing ${featureName}...`, 'info');
+            
+            try {
+                const result = await feature.test();
+                log(`✓ ${featureName} executed successfully`, 'success');
+                if (result) {
+                    log(`  Result: ${JSON.stringify(result).substring(0, 100)}...`, 'info');
+                }
+            } catch (error) {
+                log(`✗ ${featureName} failed: ${error.message}`, 'error');
+            }
+        };
+        
+        // Populate all feature cards
+        if (aiTools) {
+            features.generativeTools.forEach(f => createFeatureCard(f, 'generative-tools'));
+            features.neuralFilters.forEach(f => createFeatureCard(f, 'neural-filters'));
+            features.workflowAssistants.forEach(f => createFeatureCard(f, 'workflow-assistants'));
+            features.advancedFeatures.forEach(f => createFeatureCard(f, 'advanced-features'));
+            
+            log('✓ All 25 AI features loaded', 'success');
+            log(`✓ Feature status: ${Object.values(aiTools.features).filter(v => v).length}/25 enabled`, 'success');
+        } else {
+            log('✗ Failed to load AI features', 'error');
+        }
+        
+        // Run automatic test
+        log('Running automatic feature availability test...', 'info');
+        let availableCount = 0;
+        if (aiTools && aiTools.features) {
+            for (const [key, value] of Object.entries(aiTools.features)) {
+                if (value) {
+                    availableCount++;
+                    log(`  ✓ ${key}: Available`, 'success');
+                }
+            }
+            log(`Test complete: ${availableCount}/25 features available`, 'success');
+        }
+    </script>
+</body>
+</html>
