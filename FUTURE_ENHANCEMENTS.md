@@ -195,7 +195,7 @@ Features that would be nice to have but are not essential for core functionality
 **Priority: Medium**
 
 - [x] Shape anchor point editing ✅ COMPLETED
-  - Edit bezier curves with VectorPath class
+  - Edit Bézier curves with VectorPath class
   - Add/remove anchor points
   - Convert corner/smooth points
   - Interactive control handles
@@ -205,7 +205,7 @@ Features that would be nice to have but are not essential for core functionality
   - Preserve vector data with SVGHandler
 - [x] Advanced vector tools ✅ COMPLETED
   - Pen tool for custom shapes with keyboard shortcut (P)
-  - Vector brush strokes with bezier curves
+  - Vector brush strokes with Bézier curves
   - Shape boolean operations (union, subtract, intersect, exclude)
 
 ### Text Improvements
@@ -225,7 +225,7 @@ Features that would be nice to have but are not essential for core functionality
   - Shadow with blur, offset, and color controls
   - Gradient fill (linear and radial)
 
-**Impact:** ✅ FULLY COMPLETE - Professional vector editing with bezier curves, anchor point manipulation, SVG import/export, shape boolean operations, and text-on-path capabilities now available. Full pen tool implementation with interactive handles for precise vector artwork creation.
+**Impact:** ✅ FULLY COMPLETE - Professional vector editing with Bézier curves, anchor point manipulation, SVG import/export, shape boolean operations, and text-on-path capabilities now available. Full pen tool implementation with interactive handles for precise vector artwork creation.
 
 ---
 
