@@ -1005,6 +1005,9 @@ function init() {
     // Phase 14: Initialize Cloud & Collaboration features
     initPhase14Features();
     
+    // Category 1: Initialize AI Tools rendering hooks
+    setupAIRenderingHook();
+    
     // Create initial layer
     addLayer('Background');
     
@@ -19903,19 +19906,28 @@ function drawAICompositionOverlay() {
 }
 
 // Hook into the rendering pipeline to draw overlay
-const originalRenderLayers = renderLayers;
-renderLayers = function() {
-    originalRenderLayers.apply(this, arguments);
-    if (aiCompositionOverlayActive) {
-        drawAICompositionOverlay();
+// This will be set up after renderLayers is defined
+let originalRenderLayers = null;
+
+function setupAIRenderingHook() {
+    if (typeof renderLayers !== 'undefined' && !originalRenderLayers) {
+        originalRenderLayers = renderLayers;
+        renderLayers = function() {
+            originalRenderLayers.apply(this, arguments);
+            if (aiCompositionOverlayActive) {
+                drawAICompositionOverlay();
+            }
+        };
     }
-};
+}
 
 // Add ESC key to hide overlay
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && aiCompositionOverlayActive) {
         aiCompositionOverlayActive = false;
-        renderLayers();
+        if (typeof renderLayers !== 'undefined') {
+            renderLayers();
+        }
     }
 });
 
