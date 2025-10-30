@@ -13517,6 +13517,14 @@ function setupMenuHandlers() {
     ipcRenderer.on('window-reset-panels', () => resetPanelPositions());
     ipcRenderer.on('window-save-layout', () => savePanelLayout());
     ipcRenderer.on('window-load-layout', () => loadPanelLayout());
+    
+    // AI Tools menu handlers
+    ipcRenderer.on('ai-background-removal', () => applyAIBackgroundRemoval());
+    ipcRenderer.on('ai-object-selection', () => enableAIObjectSelection());
+    ipcRenderer.on('ai-smart-sharpen', () => applyAISmartSharpen());
+    ipcRenderer.on('ai-auto-enhance', () => applyAIAutoEnhance());
+    ipcRenderer.on('ai-intelligent-crop', () => showAIIntelligentCrop());
+    ipcRenderer.on('ai-composition-overlay', () => toggleAICompositionOverlay());
 }
 
 // Setup Browser Menu Bar (for standalone browser mode)
@@ -13629,6 +13637,26 @@ function handleMenuAction(action) {
             break;
         case 'interface-scale':
             showInterfaceScaleDialog();
+            break;
+        
+        // AI Tools menu
+        case 'ai-background-removal':
+            applyAIBackgroundRemoval();
+            break;
+        case 'ai-object-selection':
+            enableAIObjectSelection();
+            break;
+        case 'ai-smart-sharpen':
+            applyAISmartSharpen();
+            break;
+        case 'ai-auto-enhance':
+            applyAIAutoEnhance();
+            break;
+        case 'ai-intelligent-crop':
+            showAIIntelligentCrop();
+            break;
+        case 'ai-composition-overlay':
+            toggleAICompositionOverlay();
             break;
         
         default:
@@ -19536,6 +19564,360 @@ function setupCloudSyncMenuHandlers() {
         });
     }
 }
+
+// ============================================================================
+// AI Tools Implementation (Category 1: Future Enhancements 2.0)
+// ============================================================================
+
+let aiTools = null;
+let aiCompositionOverlayActive = false;
+let aiCompositionOverlayType = 'rule-of-thirds';
+
+// Initialize AI Tools on first use
+function initAITools() {
+    if (!aiTools && typeof AITools !== 'undefined') {
+        aiTools = new AITools({
+            canvas: mainCanvas,
+            ctx: mainCtx
+        });
+        console.log('AI Tools initialized');
+    }
+    return aiTools;
+}
+
+// AI Background Removal
+async function applyAIBackgroundRemoval() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const tools = initAITools();
+    if (!tools) {
+        alert('AI Tools not available');
+        return;
+    }
+    
+    const tolerance = prompt('Enter background removal tolerance (10-100):', '30');
+    if (tolerance === null) return;
+    
+    const featherRadius = prompt('Enter edge feather radius (0-10):', '2');
+    if (featherRadius === null) return;
+    
+    try {
+        // Save current state for undo
+        saveState();
+        
+        // Apply background removal to active layer
+        const layerCanvas = state.activeLayer.canvas;
+        const layerCtx = layerCanvas.getContext('2d');
+        tools.canvas = layerCanvas;
+        tools.ctx = layerCtx;
+        
+        await tools.removeBackground({
+            tolerance: parseInt(tolerance),
+            preserveEdges: true,
+            featherRadius: parseInt(featherRadius)
+        });
+        
+        // Restore original canvas reference
+        tools.canvas = mainCanvas;
+        tools.ctx = mainCtx;
+        
+        // Redraw
+        renderLayers();
+        alert('Background removal complete!');
+    } catch (error) {
+        console.error('AI Background Removal error:', error);
+        alert('Error applying background removal: ' + error.message);
+    }
+}
+
+// AI Object Selection
+function enableAIObjectSelection() {
+    alert('AI Object Selection: Click on an object in the canvas to select it.\n\nThis feature uses intelligent edge detection to identify and select objects.');
+    
+    // Switch to selection tool and enable AI mode
+    selectTool('selection');
+    
+    // Add one-time click listener for AI selection
+    const handleAISelection = async (e) => {
+        const tools = initAITools();
+        if (!tools || !state.activeLayer) return;
+        
+        const rect = mainCanvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) * (mainCanvas.width / rect.width));
+        const y = Math.floor((e.clientY - rect.top) * (mainCanvas.height / rect.height));
+        
+        try {
+            const tolerance = 32;
+            const selection = await tools.selectObject(x, y, {
+                tolerance,
+                contiguous: true,
+                antiAlias: true
+            });
+            
+            // Create selection visualization
+            state.selection = {
+                active: true,
+                data: selection,
+                x: 0,
+                y: 0,
+                width: mainCanvas.width,
+                height: mainCanvas.height
+            };
+            
+            // Draw selection marching ants
+            renderLayers();
+            alert('Object selected! You can now move, transform, or edit the selection.');
+        } catch (error) {
+            console.error('AI Object Selection error:', error);
+            alert('Error selecting object: ' + error.message);
+        }
+        
+        // Remove the listener after first use
+        mainCanvas.removeEventListener('click', handleAISelection);
+    };
+    
+    mainCanvas.addEventListener('click', handleAISelection);
+}
+
+// AI Smart Sharpen
+async function applyAISmartSharpen() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const tools = initAITools();
+    if (!tools) {
+        alert('AI Tools not available');
+        return;
+    }
+    
+    const amount = prompt('Enter sharpening amount (0.5-3.0):', '1.0');
+    if (amount === null) return;
+    
+    const radius = prompt('Enter sharpening radius (0.5-5.0):', '1.0');
+    if (radius === null) return;
+    
+    const reduceNoise = confirm('Apply noise reduction first?');
+    
+    try {
+        // Save current state for undo
+        saveState();
+        
+        // Apply smart sharpen to active layer
+        const layerCanvas = state.activeLayer.canvas;
+        const layerCtx = layerCanvas.getContext('2d');
+        tools.canvas = layerCanvas;
+        tools.ctx = layerCtx;
+        
+        await tools.smartSharpen({
+            amount: parseFloat(amount),
+            radius: parseFloat(radius),
+            threshold: 0,
+            reduceNoise: reduceNoise
+        });
+        
+        // Restore original canvas reference
+        tools.canvas = mainCanvas;
+        tools.ctx = mainCtx;
+        
+        // Redraw
+        renderLayers();
+        alert('Smart sharpening complete!');
+    } catch (error) {
+        console.error('AI Smart Sharpen error:', error);
+        alert('Error applying smart sharpen: ' + error.message);
+    }
+}
+
+// AI Auto-Enhance
+async function applyAIAutoEnhance() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const tools = initAITools();
+    if (!tools) {
+        alert('AI Tools not available');
+        return;
+    }
+    
+    const adjustExposure = confirm('Adjust exposure automatically?');
+    const adjustContrast = confirm('Adjust contrast automatically?');
+    const adjustSaturation = confirm('Adjust saturation automatically?');
+    const reduceNoise = confirm('Apply noise reduction?');
+    
+    try {
+        // Save current state for undo
+        saveState();
+        
+        // Apply auto-enhance to active layer
+        const layerCanvas = state.activeLayer.canvas;
+        const layerCtx = layerCanvas.getContext('2d');
+        tools.canvas = layerCanvas;
+        tools.ctx = layerCtx;
+        
+        await tools.autoEnhance({
+            adjustExposure,
+            adjustContrast,
+            adjustSaturation,
+            reduceNoise
+        });
+        
+        // Restore original canvas reference
+        tools.canvas = mainCanvas;
+        tools.ctx = mainCtx;
+        
+        // Redraw
+        renderLayers();
+        alert('Auto-enhancement complete!');
+    } catch (error) {
+        console.error('AI Auto-Enhance error:', error);
+        alert('Error applying auto-enhance: ' + error.message);
+    }
+}
+
+// AI Intelligent Crop
+async function showAIIntelligentCrop() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const tools = initAITools();
+    if (!tools) {
+        alert('AI Tools not available');
+        return;
+    }
+    
+    try {
+        const aspectRatio = prompt('Enter desired aspect ratio (width:height), or leave empty for auto:', '');
+        let ratio = null;
+        if (aspectRatio && aspectRatio.includes(':')) {
+            const parts = aspectRatio.split(':');
+            ratio = parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+        
+        // Get crop suggestions from AI
+        const layerCanvas = state.activeLayer.canvas;
+        const layerCtx = layerCanvas.getContext('2d');
+        tools.canvas = layerCanvas;
+        tools.ctx = layerCtx;
+        
+        const suggestions = await tools.suggestCrop(ratio);
+        
+        // Restore original canvas reference
+        tools.canvas = mainCanvas;
+        tools.ctx = mainCtx;
+        
+        // Show suggestions
+        let message = 'AI Crop Suggestions:\n\n';
+        suggestions.forEach((suggestion, index) => {
+            message += `${index + 1}. ${suggestion.type}\n`;
+            message += `   Position: (${Math.round(suggestion.x)}, ${Math.round(suggestion.y)})\n`;
+            message += `   Size: ${Math.round(suggestion.width)} x ${Math.round(suggestion.height)}\n\n`;
+        });
+        
+        alert(message + 'Use the Crop tool to apply these suggestions manually.');
+    } catch (error) {
+        console.error('AI Intelligent Crop error:', error);
+        alert('Error suggesting crops: ' + error.message);
+    }
+}
+
+// AI Composition Overlay
+function toggleAICompositionOverlay() {
+    aiCompositionOverlayActive = !aiCompositionOverlayActive;
+    
+    if (aiCompositionOverlayActive) {
+        const types = ['rule-of-thirds', 'golden-ratio', 'center', 'diagonal'];
+        const choice = prompt(
+            'Choose composition overlay type:\n' +
+            '1. Rule of Thirds\n' +
+            '2. Golden Ratio\n' +
+            '3. Center\n' +
+            '4. Diagonal',
+            '1'
+        );
+        
+        if (choice === null) {
+            aiCompositionOverlayActive = false;
+            return;
+        }
+        
+        const index = parseInt(choice) - 1;
+        if (index >= 0 && index < types.length) {
+            aiCompositionOverlayType = types[index];
+        }
+        
+        drawAICompositionOverlay();
+    } else {
+        // Clear overlay
+        renderLayers();
+    }
+}
+
+function drawAICompositionOverlay() {
+    if (!aiCompositionOverlayActive) return;
+    
+    const tools = initAITools();
+    if (!tools) return;
+    
+    const overlay = tools.getCompositionOverlay(aiCompositionOverlayType);
+    
+    // Draw overlay on main canvas
+    renderLayers(); // Redraw base image first
+    
+    mainCtx.save();
+    mainCtx.strokeStyle = 'rgba(255, 215, 0, 0.5)'; // Golden color
+    mainCtx.lineWidth = 2;
+    mainCtx.setLineDash([10, 5]);
+    
+    overlay.lines.forEach(line => {
+        const x1 = line.x1 * mainCanvas.width;
+        const y1 = line.y1 * mainCanvas.height;
+        const x2 = line.x2 * mainCanvas.width;
+        const y2 = line.y2 * mainCanvas.height;
+        
+        mainCtx.beginPath();
+        mainCtx.moveTo(x1, y1);
+        mainCtx.lineTo(x2, y2);
+        mainCtx.stroke();
+    });
+    
+    mainCtx.restore();
+    
+    // Show overlay info
+    mainCtx.save();
+    mainCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    mainCtx.fillRect(10, 10, 200, 40);
+    mainCtx.fillStyle = 'rgba(255, 215, 0, 1)';
+    mainCtx.font = '14px Arial';
+    mainCtx.fillText(`Composition: ${aiCompositionOverlayType}`, 20, 30);
+    mainCtx.fillText('Press ESC to hide', 20, 45);
+    mainCtx.restore();
+}
+
+// Hook into the rendering pipeline to draw overlay
+const originalRenderLayers = renderLayers;
+renderLayers = function() {
+    originalRenderLayers.apply(this, arguments);
+    if (aiCompositionOverlayActive) {
+        drawAICompositionOverlay();
+    }
+};
+
+// Add ESC key to hide overlay
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aiCompositionOverlayActive) {
+        aiCompositionOverlayActive = false;
+        renderLayers();
+    }
+});
 
 // Initialize on load
 window.addEventListener('DOMContentLoaded', init);
