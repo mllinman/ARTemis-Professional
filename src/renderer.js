@@ -408,9 +408,9 @@ const state = {
         predictiveCaching: true, // Predictive pre-loading
         
         // Multi-Threading
-        multiThreadEnabled: false, // Parallel brush rendering (note: limited in browser)
+        multiThreadEnabled: false, // Parallel brush rendering (can use Web Workers and OffscreenCanvas in modern browsers)
         strokePrediction: true,  // Predict stroke path
-        backgroundProcessing: false, // Background processing
+        backgroundProcessing: false, // Background processing (via Web Workers)
         targetFPS: 60,           // Target framerate
         
         // Brush Stabilization (enhanced)
