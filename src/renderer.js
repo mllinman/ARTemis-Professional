@@ -11797,6 +11797,23 @@ function toggleRulers() {
     }
 }
 
+// Node-Based Brush Editor
+let nodeEditorInstance = null;
+
+function showNodeEditor() {
+    if (!nodeEditorInstance) {
+        // Initialize the node editor on first use
+        if (typeof NodeEditor !== 'undefined') {
+            nodeEditorInstance = new NodeEditor();
+        } else {
+            console.error('NodeEditor class not found. Make sure node-editor.js is loaded.');
+            alert('Node Editor is not available. Please reload the page.');
+            return;
+        }
+    }
+    nodeEditorInstance.show();
+}
+
 // Shape Tool
 function startShape(x, y) {
     state.shape.drawing = true;
@@ -13595,6 +13612,9 @@ function handleMenuAction(action) {
             break;
         case 'window-toggle-rulers':
             toggleRulers();
+            break;
+        case 'window-node-editor':
+            showNodeEditor();
             break;
         
         // Workspace menu

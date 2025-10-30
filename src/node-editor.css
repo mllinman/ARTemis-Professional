@@ -1,0 +1,457 @@
+/* Node Editor Styling */
+
+#node-editor-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    height: 85vh;
+    background: #1a1a1a;
+    border: 2px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+}
+
+#node-editor-window.visible {
+    display: flex;
+}
+
+.node-editor-header {
+    background: linear-gradient(to bottom, #2a2a2a, #222);
+    padding: 12px 16px;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px 6px 0 0;
+}
+
+.node-editor-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.node-editor-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.node-editor-btn {
+    background: #3a3a3a;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.node-editor-btn:hover {
+    background: #4a4a4a;
+    border-color: #666;
+}
+
+.node-editor-btn.primary {
+    background: #0066cc;
+    border-color: #0066cc;
+}
+
+.node-editor-btn.primary:hover {
+    background: #0077dd;
+}
+
+.node-editor-close {
+    background: #c44;
+    border-color: #c44;
+}
+
+.node-editor-close:hover {
+    background: #d55;
+}
+
+.node-editor-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.node-palette {
+    width: 220px;
+    background: #252525;
+    border-right: 1px solid #444;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.node-palette h4 {
+    color: #aaa;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.node-category {
+    margin-bottom: 20px;
+}
+
+.node-type-btn {
+    width: 100%;
+    background: #333;
+    border: 1px solid #555;
+    color: #ddd;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.node-type-btn:hover {
+    background: #3a3a3a;
+    border-color: #666;
+    transform: translateX(2px);
+}
+
+.node-type-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.node-canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1e1e1e;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.node-canvas {
+    position: absolute;
+    cursor: grab;
+}
+
+.node-canvas.panning {
+    cursor: grabbing;
+}
+
+/* Node styling */
+.node {
+    position: absolute;
+    background: linear-gradient(to bottom, #2d2d2d, #252525);
+    border: 2px solid #444;
+    border-radius: 6px;
+    min-width: 180px;
+    cursor: move;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.2s;
+}
+
+.node:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+.node.selected {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.3), 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+.node-header {
+    background: linear-gradient(to bottom, #3a3a3a, #333);
+    padding: 8px 12px;
+    border-bottom: 1px solid #444;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.node-title {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    user-select: none;
+}
+
+.node-delete {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.node-delete:hover {
+    background: #c44;
+    color: #fff;
+}
+
+.node-body {
+    padding: 12px;
+}
+
+.node-sockets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.node-socket-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.node-socket {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #555;
+    background: #2a2a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.node-socket:hover {
+    border-color: #0066cc;
+    transform: scale(1.2);
+}
+
+.node-socket.connected {
+    background: #0066cc;
+    border-color: #0066cc;
+}
+
+.node-socket.input {
+    margin-right: auto;
+}
+
+.node-socket.output {
+    margin-left: auto;
+}
+
+.node-socket-label {
+    color: #bbb;
+    font-size: 12px;
+    user-select: none;
+}
+
+.node-parameter {
+    margin: 8px 0;
+}
+
+.node-parameter label {
+    display: block;
+    color: #999;
+    font-size: 11px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.node-parameter input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.node-parameter input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #0066cc;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.node-parameter input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #0066cc;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+}
+
+.node-parameter input[type="number"],
+.node-parameter input[type="text"] {
+    width: 100%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #ddd;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.node-parameter select {
+    width: 100%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #ddd;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.node-parameter-value {
+    color: #0066cc;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Connection lines */
+.node-connection {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.node-connection path {
+    fill: none;
+    stroke: #0066cc;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.node-connection.temp {
+    z-index: 2;
+}
+
+.node-connection.temp path {
+    stroke: #0088ff;
+    stroke-dasharray: 5, 5;
+    animation: dash 0.5s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Properties panel */
+.node-properties-panel {
+    width: 280px;
+    background: #252525;
+    border-left: 1px solid #444;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.node-properties-panel h4 {
+    color: #fff;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+}
+
+.node-properties-panel .property-group {
+    margin-bottom: 20px;
+}
+
+.node-properties-panel .property-label {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.brush-preview-container {
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.brush-preview-canvas {
+    width: 100%;
+    height: 150px;
+    background: white;
+    border-radius: 3px;
+    cursor: crosshair;
+}
+
+.save-brush-container {
+    margin-top: 16px;
+}
+
+.save-brush-container input {
+    width: 100%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #ddd;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.node-info {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.node-info p {
+    color: #aaa;
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Scrollbar styling */
+.node-palette::-webkit-scrollbar,
+.node-properties-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.node-palette::-webkit-scrollbar-track,
+.node-properties-panel::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.node-palette::-webkit-scrollbar-thumb,
+.node-properties-panel::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+.node-palette::-webkit-scrollbar-thumb:hover,
+.node-properties-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
