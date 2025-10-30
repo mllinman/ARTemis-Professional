@@ -267,6 +267,201 @@ const state = {
         mass: 50,             // Brush mass/weight (1-100)
         springTension: 50,    // Spring tension/stiffness (0-100%)
         springDamping: 50,    // Spring damping (0-100%)
+        
+        // CATEGORY 2: Advanced Brush & Paint Systems Features
+        
+        // Bristle Brush Physics (enhanced per-bristle simulation)
+        bristleCollision: true,  // Per-bristle collision detection
+        bristleSpread: 30,       // Bristle spread amount (0-100%)
+        bristleClumping: 50,     // How bristles clump together (0-100%)
+        bristleDeformation: true, // Enable natural bristle deformation
+        paintLoadingPerBristle: true, // Individual bristle paint loading
+        
+        // Paint Mixing Engine
+        paintMixingMode: 'RYB',  // 'RGB', 'RYB' (pigment-based)
+        paintAmount: 100,        // Paint amount on brush (0-100%)
+        muddyColorPrevention: true, // Prevent muddy color mixing
+        wetInWetBlending: true,  // Wet-in-wet paint blending
+        
+        // Impasto/3D Paint
+        impastoEnabled: false,   // Enable raised paint effect
+        impastoHeight: 50,       // Paint thickness/height (0-100%)
+        impastoNormalMap: true,  // Generate normal maps
+        impastoLighting: true,   // Lighting-aware rendering
+        paletteKnifeMode: false, // Scraping and palette knife effects
+        
+        // Advanced Wet Media
+        paperAbsorption: 50,     // Paper absorption simulation (0-100%)
+        colorBleeding: 30,       // Color bleeding amount (0-100%)
+        colorBlooming: 20,       // Watercolor blooming effect (0-100%)
+        dryingTime: 5000,        // Drying time in milliseconds
+        granulationEffect: 20,   // Granulation for watercolor (0-100%)
+        
+        // Dry Media Simulation
+        paperToothInteraction: true, // Paper texture interaction
+        layerCoverage: 70,       // Coverage layering (0-100%)
+        dryMediaBlending: true,  // Blending for charcoal/pastel
+        fixativeEffect: false,   // Fixative layer locking
+        
+        // Advanced Texture Mapping
+        multiLayerTexture: false, // Multiple texture layers
+        animatedTexture: false,  // Animated texture support
+        depthTexture: false,     // Depth-based texture
+        proceduralTexture: false, // Procedural texture generation
+        textureLayerCount: 1,    // Number of texture layers (1-5)
+        
+        // Brush Lighting Response
+        metallicPaint: false,    // Metallic paint effects
+        pearlescent: false,      // Pearlescent shimmer
+        subsurfaceScattering: false, // Subsurface light scattering
+        reflectivity: 0,         // Surface reflectivity (0-100%)
+        
+        // Multi-Tip Brushes
+        multiTipEnabled: false,  // Enable multiple tips
+        multiTipCount: 1,        // Number of tips (1-20)
+        multiTipMode: 'splatter', // 'splatter', 'grass', 'particle', 'array'
+        multiTipOffset: 10,      // Offset between tips (pixels)
+        
+        // Brush Deformation
+        pressureDeformation: true, // Pressure-based shape changes
+        velocityStretching: true,  // Velocity-based stretching
+        directionSkewing: true,    // Direction-based skewing
+        randomDeformation: 10,     // Random deformation (0-100%)
+        
+        // Expression-Based Dynamics
+        customExpression: '',    // Custom mathematical expression
+        expressionVariables: {}, // Variable values for expressions
+        expressionCurveEditor: false, // Enable curve editor
+        savedExpressions: [],    // Saved custom expressions
+        
+        // Brush Tags & Categories
+        brushTags: [],           // Array of tags for organization
+        brushCategory: 'general', // Category name
+        brushFavorite: false,    // Is this a favorite brush
+        brushRecent: false,      // Recently used brush
+        
+        // Brush Preview
+        livePreview: true,       // Show live brush preview
+        previewSurfaces: ['canvas', 'paper'], // Preview on multiple surfaces
+        strokeTestArea: true,    // Enable stroke testing
+        performanceIndicator: true, // Show performance metrics
+        
+        // Brush Sharing & Packs
+        brushId: '',             // Unique brush identifier
+        brushAuthor: '',         // Brush creator name
+        brushVersion: '1.0',     // Brush version
+        brushRating: 0,          // Community rating (0-5)
+        brushDownloads: 0,       // Download count
+        packName: '',            // Brush pack name
+        packMetadata: {},        // Pack information
+        
+        // Procedural Brushes
+        proceduralType: 'none',  // 'none', 'fractal', 'noise', 'parametric'
+        proceduralSeed: 0,       // Random seed for generation
+        proceduralComplexity: 50, // Complexity level (0-100%)
+        proceduralParameters: {}, // Custom algorithm parameters
+        
+        // Mixer Brush Enhancements
+        mixerReservoir: [],      // Multiple reservoir colors
+        mixerCleanMode: false,   // Clean brush between strokes
+        mixerWetness: 50,        // Wetness simulation (0-100%)
+        mixerSampleSize: 5,      // Sample area size (pixels)
+        
+        // Smudge Tool Pro
+        fingerPaintMode: false,  // Finger painting mode
+        smudgeStrength: 50,      // Smudge strength (0-100%)
+        smudgeFalloff: 30,       // Strength falloff (0-100%)
+        texturePreservation: true, // Preserve texture detail
+        directionalSmudge: true,  // Direction-aware smudging
+        
+        // Liquify Brush Set
+        liquifyMode: 'none',     // 'push', 'pull', 'rotate', 'pucker', 'bloat', 'turbulence'
+        liquifyStrength: 50,     // Effect strength (0-100%)
+        liquifyFreeze: false,    // Freeze mask enabled
+        liquifyReconstruct: false, // Reconstruction mode
+        liquifyTurbulence: 30,   // Turbulence amount (0-100%)
+        
+        // Symmetry Brush Engine
+        symmetryEnabled: false,  // Enable symmetry painting
+        symmetryAxes: 1,         // Number of symmetry axes (1-64)
+        symmetryMode: 'mirror',  // 'mirror', 'tile', 'kaleidoscope', 'radial'
+        symmetryOffset: 0,       // Offset for symmetry (pixels)
+        symmetryCenter: { x: 0, y: 0 }, // Center point for symmetry
+        
+        // Scatter Brush System
+        scatterParticles: false, // Particle-based painting
+        scatterPhysics: false,   // Physics simulation for particles
+        scatterColorVariation: 0, // Color variation (0-100%)
+        scatterSizeVariation: 0,  // Size variation (0-100%)
+        scatterCustomShape: null, // Custom particle shape
+        
+        // GPU Acceleration
+        gpuAccelerated: true,    // Hardware acceleration
+        gpuBackend: 'auto',      // 'auto', 'webgl', 'webgl2', 'webgpu'
+        gpuBrushCache: true,     // GPU brush caching
+        gpuComplexDynamics: true, // GPU for complex dynamics
+        
+        // Brush Caching System
+        cachingEnabled: true,    // Enable brush caching
+        textureCacheSize: 50,    // Cache size in MB
+        dynamicCacheManagement: true, // Auto cache management
+        predictiveCaching: true, // Predictive pre-loading
+        
+        // Multi-Threading
+        multiThreadEnabled: false, // Parallel brush rendering (note: limited in browser)
+        strokePrediction: true,  // Predict stroke path
+        backgroundProcessing: false, // Background processing
+        targetFPS: 60,           // Target framerate
+        
+        // Brush Stabilization (enhanced)
+        stabilizationMode: 'weighted', // 'basic', 'weighted', 'lazy', 'predictive'
+        lazyMouseRadius: 20,     // Lazy mouse string length (pixels)
+        lazyMouseStrength: 50,   // Lazy mouse pull strength (0-100%)
+        stabilizationStrength: 50, // Overall stabilization (0-100%)
+        
+        // Brush History & Undo
+        strokeHistory: [],       // Individual stroke history
+        strokeReplay: false,     // Enable stroke replay
+        selectiveStrokeDelete: false, // Delete individual strokes
+        strokeEditing: false,    // Edit stroke properties
+        maxStrokeHistory: 100,   // Maximum strokes to remember
+        
+        // Special Effects Brushes
+        
+        // Holographic Brush
+        holographicEnabled: false, // Rainbow/iridescent effects
+        holographicAngle: 45,    // Angle-dependent color shift (degrees)
+        holographicIntensity: 50, // Effect intensity (0-100%)
+        metallicSheen: false,    // Metallic surface effect
+        lightDispersion: 30,     // Light dispersion amount (0-100%)
+        
+        // Neon/Glow Brush
+        neonGlowEnabled: false,  // Luminous painting effects
+        glowBloom: 50,           // Bloom control (0-100%)
+        glowIntensity: 70,       // Color intensity (0-100%)
+        glowRadius: 20,          // Glow radius (pixels)
+        hdrGlow: false,          // HDR glow support
+        
+        // Fur/Hair Brush
+        furHairEnabled: false,   // Realistic hair strand generation
+        furClumping: 50,         // Hair clumping control (0-100%)
+        furDirection: 0,         // Direction flow (degrees)
+        furLengthVariation: 30,  // Length variation (0-100%)
+        furWindEffect: 0,        // Wind effect strength (0-100%)
+        
+        // Foliage Brush
+        foliageEnabled: false,   // Vegetation painting
+        foliageType: 'leaf',     // 'leaf', 'grass', 'tree'
+        foliageRotation: true,   // Random rotation
+        foliageColorVar: 20,     // Color variation (0-100%)
+        foliageDensity: 50,      // Density control (0-100%)
+        
+        // Pattern Stamp Tool
+        patternStampEnabled: false, // Pattern painting brush
+        patternLibrary: [],      // Available patterns
+        patternDistortion: 0,    // Distortion mode (0-100%)
+        patternBlendMode: 'normal', // Blending options
+        patternImpressionistMode: false, // Impressionist rendering
     },
     color: '#000000',
     layers: [],
