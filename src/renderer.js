@@ -6638,8 +6638,16 @@ function applyCanvasWeave(ctx, size) {
 
 // Helper function to convert color to RGBA with alpha
 function colorToRGBA(color, alpha) {
-    // If color is already rgba format, return it
-    if (color.startsWith('rgba')) return color;
+    // If color is already rgba format, parse and replace alpha
+    if (color.startsWith('rgba')) {
+        // Extract RGB values and replace alpha
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+        if (match) {
+            return `rgba(${match[1]},${match[2]},${match[3]},${alpha})`;
+        }
+        return color; // Return original if parsing fails
+    }
+    
     if (color.startsWith('rgb')) {
         // Convert rgb to rgba
         return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
@@ -6801,9 +6809,9 @@ function applySpongeEffect(ctx, x, y, size) {
     for (let i = 0; i < numDots; i++) {
         // Use position-based pseudo-random for consistent results
         const seed = x * 12.9898 + y * 78.233 + i * 37.719;
-        const rand1 = (Math.sin(seed) * 43758.5453) % 1;
-        const rand2 = (Math.sin(seed * 1.1) * 43758.5453) % 1;
-        const rand3 = (Math.sin(seed * 1.3) * 43758.5453) % 1;
+        const rand1 = Math.abs((Math.sin(seed) * 43758.5453) % 1);
+        const rand2 = Math.abs((Math.sin(seed * 1.1) * 43758.5453) % 1);
+        const rand3 = Math.abs((Math.sin(seed * 1.3) * 43758.5453) % 1);
         
         const offsetX = (rand1 - 0.5) * size;
         const offsetY = (rand2 - 0.5) * size;
@@ -6924,13 +6932,17 @@ function applyEnhancedColorBleeding(ctx, x, y, size, pressure) {
     
     // Backruns (cauliflower effect in watercolor)
     // Use deterministic pseudo-random based on position for consistent results
-    const pseudoRandom = (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+    const pseudoRandom = Math.abs((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1);
     if (backruns > 0.3 && pseudoRandom < backruns * 0.1) {
         ctx.save();
         ctx.globalAlpha *= 0.2;
         ctx.beginPath();
-        const backrunSize = size * (0.5 + Math.random() * 0.5);
-        ctx.arc(x + (Math.random() - 0.5) * size, y + (Math.random() - 0.5) * size, 
+        // Use deterministic pseudo-random for all random values
+        const rand1 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 1) * 43758.5453) % 1);
+        const rand2 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 2) * 43758.5453) % 1);
+        const rand3 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 3) * 43758.5453) % 1);
+        const backrunSize = size * (0.5 + rand1 * 0.5);
+        ctx.arc(x + (rand2 - 0.5) * size, y + (rand3 - 0.5) * size, 
                 backrunSize, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
