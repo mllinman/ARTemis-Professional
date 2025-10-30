@@ -26,6 +26,8 @@
                     <button class="menu-btn" data-action="file-save-as">Save As... (Ctrl+Shift+S)</button>
                     <button class="menu-btn" data-action="file-export">Export Image... (Ctrl+E)</button>
                     <button class="menu-btn" data-action="file-export-advanced">Advanced Export... (Ctrl+Shift+E)</button>
+                    <button class="menu-btn" data-action="file-import-svg">Import SVG...</button>
+                    <button class="menu-btn" data-action="file-export-svg">Export as SVG...</button>
                     <button class="menu-btn" data-action="file-settings">Settings (Ctrl+,)</button>
                     <button class="menu-btn" data-action="file-memory-monitor">Memory Monitor...</button>
                 </div>
@@ -36,6 +38,16 @@
                     <button class="menu-btn" data-action="edit-undo">Undo (Ctrl+Z)</button>
                     <button class="menu-btn" data-action="edit-redo">Redo (Ctrl+Y)</button>
                     <button class="menu-btn" data-action="edit-clear-canvas">Clear Canvas</button>
+                </div>
+            </div>
+            <div class="menu-item">
+                <span class="menu-label">Path</span>
+                <div class="menu-dropdown">
+                    <button class="menu-btn" data-action="path-union">Union (Combine Shapes)</button>
+                    <button class="menu-btn" data-action="path-subtract">Subtract (Cut Out)</button>
+                    <button class="menu-btn" data-action="path-intersect">Intersect (Keep Overlap)</button>
+                    <button class="menu-btn" data-action="path-exclude">Exclude (Remove Overlap)</button>
+                    <button class="menu-btn" data-action="path-text-on-path">Text on Path...</button>
                 </div>
             </div>
             <div class="menu-item">
@@ -116,6 +128,11 @@
                 <button class="tool-btn" data-tool="shapes" title="Shapes (S)">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="pen" title="Pen Tool - Vector Path (P)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                     </svg>
                 </button>
                 <button class="tool-btn" data-tool="gradient" title="Gradient (L)">
@@ -346,6 +363,44 @@
                         </button>
                         <span class="context-divider"></span>
                         <button class="context-btn" data-action="shape-filled" title="Toggle Fill">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pen Tool Context -->
+                <div class="context-group" data-tools="pen">
+                    <span class="context-label">Pen:</span>
+                    <div class="context-controls">
+                        <button class="context-btn" data-action="pen-add-point" title="Add Point Mode (A)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="pen-delete-point" title="Delete Point (Delete)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 13H5v-2h14v2z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="pen-convert-corner" title="Convert to Corner">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="pen-convert-smooth" title="Convert to Smooth">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </button>
+                        <span class="context-divider"></span>
+                        <button class="context-btn" data-action="pen-close-path" title="Close Path">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                        </button>
+                        <button class="context-btn" data-action="pen-fill" title="Toggle Fill">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/>
                             </svg>
@@ -2304,6 +2359,9 @@
     <script src="progressive-loader.js"></script>
     <script src="webgl-renderer.js"></script>
     <script src="tiled-canvas.js"></script>
+    
+    <!-- Phase 7: Vector & Text Tools -->
+    <script src="vector-tools.js"></script>
     
     <script src="renderer.js"></script>
 </body>

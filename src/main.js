@@ -58,6 +58,14 @@ function createWindow() {
           accelerator: 'CmdOrCtrl+E',
           click: () => { mainWindow.webContents.send('file-export'); }
         },
+        {
+          label: 'Import SVG...',
+          click: () => { mainWindow.webContents.send('file-import-svg'); }
+        },
+        {
+          label: 'Export as SVG...',
+          click: () => { mainWindow.webContents.send('file-export-svg'); }
+        },
         { type: 'separator' },
         {
           label: 'Settings',
@@ -85,6 +93,32 @@ function createWindow() {
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' }
+      ]
+    },
+    {
+      label: 'Path',
+      submenu: [
+        {
+          label: 'Union (Combine Shapes)',
+          click: () => { mainWindow.webContents.send('path-union'); }
+        },
+        {
+          label: 'Subtract (Cut Out)',
+          click: () => { mainWindow.webContents.send('path-subtract'); }
+        },
+        {
+          label: 'Intersect (Keep Overlap)',
+          click: () => { mainWindow.webContents.send('path-intersect'); }
+        },
+        {
+          label: 'Exclude (Remove Overlap)',
+          click: () => { mainWindow.webContents.send('path-exclude'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Text on Path...',
+          click: () => { mainWindow.webContents.send('path-text-on-path'); }
+        }
       ]
     },
     {
@@ -184,6 +218,11 @@ function createWindow() {
           label: 'Text',
           accelerator: 'T',
           click: () => { mainWindow.webContents.send('tool-text'); }
+        },
+        {
+          label: 'Pen Tool',
+          accelerator: 'P',
+          click: () => { mainWindow.webContents.send('tool-pen'); }
         },
         {
           label: 'Shapes',
