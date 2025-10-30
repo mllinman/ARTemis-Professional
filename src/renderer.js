@@ -640,7 +640,16 @@ const state = {
     tiledRenderingEnabled: false,  // Tiled rendering enabled
     tiledCanvasInstance: null,     // Tiled canvas instance
     progressiveLoadingEnabled: true, // Progressive loading enabled
-    useTiledCanvas: false          // Currently using tiled canvas
+    useTiledCanvas: false,         // Currently using tiled canvas
+    // Phase 12: Animation & Recording
+    animationSystem: null,         // AnimationSystem instance
+    animationUI: null,             // AnimationUI instance
+    sessionRecorder: null,         // SessionRecorder instance
+    isRecording: false,            // Session recording active
+    // Phase 14: Cloud & Collaboration
+    cloudSync: null,               // CloudSync instance
+    cloudSyncUI: null,             // CloudSyncUI instance
+    autoSyncEnabled: false         // Auto-sync active
 };
 
 // Default keyboard shortcuts (for reset functionality)
@@ -989,6 +998,12 @@ function init() {
     
     // Phase 15: Initialize Performance & Export features
     initPhase15Features();
+    
+    // Phase 12: Initialize Animation & Recording features
+    initPhase12Features();
+    
+    // Phase 14: Initialize Cloud & Collaboration features
+    initPhase14Features();
     
     // Create initial layer
     addLayer('Background');
@@ -19341,6 +19356,164 @@ function checkAndEnableTiledCanvas() {
     if (canvasSize > threshold && typeof TiledCanvas !== 'undefined') {
         console.log('Canvas is large (4K+), tiled rendering is available');
         // Tiled canvas will be enabled on demand to preserve memory
+    }
+}
+
+// Phase 12: Initialize Animation & Recording features
+function initPhase12Features() {
+    // Initialize Animation System
+    if (typeof AnimationSystem !== 'undefined') {
+        state.animationSystem = new AnimationSystem();
+        state.animationUI = new AnimationUI(state.animationSystem);
+        
+        // Set up frame change callback
+        state.animationUI.onFrameChange = (frameIndex, frame) => {
+            // TODO: Render frame to canvas
+            console.log(`Animation frame changed to: ${frameIndex}`);
+        };
+        
+        console.log('Animation system initialized');
+    }
+    
+    // Initialize Session Recorder
+    if (typeof SessionRecorder !== 'undefined') {
+        state.sessionRecorder = new SessionRecorder();
+        console.log('Session recorder initialized');
+    }
+    
+    // Setup animation menu handlers
+    setupAnimationMenuHandlers();
+    
+    console.log('Phase 12: Animation & Recording features initialized');
+}
+
+// Setup animation menu handlers
+function setupAnimationMenuHandlers() {
+    // Listen for IPC events from menu
+    if (typeof ipcRenderer !== 'undefined' && ipcRenderer.on) {
+        ipcRenderer.on('animation-show-timeline', () => {
+            if (state.animationUI) state.animationUI.show();
+        });
+        
+        ipcRenderer.on('animation-add-frame', () => {
+            if (state.animationUI) state.animationUI.addFrame();
+        });
+        
+        ipcRenderer.on('animation-duplicate-frame', () => {
+            if (state.animationUI) state.animationUI.duplicateFrame();
+        });
+        
+        ipcRenderer.on('animation-delete-frame', () => {
+            if (state.animationUI) state.animationUI.deleteFrame();
+        });
+        
+        ipcRenderer.on('animation-play', () => {
+            if (state.animationUI) state.animationUI.play();
+        });
+        
+        ipcRenderer.on('animation-stop', () => {
+            if (state.animationUI) state.animationUI.stop();
+        });
+        
+        ipcRenderer.on('animation-toggle-onion-skin', () => {
+            if (state.animationUI) state.animationUI.toggleOnionSkin();
+        });
+        
+        ipcRenderer.on('animation-export-gif', () => {
+            if (state.animationUI) state.animationUI.exportGIF();
+        });
+        
+        ipcRenderer.on('animation-export-frames', () => {
+            if (state.animationUI) state.animationUI.exportFrames();
+        });
+        
+        ipcRenderer.on('animation-export-spritesheet', () => {
+            if (state.animationUI) state.animationUI.exportSpriteSheet();
+        });
+        
+        ipcRenderer.on('recording-start', () => {
+            if (state.sessionRecorder) {
+                state.sessionRecorder.startRecording(mainCanvas);
+                console.log('Recording started');
+            }
+        });
+        
+        ipcRenderer.on('recording-stop', () => {
+            if (state.sessionRecorder) {
+                const stats = state.sessionRecorder.stopRecording();
+                console.log('Recording stopped:', stats);
+            }
+        });
+    }
+}
+
+// Phase 14: Initialize Cloud & Collaboration features
+async function initPhase14Features() {
+    // Initialize Cloud Sync System
+    if (typeof CloudSync !== 'undefined') {
+        state.cloudSync = new CloudSync();
+        state.cloudSyncUI = new CloudSyncUI(state.cloudSync);
+        
+        // Initialize database
+        try {
+            await state.cloudSync.initDB();
+            console.log('Cloud sync database initialized');
+            
+            // Load saved settings if available
+            const savedSettings = await state.cloudSync.loadSettings();
+            if (savedSettings) {
+                console.log('Loaded settings from cloud sync');
+                // TODO: Apply saved settings
+            }
+        } catch (error) {
+            console.error('Failed to initialize cloud sync:', error);
+        }
+        
+        // Set up project load callback
+        state.cloudSyncUI.onProjectLoad = async (projectId) => {
+            const project = await state.cloudSync.loadProject(projectId);
+            if (project) {
+                console.log('Loading project from cloud:', project.name);
+                // TODO: Load project data into application
+            }
+        };
+        
+        console.log('Cloud sync UI initialized');
+    }
+    
+    // Setup cloud sync menu handlers
+    setupCloudSyncMenuHandlers();
+    
+    console.log('Phase 14: Cloud & Collaboration features initialized');
+}
+
+// Setup cloud sync menu handlers
+function setupCloudSyncMenuHandlers() {
+    // Listen for IPC events from menu
+    if (typeof ipcRenderer !== 'undefined' && ipcRenderer.on) {
+        ipcRenderer.on('cloud-show-panel', () => {
+            if (state.cloudSyncUI) state.cloudSyncUI.show();
+        });
+        
+        ipcRenderer.on('cloud-sync-now', async () => {
+            if (state.cloudSyncUI) await state.cloudSyncUI.syncNow();
+        });
+        
+        ipcRenderer.on('cloud-toggle-auto-sync', async () => {
+            if (state.cloudSyncUI) await state.cloudSyncUI.toggleAutoSync();
+        });
+        
+        ipcRenderer.on('cloud-export-backup', async () => {
+            if (state.cloudSyncUI) await state.cloudSyncUI.exportBackup();
+        });
+        
+        ipcRenderer.on('cloud-import-backup', async () => {
+            if (state.cloudSyncUI) await state.cloudSyncUI.importBackup();
+        });
+        
+        ipcRenderer.on('cloud-generate-share-link', async () => {
+            if (state.cloudSyncUI) await state.cloudSyncUI.generateShareLink();
+        });
     }
 }
 

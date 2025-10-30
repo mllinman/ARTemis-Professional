@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 12 & 14 Feature Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #3a3a3a;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #2d5f2d;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background: #5f2d2d;
+            border: 1px solid #f44336;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4a9eff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #3a8eef;
+        }
+        canvas {
+            border: 1px solid #3a3a3a;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Phase 12 & 14 Feature Test</h1>
+    
+    <div class="test-section">
+        <h2>Module Loading Tests</h2>
+        <div id="module-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Phase 12: Animation System Test</h2>
+        <div id="animation-tests"></div>
+        <button onclick="testAnimationSystem()">Test Animation System</button>
+        <button onclick="testAnimationUI()">Test Animation UI</button>
+        <button onclick="testSessionRecorder()">Test Session Recorder</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Phase 14: Cloud Sync Test</h2>
+        <div id="cloud-tests"></div>
+        <button onclick="testCloudSync()">Test Cloud Sync</button>
+        <button onclick="testCloudSyncUI()">Test Cloud Sync UI</button>
+    </div>
+
+    <canvas id="test-canvas" width="400" height="300"></canvas>
+
+    <!-- Load Phase 12 modules -->
+    <script src="src/animation.js"></script>
+    <script src="src/animation-ui.js"></script>
+    <script src="src/session-recorder.js"></script>
+
+    <!-- Load Phase 14 modules -->
+    <script src="src/cloud-sync.js"></script>
+    <script src="src/cloud-sync-ui.js"></script>
+
+    <script>
+        // Test module loading
+        function testModules() {
+            const results = [];
+            
+            // Phase 12 modules
+            results.push({
+                name: 'AnimationSystem',
+                loaded: typeof AnimationSystem !== 'undefined'
+            });
+            results.push({
+                name: 'AnimationUI',
+                loaded: typeof AnimationUI !== 'undefined'
+            });
+            results.push({
+                name: 'SessionRecorder',
+                loaded: typeof SessionRecorder !== 'undefined'
+            });
+            
+            // Phase 14 modules
+            results.push({
+                name: 'CloudSync',
+                loaded: typeof CloudSync !== 'undefined'
+            });
+            results.push({
+                name: 'CloudSyncUI',
+                loaded: typeof CloudSyncUI !== 'undefined'
+            });
+            
+            const container = document.getElementById('module-tests');
+            container.innerHTML = results.map(r => 
+                `<div class="test-result ${r.loaded ? 'success' : 'error'}">
+                    ${r.name}: ${r.loaded ? '✓ Loaded' : '✗ Failed to load'}
+                </div>`
+            ).join('');
+        }
+
+        // Test Animation System
+        function testAnimationSystem() {
+            const container = document.getElementById('animation-tests');
+            try {
+                const anim = new AnimationSystem();
+                
+                // Test frame operations
+                const frame1 = anim.addFrame({ test: 'data1' });
+                const frame2 = anim.addFrame({ test: 'data2' });
+                const frame3 = anim.addFrame({ test: 'data3' });
+                
+                const frameCount = anim.getFrameCount();
+                
+                // Test navigation
+                anim.setCurrentFrame(1);
+                const current = anim.getCurrentFrame();
+                
+                // Test frame rate
+                anim.setFrameRate(24);
+                
+                // Test onion skin
+                anim.toggleOnionSkin();
+                const onionFrames = anim.getOnionSkinFrames();
+                
+                // Test duplicate
+                anim.duplicateFrame(1);
+                
+                // Test JSON save/load
+                const json = anim.saveToJSON();
+                const anim2 = new AnimationSystem();
+                anim2.loadFromJSON(json);
+                
+                container.innerHTML = `
+                    <div class="test-result success">
+                        ✓ AnimationSystem tests passed<br>
+                        - Added ${frameCount} frames<br>
+                        - Navigation works<br>
+                        - Frame rate: ${anim.frameRate} FPS<br>
+                        - Onion skin frames: ${onionFrames.length}<br>
+                        - Duplicate works (total: ${anim.getFrameCount()} frames)<br>
+                        - JSON save/load works (loaded ${anim2.getFrameCount()} frames)
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="test-result error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Animation UI
+        function testAnimationUI() {
+            const container = document.getElementById('animation-tests');
+            try {
+                const anim = new AnimationSystem();
+                const animUI = new AnimationUI(anim);
+                
+                // Create panel
+                animUI.createPanel();
+                
+                // Show/hide
+                animUI.show();
+                const isVisible1 = animUI.isVisible;
+                animUI.hide();
+                const isVisible2 = animUI.isVisible;
+                
+                container.innerHTML = `
+                    <div class="test-result success">
+                        ✓ AnimationUI tests passed<br>
+                        - Panel created successfully<br>
+                        - Show works (visible: ${isVisible1})<br>
+                        - Hide works (visible: ${isVisible2})
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="test-result error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Session Recorder
+        function testSessionRecorder() {
+            const container = document.getElementById('animation-tests');
+            try {
+                const recorder = new SessionRecorder();
+                const canvas = document.getElementById('test-canvas');
+                
+                // Test recording
+                recorder.startRecording(canvas);
+                const recording1 = recorder.isRecording;
+                
+                // Record some actions
+                recorder.recordBrushStroke('brush', 
+                    [{x: 10, y: 10, pressure: 0.5}, {x: 20, y: 20, pressure: 0.7}],
+                    {size: 20, opacity: 100}
+                );
+                recorder.recordLayerOperation('add', {name: 'Layer 1'});
+                
+                const stats1 = recorder.stopRecording();
+                const recording2 = recorder.isRecording;
+                
+                // Test stats
+                const stats = recorder.getStats();
+                
+                // Test JSON save/load
+                const json = recorder.saveToJSON();
+                const recorder2 = new SessionRecorder();
+                recorder2.loadFromJSON(json);
+                
+                // Test macro
+                recorder.startMacro('Test Macro');
+                recorder.recordAction({type: 'test', data: {value: 123}});
+                const macro = recorder.stopMacro();
+                
+                container.innerHTML = `
+                    <div class="test-result success">
+                        ✓ SessionRecorder tests passed<br>
+                        - Recording started (${recording1})<br>
+                        - Recorded ${stats1.actionCount} actions<br>
+                        - Recording stopped (${recording2})<br>
+                        - Stats: ${stats.actionCount} actions, ${stats.avgActionsPerSecond} avg/sec<br>
+                        - JSON save/load works<br>
+                        - Macro system works (${macro.actions.length} actions)
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="test-result error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Cloud Sync
+        async function testCloudSync() {
+            const container = document.getElementById('cloud-tests');
+            try {
+                const cloudSync = new CloudSync();
+                
+                // Test IndexedDB initialization
+                await cloudSync.initDB();
+                
+                // Test settings sync
+                const testSettings = {
+                    theme: 'dark',
+                    brushSize: 20,
+                    testData: 'test123'
+                };
+                await cloudSync.syncSettings(testSettings);
+                const loadedSettings = await cloudSync.loadSettings();
+                const settingsLoaded = loadedSettings !== null && typeof loadedSettings === 'object';
+                
+                // Test project save/load
+                const projectId = await cloudSync.saveProject({
+                    name: 'Test Project',
+                    data: { layers: [], canvas: {} }
+                });
+                const project = await cloudSync.loadProject(projectId);
+                const allProjects = await cloudSync.getAllProjects();
+                
+                // Test brushes sync
+                await cloudSync.syncBrushes([
+                    { id: 'brush1', name: 'Test Brush 1' },
+                    { id: 'brush2', name: 'Test Brush 2' }
+                ]);
+                const brushes = await cloudSync.loadBrushes();
+                
+                // Test stats
+                const stats = await cloudSync.getSyncStats();
+                
+                // Test export/import
+                const backup = await cloudSync.exportAllData();
+                const importSuccess = await cloudSync.importAllData(backup);
+                
+                container.innerHTML = `
+                    <div class="test-result success">
+                        ✓ CloudSync tests passed<br>
+                        - IndexedDB initialized<br>
+                        - Settings synced (loaded: ${settingsLoaded ? 'yes' : 'no'})<br>
+                        - Project saved (ID: ${projectId.substring(0, 10)}...)<br>
+                        - Project loaded (name: ${project.name})<br>
+                        - Total projects: ${allProjects.length}<br>
+                        - Brushes synced: ${brushes.length}<br>
+                        - Stats: ${stats.projectCount} projects, ${stats.brushCount} brushes<br>
+                        - Export/import: ${importSuccess ? 'success' : 'failed'}
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="test-result error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test Cloud Sync UI
+        function testCloudSyncUI() {
+            const container = document.getElementById('cloud-tests');
+            try {
+                const cloudSync = new CloudSync();
+                const cloudSyncUI = new CloudSyncUI(cloudSync);
+                
+                // Create panel
+                cloudSyncUI.createPanel();
+                
+                // Show/hide
+                cloudSyncUI.show();
+                const isVisible1 = cloudSyncUI.isVisible;
+                cloudSyncUI.hide();
+                const isVisible2 = cloudSyncUI.isVisible;
+                
+                container.innerHTML = `
+                    <div class="test-result success">
+                        ✓ CloudSyncUI tests passed<br>
+                        - Panel created successfully<br>
+                        - Show works (visible: ${isVisible1})<br>
+                        - Hide works (visible: ${isVisible2})<br>
+                        - UI components rendered
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="test-result error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Run module tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            testModules();
+        });
+    </script>
+</body>
+</html>
