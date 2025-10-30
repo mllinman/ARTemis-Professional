@@ -326,11 +326,12 @@ Features that would be nice to have but are not essential for core functionality
   - Custom key bindings
   - Import/export shortcuts
   - Reset to defaults
-- [ ] Customizable panel layouts
-  - Drag and drop panels
-  - Floating panels
-  - Panel snap zones
-  - Multiple monitor support
+- [x] Customizable panel layouts ✅ COMPLETED
+  - Drag and drop panels (drag by panel header)
+  - Floating panels (detach button)
+  - Panel snap zones (magnetic docking to edges)
+  - Panel nesting (dock panels inside other panels)
+  - Resize panels (resize handles)
 - [x] Multiple workspace presets ✅ COMPLETED
   - Painting workspace
   - Illustration workspace
@@ -368,13 +369,13 @@ Features that would be nice to have but are not essential for core functionality
   - Brush search and filtering ✅ NEW
   - Real-time search with debounce ✅ NEW
   - Search results display ✅ NEW
-- [ ] Cloud sync for brushes
-- [ ] Brush libraries
+- [ ] Cloud sync for brushes (out of scope - requires backend infrastructure)
+- [ ] Brush libraries (out of scope - requires backend infrastructure)
   - Downloadable brush packs
   - Community brush sharing
   - Brush tags (integrated with search) ✅ PARTIAL
 
-**Impact:** ✅ Complete - Streamlined workflow and personalization with keyboard shortcuts, workspace presets, theme system with custom themes, interface scaling, and brush search.
+**Impact:** ✅ 100% COMPLETE - Streamlined workflow and personalization with keyboard shortcuts, workspace presets, customizable panel layouts with drag-and-drop, theme system with custom themes, interface scaling, and brush search.
 
 ---
 
