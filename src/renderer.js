@@ -20759,8 +20759,8 @@ function colorRangeSelection(color, fuzziness = 40, localized = false, skinTone 
     
     const selectionMask = new Uint8Array(width * height);
     
-    // Parse target color
-    const targetRGB = hexToRgb(color);
+    // Parse target color (only if not in skinTone mode)
+    const targetRGB = skinTone ? null : hexToRgb(color);
     
     for (let i = 0; i < pixels.length; i += 4) {
         const r = pixels[i];
@@ -20772,7 +20772,7 @@ function colorRangeSelection(color, fuzziness = 40, localized = false, skinTone 
         if (skinTone) {
             // Skin tone detection
             selected = isSkinTone(r, g, b);
-        } else {
+        } else if (targetRGB) {
             // Color distance calculation
             const distance = Math.sqrt(
                 Math.pow(r - targetRGB.r, 2) +
@@ -21136,9 +21136,9 @@ function applySelectAndMaskRefinement() {
         mask = smoothSelectionMask(mask, width, height, state.selection.selectAndMask.smoothness);
     }
     
-    // Apply feather
+    // Apply feather using grayscale-aware function
     if (state.selection.selectAndMask.feather > 0) {
-        mask = applyFeathering(mask, width, height, state.selection.selectAndMask.feather);
+        mask = applyGrayscaleFeathering(mask, width, height, state.selection.selectAndMask.feather);
     }
     
     // Apply contrast
@@ -21173,9 +21173,9 @@ function refineSelectionEdges(softEdge = true, featherRadius = 5) {
         mask = smoothSelectionMask(mask, width, height, 2);
     }
     
-    // Apply feathering
+    // Apply feathering using grayscale-aware function
     if (featherRadius > 0) {
-        mask = applyFeathering(mask, width, height, featherRadius);
+        mask = applyGrayscaleFeathering(mask, width, height, featherRadius);
     }
     
     state.selection.mask = mask;
@@ -21602,62 +21602,99 @@ function smoothSelectionMask(mask, width, height, iterations = 1) {
     return result;
 }
 
-function shiftSelectionEdge(mask, width, height, pixels) {
-    if (pixels === 0) return mask;
+function applyGrayscaleFeathering(mask, width, height, radius) {
+    if (radius <= 0) return mask;
     
     const result = new Uint8Array(mask.length);
+    const originalMask = new Uint8Array(mask);
     
-    if (pixels > 0) {
-        // Dilate (expand)
-        for (let iter = 0; iter < pixels; iter++) {
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = y * width + x;
-                    if (mask[idx] > 0) {
-                        // Set neighbors
-                        if (x > 0) result[idx - 1] = 255;
-                        if (x < width - 1) result[idx + 1] = 255;
-                        if (y > 0) result[idx - width] = 255;
-                        if (y < height - 1) result[idx + width] = 255;
-                        result[idx] = 255;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = y * width + x;
+            
+            // Calculate weighted average of surrounding pixels
+            let sum = 0;
+            let weightSum = 0;
+            
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance <= radius) {
+                            // Gaussian-like weight based on distance
+                            const weight = 1.0 - (distance / radius);
+                            sum += originalMask[ny * width + nx] * weight;
+                            weightSum += weight;
+                        }
                     }
                 }
             }
-            mask = new Uint8Array(result);
-        }
-    } else {
-        // Erode (contract)
-        for (let iter = 0; iter < Math.abs(pixels); iter++) {
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = y * width + x;
-                    if (mask[idx] > 0) {
-                        // Check if all neighbors are selected
-                        const allSelected = 
-                            (x === 0 || mask[idx - 1] > 0) &&
-                            (x === width - 1 || mask[idx + 1] > 0) &&
-                            (y === 0 || mask[idx - width] > 0) &&
-                            (y === height - 1 || mask[idx + width] > 0);
-                        
-                        result[idx] = allSelected ? 255 : 0;
-                    }
-                }
-            }
-            mask = new Uint8Array(result);
+            
+            // Weighted average maintains grayscale values
+            result[idx] = weightSum > 0 ? Math.round(sum / weightSum) : 0;
         }
     }
     
     return result;
 }
 
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
+function shiftSelectionEdge(mask, width, height, pixels) {
+    if (pixels === 0) return mask;
+    
+    // Use array swapping to avoid unnecessary allocations
+    let current = new Uint8Array(mask);
+    let next = new Uint8Array(mask.length);
+    
+    if (pixels > 0) {
+        // Dilate (expand)
+        for (let iter = 0; iter < pixels; iter++) {
+            next.fill(0);
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    if (current[idx] > 0) {
+                        // Set neighbors
+                        if (x > 0) next[idx - 1] = 255;
+                        if (x < width - 1) next[idx + 1] = 255;
+                        if (y > 0) next[idx - width] = 255;
+                        if (y < height - 1) next[idx + width] = 255;
+                        next[idx] = 255;
+                    }
+                }
+            }
+            // Swap arrays
+            [current, next] = [next, current];
+        }
+    } else {
+        // Erode (contract)
+        for (let iter = 0; iter < Math.abs(pixels); iter++) {
+            next.fill(0);
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    if (current[idx] > 0) {
+                        // Check if all neighbors are selected
+                        const allSelected = 
+                            (x === 0 || current[idx - 1] > 0) &&
+                            (x === width - 1 || current[idx + 1] > 0) &&
+                            (y === 0 || current[idx - width] > 0) &&
+                            (y === height - 1 || current[idx + width] > 0);
+                        
+                        next[idx] = allSelected ? 255 : 0;
+                    }
+                }
+            }
+            // Swap arrays
+            [current, next] = [next, current];
+        }
+    }
+    
+    return current;
 }
+
+// Note: hexToRgb() function already exists at line 5665, no need to duplicate
 
 // ==================================================================
 // END CATEGORY 4: SELECTION & MASKING TOOLS
