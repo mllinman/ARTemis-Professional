@@ -330,6 +330,16 @@ const state = {
         endY: 0,
         drawing: false
     },
+    // Phase 7: Vector path editing
+    vectorPath: {
+        currentPath: null,      // Current VectorPath being edited
+        paths: [],              // Array of completed vector paths
+        mode: 'add',            // 'add', 'edit', 'delete'
+        dragging: false,
+        dragTarget: null,       // {type: 'point'|'handle', index, handleType}
+        filled: false,
+        strokeWidth: 2
+    },
     gradient: {
         type: 'linear',
         startX: 0,
@@ -5380,6 +5390,8 @@ function setupCanvasEvents() {
                 startPolygonalLassoSelection(pos.x, pos.y);
             } else if (state.tool === 'text') {
                 addText(pos.x, pos.y);
+            } else if (state.tool === 'pen') {
+                handlePenToolMouseDown(pos.x, pos.y, e);
             } else if (state.tool === 'shapes') {
                 startShape(pos.x, pos.y);
             } else if (state.tool === 'gradient') {
@@ -5488,6 +5500,8 @@ function setupCanvasEvents() {
                 updateSelection(pos.x, pos.y);
             } else if (state.tool === 'lasso') {
                 continueLassoSelection(pos.x, pos.y);
+            } else if (state.tool === 'pen' && state.vectorPath.dragging) {
+                handlePenToolMouseMove(pos.x, pos.y);
             } else if (state.tool === 'shapes' && state.shape.drawing) {
                 updateShape(pos.x, pos.y);
             } else if (state.tool === 'gradient' && state.gradient.drawing) {
@@ -5536,6 +5550,10 @@ function setupCanvasEvents() {
             state.transform.selectedHandle = null;
             drawTransformHandles();
             return;
+        }
+        
+        if (state.tool === 'pen' && state.vectorPath.dragging) {
+            handlePenToolMouseUp();
         }
         
         if (state.shape.drawing) {
@@ -11992,6 +12010,285 @@ function drawShape(ctx, shape) {
     ctx.restore();
 }
 
+// Phase 7: Pen Tool Functions
+function handlePenToolMouseDown(x, y, e) {
+    if (!state.vectorPath.currentPath) {
+        // Start a new path
+        state.vectorPath.currentPath = new VectorPath();
+        state.vectorPath.currentPath.addPoint(x, y, 'corner');
+    } else {
+        // Check if clicking near an existing point or handle
+        const nearestHandle = state.vectorPath.currentPath.findNearestHandle(x, y, 10);
+        if (nearestHandle) {
+            // Start dragging a handle
+            state.vectorPath.dragging = true;
+            state.vectorPath.dragTarget = { type: 'handle', ...nearestHandle };
+            return;
+        }
+        
+        const nearestPoint = state.vectorPath.currentPath.findNearestPoint(x, y, 10);
+        if (nearestPoint >= 0) {
+            // Start dragging a point or close the path
+            if (nearestPoint === 0 && state.vectorPath.currentPath.points.length > 2) {
+                // Clicking on first point - close the path
+                state.vectorPath.currentPath.closed = true;
+                finishVectorPath();
+            } else {
+                state.vectorPath.dragging = true;
+                state.vectorPath.dragTarget = { type: 'point', index: nearestPoint };
+                state.vectorPath.currentPath.selectedPoint = nearestPoint;
+            }
+            return;
+        }
+        
+        // Add a new point
+        if (state.vectorPath.mode === 'add' || !state.vectorPath.mode) {
+            state.vectorPath.currentPath.addPoint(x, y, 'smooth');
+        }
+    }
+    
+    // Redraw the path preview
+    drawVectorPathPreview();
+}
+
+function handlePenToolMouseMove(x, y) {
+    if (!state.vectorPath.dragging || !state.vectorPath.dragTarget) return;
+    
+    const target = state.vectorPath.dragTarget;
+    if (target.type === 'point') {
+        state.vectorPath.currentPath.movePoint(target.index, x, y);
+    } else if (target.type === 'handle') {
+        state.vectorPath.currentPath.moveHandle(target.pointIndex, target.type, x, y);
+    }
+    
+    drawVectorPathPreview();
+}
+
+function handlePenToolMouseUp() {
+    state.vectorPath.dragging = false;
+    state.vectorPath.dragTarget = null;
+}
+
+function finishVectorPath() {
+    if (!state.vectorPath.currentPath) return;
+    
+    // Draw the path on the active layer
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    state.vectorPath.currentPath.draw(
+        ctx,
+        state.color,
+        state.vectorPath.filled ? state.color : null,
+        state.vectorPath.strokeWidth
+    );
+    
+    // Add to paths history
+    state.vectorPath.paths.push({
+        path: state.vectorPath.currentPath.clone(),
+        stroke: state.color,
+        fill: state.vectorPath.filled ? state.color : null,
+        strokeWidth: state.vectorPath.strokeWidth
+    });
+    
+    // Clear the current path
+    state.vectorPath.currentPath = null;
+    
+    // Clear preview
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    compositeAllLayers();
+    saveState();
+}
+
+function drawVectorPathPreview() {
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    if (state.vectorPath.currentPath) {
+        // Draw the path
+        state.vectorPath.currentPath.draw(
+            drawCtx,
+            state.color,
+            state.vectorPath.filled ? state.color : null,
+            state.vectorPath.strokeWidth
+        );
+        
+        // Draw control points
+        state.vectorPath.currentPath.drawControls(drawCtx);
+    }
+}
+
+function deleteSelectedPoint() {
+    if (state.vectorPath.currentPath && state.vectorPath.currentPath.selectedPoint >= 0) {
+        state.vectorPath.currentPath.removePoint(state.vectorPath.currentPath.selectedPoint);
+        drawVectorPathPreview();
+    }
+}
+
+function convertPointToCorner() {
+    if (state.vectorPath.currentPath && state.vectorPath.currentPath.selectedPoint >= 0) {
+        state.vectorPath.currentPath.convertPointType(state.vectorPath.currentPath.selectedPoint, 'corner');
+        drawVectorPathPreview();
+    }
+}
+
+function convertPointToSmooth() {
+    if (state.vectorPath.currentPath && state.vectorPath.currentPath.selectedPoint >= 0) {
+        state.vectorPath.currentPath.convertPointType(state.vectorPath.currentPath.selectedPoint, 'smooth');
+        drawVectorPathPreview();
+    }
+}
+
+function closePath() {
+    if (state.vectorPath.currentPath) {
+        state.vectorPath.currentPath.closed = true;
+        finishVectorPath();
+    }
+}
+
+function togglePathFill() {
+    state.vectorPath.filled = !state.vectorPath.filled;
+    drawVectorPathPreview();
+}
+
+// SVG Import/Export Functions
+async function importSVG() {
+    try {
+        const result = await ipcRenderer.invoke('show-open-dialog', {
+            filters: [
+                { name: 'SVG Files', extensions: ['svg'] }
+            ],
+            properties: ['openFile']
+        });
+        
+        if (!result.canceled && result.fileContent) {
+            const paths = await SVGHandler.importSVG(result.fileContent);
+            
+            // Create a new layer for the imported SVG
+            addLayer('Imported SVG', 'normal');
+            const ctx = state.activeLayer.canvas.getContext('2d');
+            
+            // Draw all imported paths
+            for (const pathData of paths) {
+                pathData.path.draw(ctx, pathData.stroke, pathData.fill, pathData.strokeWidth);
+                
+                // Add to vector paths for editing
+                state.vectorPath.paths.push(pathData);
+            }
+            
+            compositeAllLayers();
+            saveState();
+            
+            alert(`Imported ${paths.length} vector path(s) from SVG.`);
+        }
+    } catch (error) {
+        console.error('Failed to import SVG:', error);
+        alert('Failed to import SVG file. Please ensure it is a valid SVG file.');
+    }
+}
+
+async function exportSVG() {
+    try {
+        if (state.vectorPath.paths.length === 0) {
+            alert('No vector paths to export. Please create vector paths using the Pen tool first.');
+            return;
+        }
+        
+        const result = await ipcRenderer.invoke('show-save-dialog', {
+            defaultPath: 'artwork.svg',
+            filters: [
+                { name: 'SVG Files', extensions: ['svg'] }
+            ]
+        });
+        
+        if (!result.canceled) {
+            const svgContent = SVGHandler.exportSVG(
+                state.vectorPath.paths,
+                state.canvas.width,
+                state.canvas.height
+            );
+            
+            await ipcRenderer.invoke('save-file', result.filePath, svgContent);
+            alert('SVG exported successfully!');
+        }
+    } catch (error) {
+        console.error('Failed to export SVG:', error);
+        alert('Failed to export SVG file.');
+    }
+}
+
+// Shape Boolean Operations
+function applyBooleanOperation(operation) {
+    if (state.vectorPath.paths.length < 2) {
+        alert('Please create at least 2 vector paths before applying boolean operations.');
+        return;
+    }
+    
+    // Get the last two paths
+    const path2 = state.vectorPath.paths.pop();
+    const path1 = state.vectorPath.paths.pop();
+    
+    let resultPath;
+    switch (operation) {
+        case 'union':
+            resultPath = ShapeBoolean.union(path1.path, path2.path);
+            break;
+        case 'subtract':
+            resultPath = ShapeBoolean.subtract(path1.path, path2.path);
+            break;
+        case 'intersect':
+            resultPath = ShapeBoolean.intersect(path1.path, path2.path);
+            break;
+        case 'exclude':
+            resultPath = ShapeBoolean.exclude(path1.path, path2.path);
+            break;
+        default:
+            alert('Unknown boolean operation.');
+            return;
+    }
+    
+    // Draw the result on the active layer
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    resultPath.draw(ctx, path1.stroke, path1.fill, path1.strokeWidth);
+    
+    // Add result to paths
+    state.vectorPath.paths.push({
+        path: resultPath,
+        stroke: path1.stroke,
+        fill: path1.fill,
+        strokeWidth: path1.strokeWidth
+    });
+    
+    compositeAllLayers();
+    saveState();
+}
+
+// Text on Path
+function showTextOnPathDialog() {
+    if (!state.vectorPath.currentPath && state.vectorPath.paths.length === 0) {
+        alert('Please create a vector path first using the Pen tool.');
+        return;
+    }
+    
+    const text = prompt('Enter text to place on path:');
+    if (!text) return;
+    
+    // Use current path or last path
+    const pathData = state.vectorPath.currentPath 
+        ? { path: state.vectorPath.currentPath }
+        : state.vectorPath.paths[state.vectorPath.paths.length - 1];
+    
+    const fontSize = parseInt(prompt('Enter font size:', '24')) || 24;
+    const fontFamily = state.text.fontFamily || 'Arial';
+    
+    const textOnPath = new TextOnPath(text, pathData.path, fontSize, fontFamily);
+    
+    // Draw text on path on the active layer
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    textOnPath.draw(ctx, state.color);
+    
+    compositeAllLayers();
+    saveState();
+}
+
 // Utility Functions
 function getCanvasPos(e) {
     const rect = drawCanvas.getBoundingClientRect();
@@ -12039,6 +12336,8 @@ function updateCursor() {
         drawCanvas.style.cursor = 'crosshair';
     } else if (state.tool === 'text') {
         drawCanvas.style.cursor = 'text';
+    } else if (state.tool === 'pen') {
+        drawCanvas.style.cursor = 'crosshair';
     } else if (state.tool === 'shapes') {
         drawCanvas.style.cursor = 'crosshair';
     } else if (state.tool === 'crop') {
@@ -12807,6 +13106,31 @@ function setupContextualTaskbar() {
         });
     }
     
+    // Phase 7: Pen tool context buttons
+    document.querySelector('[data-action="pen-add-point"]')?.addEventListener('click', () => {
+        state.vectorPath.mode = 'add';
+    });
+    
+    document.querySelector('[data-action="pen-delete-point"]')?.addEventListener('click', () => {
+        deleteSelectedPoint();
+    });
+    
+    document.querySelector('[data-action="pen-convert-corner"]')?.addEventListener('click', () => {
+        convertPointToCorner();
+    });
+    
+    document.querySelector('[data-action="pen-convert-smooth"]')?.addEventListener('click', () => {
+        convertPointToSmooth();
+    });
+    
+    document.querySelector('[data-action="pen-close-path"]')?.addEventListener('click', () => {
+        closePath();
+    });
+    
+    document.querySelector('[data-action="pen-fill"]')?.addEventListener('click', () => {
+        togglePathFill();
+    });
+    
     // Initialize contextual taskbar with current tool
     updateContextualTaskbar(state.tool);
 }
@@ -12908,6 +13232,15 @@ function setupMenuHandlers() {
         exportImage();
     });
     
+    // Phase 7: SVG import/export handlers
+    ipcRenderer.on('file-import-svg', () => {
+        importSVG();
+    });
+    
+    ipcRenderer.on('file-export-svg', () => {
+        exportSVG();
+    });
+    
     ipcRenderer.on('file-settings', () => {
         showSettingsDialog();
     });
@@ -12915,6 +13248,27 @@ function setupMenuHandlers() {
     // Edit menu handlers
     ipcRenderer.on('edit-undo', undo);
     ipcRenderer.on('edit-redo', redo);
+    
+    // Phase 7: Path menu handlers
+    ipcRenderer.on('path-union', () => {
+        applyBooleanOperation('union');
+    });
+    
+    ipcRenderer.on('path-subtract', () => {
+        applyBooleanOperation('subtract');
+    });
+    
+    ipcRenderer.on('path-intersect', () => {
+        applyBooleanOperation('intersect');
+    });
+    
+    ipcRenderer.on('path-exclude', () => {
+        applyBooleanOperation('exclude');
+    });
+    
+    ipcRenderer.on('path-text-on-path', () => {
+        showTextOnPathDialog();
+    });
     
     // View menu handlers
     ipcRenderer.on('view-zoom-in', () => zoom(1.2));
@@ -12951,6 +13305,7 @@ function setupMenuHandlers() {
     ipcRenderer.on('tool-eyedropper', () => selectTool('eyedropper'));
     ipcRenderer.on('tool-selection', () => selectTool('selection'));
     ipcRenderer.on('tool-text', () => selectTool('text'));
+    ipcRenderer.on('tool-pen', () => selectTool('pen'));
     ipcRenderer.on('tool-shapes', () => selectTool('shapes'));
     ipcRenderer.on('tool-gradient', () => selectTool('gradient'));
     ipcRenderer.on('tool-move', () => selectTool('move'));
