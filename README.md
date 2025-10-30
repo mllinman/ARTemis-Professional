@@ -33,14 +33,15 @@ ARTemis offers flexible pricing to suit your needs:
 
 ### ⭐ Professional Features
 
-🎨 **NEW: Advanced Brush Engine!**
-ARTemis now features a professional-grade brush engine with capabilities comparable to industry-leading applications:
+🎨 **NEW: Advanced Brush Engine + Vector Tools!**
+ARTemis now features professional-grade tools comparable to industry-leading applications:
 - **178+ Professional Brushes** across 17 categories
 - **Color Dynamics** - Hue, saturation, brightness variation
 - **Bristle Simulation** - Natural media with 1-50 bristles
 - **Dual Brush System** - Complex textures with blend modes
 - **Canvas Color Mixing** - Pick up colors like real paint
 - **Full Device Support** - Wacom, XP-Pen, Huion, tablets, touch, and mouse
+- **⭐ PHASE 7: Vector Editing** - Bézier curves, SVG import/export, boolean operations, text on path
 
 **[📖 Read the Complete Advanced Brush Engine Guide](ADVANCED-BRUSH-ENGINE.md)**
 
@@ -161,6 +162,14 @@ ARTemis includes a comprehensive set of professional digital painting features!
 - **Eyedropper Tool** - Screen-wide color picker - sample from anywhere on screen ⭐ NEW
 - **Selection Tool** - Rectangle selection with visual marquee (fully functional)
 - **Text Tool** - Add text to your artwork with customizable size and color ⭐ NEW
+  - **Text on Path** ⭐ PHASE 7 - Flow text along any vector path for curved text effects
+- **⭐ PHASE 7: Pen Tool** - Professional vector editing with Bézier curves
+  - Create custom vector shapes with anchor point editing
+  - Edit Bézier curves with interactive control handles
+  - Convert between corner and smooth points
+  - SVG import/export with full vector data preservation
+  - Shape boolean operations: union, subtract, intersect, exclude
+  - Keyboard shortcut: P
 - **Shape Tool** - Draw vector shapes for comics, panels, and word bubbles ⭐ NEW
   - 10 shape templates: Rectangle, Circle, Rounded Rectangle, Speech Bubble, Thought Bubble, Star, Arrow, Heart, Comic Panel (Square), Comic Panel (Split)
 
