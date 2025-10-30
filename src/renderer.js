@@ -628,6 +628,58 @@ const state = {
             width: 10,          // Edge detection width
             contrast: 40,       // Edge contrast threshold
             frequency: 57       // Anchor point frequency
+        },
+        // Category 4: Advanced Selection Features
+        mask: null,             // Selection mask data (Uint8Array)
+        algebra: 'replace',     // 'replace', 'add', 'subtract', 'intersect', 'xor'
+        // Color Range Selection
+        colorRange: {
+            enabled: false,
+            colors: [],         // Array of selected colors
+            fuzziness: 40,      // Color tolerance (0-255)
+            localized: false,   // Localized color selection
+            skinTone: false     // Skin tone detection mode
+        },
+        // Focus Area Selection
+        focusArea: {
+            enabled: false,
+            depthBased: true,
+            focusRange: 50,     // Focus range percentage (0-100)
+            blurDetection: true
+        },
+        // Luminosity Mask
+        luminosityMask: {
+            enabled: false,
+            type: 'highlights',  // 'highlights', 'midtones', 'shadows', 'custom'
+            rangeMin: 170,      // For highlights (0-255)
+            rangeMax: 255,
+            feather: 10
+        },
+        // Channel Selection
+        channelSelection: {
+            enabled: false,
+            channel: 'rgb',     // 'rgb', 'r', 'g', 'b', 'alpha'
+            operation: 'load'   // 'load', 'add', 'subtract', 'intersect'
+        },
+        // Select and Mask Workspace
+        selectAndMask: {
+            active: false,
+            viewMode: 'onBlack', // 'onBlack', 'onWhite', 'onLayers', 'marching', 'overlay'
+            edgeRefinement: true,
+            refineRadius: 10,
+            smoothness: 5,
+            feather: 1,
+            contrast: 0,
+            shiftEdge: 0,
+            decontaminate: false
+        },
+        // Transform Selection
+        transformSelection: {
+            enabled: false,
+            mode: 'move',       // 'move', 'rotate', 'scale', 'perspective'
+            angle: 0,
+            scaleX: 1,
+            scaleY: 1
         }
     },
     // Quick Mask Mode (Phase 8)
@@ -4373,6 +4425,15 @@ function addLayer(name, type = 'paint') {
         // Phase 5: Layer Masks
         mask: null,  // Layer mask canvas (null if no mask)
         maskEnabled: false,  // Whether mask is active
+        // Category 4: Advanced Masking Features
+        maskProperties: {
+            density: 100,       // Mask density (0-100%)
+            feather: 0,         // Mask feather amount (0-250 pixels)
+            invert: false,      // Invert mask
+            type: 'raster'      // 'raster', 'vector', 'gradient'
+        },
+        vectorMask: null,       // Vector mask path (Bezier paths)
+        gradientMask: null,     // Gradient mask data
         // Phase 5: Clipping Masks
         clippingMask: false,  // Clip to layer below
         // Phase 5: Layer Styles/Effects
@@ -20622,6 +20683,985 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// ==================================================================
+// CATEGORY 4: SELECTION & MASKING TOOLS
+// Implementation of FUTURE_ENHANCEMENTS_2.md Category 4
+// ==================================================================
+
+// ==================== Advanced Selection ====================
+
+/**
+ * AI-Powered Selection Enhancement
+ * Select subject, sky, hair, objects by type
+ */
+function aiSelectSubject() {
+    if (!state.activeLayer) return;
+    
+    const imageData = state.activeLayer.canvas.getContext('2d').getImageData(
+        0, 0, state.canvas.width, state.canvas.height
+    );
+    
+    // Use existing AI object selection with enhanced capabilities
+    if (window.aiTools && window.aiTools.objectSelection) {
+        const centerX = Math.floor(state.canvas.width / 2);
+        const centerY = Math.floor(state.canvas.height / 2);
+        
+        window.aiTools.objectSelection(imageData, centerX, centerY, {
+            tolerance: 30,
+            multiObject: true,
+            semanticUnderstanding: 'subject'
+        }).then(selectionMask => {
+            state.selection.mask = selectionMask;
+            state.selection.active = true;
+            state.selection.type = 'ai-subject';
+            compositeAllLayers();
+        });
+    }
+}
+
+function aiSelectSky() {
+    if (!state.activeLayer) return;
+    
+    const imageData = state.activeLayer.canvas.getContext('2d').getImageData(
+        0, 0, state.canvas.width, state.canvas.height
+    );
+    
+    // Sky typically at top of image
+    const skyX = Math.floor(state.canvas.width / 2);
+    const skyY = Math.floor(state.canvas.height * 0.2);
+    
+    if (window.aiTools && window.aiTools.objectSelection) {
+        window.aiTools.objectSelection(imageData, skyX, skyY, {
+            tolerance: 50,
+            semanticUnderstanding: 'sky'
+        }).then(selectionMask => {
+            state.selection.mask = selectionMask;
+            state.selection.active = true;
+            state.selection.type = 'ai-sky';
+            compositeAllLayers();
+        });
+    }
+}
+
+/**
+ * Color Range Selection
+ * Select by color with fuzziness control
+ */
+function colorRangeSelection(color, fuzziness = 40, localized = false, skinTone = false) {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    const selectionMask = new Uint8Array(width * height);
+    
+    // Parse target color
+    const targetRGB = hexToRgb(color);
+    
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        
+        let selected = false;
+        
+        if (skinTone) {
+            // Skin tone detection
+            selected = isSkinTone(r, g, b);
+        } else {
+            // Color distance calculation
+            const distance = Math.sqrt(
+                Math.pow(r - targetRGB.r, 2) +
+                Math.pow(g - targetRGB.g, 2) +
+                Math.pow(b - targetRGB.b, 2)
+            );
+            
+            selected = distance <= fuzziness;
+        }
+        
+        if (selected) {
+            const pixelIndex = i / 4;
+            selectionMask[pixelIndex] = 255;
+        }
+    }
+    
+    state.selection.mask = selectionMask;
+    state.selection.active = true;
+    state.selection.type = 'color-range';
+    state.selection.colorRange.enabled = true;
+    state.selection.colorRange.fuzziness = fuzziness;
+    compositeAllLayers();
+}
+
+function isSkinTone(r, g, b) {
+    // Simple skin tone detection algorithm
+    // R > 95 AND G > 40 AND B > 20 AND
+    // max(R,G,B) - min(R,G,B) > 15 AND
+    // |R-G| > 15 AND R > G AND R > B
+    return r > 95 && g > 40 && b > 20 &&
+           (Math.max(r, g, b) - Math.min(r, g, b)) > 15 &&
+           Math.abs(r - g) > 15 && r > g && r > b;
+}
+
+/**
+ * Focus Area Selection
+ * Select in-focus regions using edge detection
+ */
+function focusAreaSelection(focusRange = 50, blurDetection = true) {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    // Apply edge detection to find sharp areas
+    const edgeStrength = detectEdges(imageData);
+    
+    // Normalize and threshold
+    const threshold = (100 - focusRange) / 100 * 255;
+    const selectionMask = new Uint8Array(width * height);
+    
+    for (let i = 0; i < edgeStrength.length; i++) {
+        selectionMask[i] = edgeStrength[i] > threshold ? 255 : 0;
+    }
+    
+    // Apply smoothing
+    if (blurDetection) {
+        smoothSelectionMask(selectionMask, width, height, 3);
+    }
+    
+    state.selection.mask = selectionMask;
+    state.selection.active = true;
+    state.selection.type = 'focus-area';
+    state.selection.focusArea.enabled = true;
+    state.selection.focusArea.focusRange = focusRange;
+    compositeAllLayers();
+}
+
+function detectEdges(imageData) {
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const edgeStrength = new Uint8Array(width * height);
+    
+    // Sobel operator
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            let gx = 0, gy = 0;
+            
+            // Get grayscale values
+            for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                    const idx = ((y + ky) * width + (x + kx)) * 4;
+                    const gray = (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3;
+                    
+                    // Sobel kernels
+                    const sobelX = kx;
+                    const sobelY = ky;
+                    
+                    gx += gray * sobelX;
+                    gy += gray * sobelY;
+                }
+            }
+            
+            const magnitude = Math.sqrt(gx * gx + gy * gy);
+            edgeStrength[y * width + x] = Math.min(255, magnitude);
+        }
+    }
+    
+    return edgeStrength;
+}
+
+/**
+ * Luminosity Mask Generator
+ * Create masks based on tonal ranges
+ */
+function createLuminosityMask(type = 'highlights', rangeMin = 170, rangeMax = 255, feather = 10) {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    const selectionMask = new Uint8Array(width * height);
+    
+    // Set range based on type
+    if (type === 'highlights') {
+        rangeMin = 170;
+        rangeMax = 255;
+    } else if (type === 'midtones') {
+        rangeMin = 85;
+        rangeMax = 170;
+    } else if (type === 'shadows') {
+        rangeMin = 0;
+        rangeMax = 85;
+    }
+    
+    // Create mask based on luminosity
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        
+        // Calculate luminosity (perceived brightness)
+        const luminosity = 0.299 * r + 0.587 * g + 0.114 * b;
+        
+        const pixelIndex = i / 4;
+        if (luminosity >= rangeMin && luminosity <= rangeMax) {
+            // Gradient falloff at edges
+            let strength = 255;
+            if (luminosity < rangeMin + feather) {
+                strength = ((luminosity - rangeMin) / feather) * 255;
+            } else if (luminosity > rangeMax - feather) {
+                strength = ((rangeMax - luminosity) / feather) * 255;
+            }
+            selectionMask[pixelIndex] = Math.max(0, Math.min(255, strength));
+        }
+    }
+    
+    state.selection.mask = selectionMask;
+    state.selection.active = true;
+    state.selection.type = 'luminosity';
+    state.selection.luminosityMask.enabled = true;
+    state.selection.luminosityMask.type = type;
+    state.selection.luminosityMask.rangeMin = rangeMin;
+    state.selection.luminosityMask.rangeMax = rangeMax;
+    compositeAllLayers();
+}
+
+/**
+ * Channel-Based Selection
+ * Select using individual color channels
+ */
+function channelBasedSelection(channel = 'r', operation = 'load') {
+    if (!state.activeLayer) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.canvas.width, state.canvas.height);
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    const channelMask = new Uint8Array(width * height);
+    
+    // Extract channel
+    for (let i = 0; i < pixels.length; i += 4) {
+        const pixelIndex = i / 4;
+        
+        if (channel === 'r') {
+            channelMask[pixelIndex] = pixels[i];
+        } else if (channel === 'g') {
+            channelMask[pixelIndex] = pixels[i + 1];
+        } else if (channel === 'b') {
+            channelMask[pixelIndex] = pixels[i + 2];
+        } else if (channel === 'alpha') {
+            channelMask[pixelIndex] = pixels[i + 3];
+        } else if (channel === 'rgb') {
+            // Luminosity
+            const lum = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+            channelMask[pixelIndex] = lum;
+        }
+    }
+    
+    // Apply operation
+    if (operation === 'load' || !state.selection.mask) {
+        state.selection.mask = channelMask;
+    } else {
+        applySelectionAlgebra(channelMask, operation);
+    }
+    
+    state.selection.active = true;
+    state.selection.type = 'channel';
+    state.selection.channelSelection.enabled = true;
+    state.selection.channelSelection.channel = channel;
+    compositeAllLayers();
+}
+
+// ==================== Selection Refinement ====================
+
+/**
+ * Select and Mask Workspace
+ * Dedicated interface for refining selections
+ */
+function openSelectAndMaskWorkspace() {
+    if (!state.selection.active && !state.selection.mask) {
+        alert('Please make a selection first.');
+        return;
+    }
+    
+    state.selection.selectAndMask.active = true;
+    
+    // Create workspace UI (simplified version)
+    showSelectAndMaskPanel();
+}
+
+function showSelectAndMaskPanel() {
+    // Create a modal panel for Select and Mask
+    const panel = document.createElement('div');
+    panel.id = 'select-mask-workspace';
+    panel.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(30, 30, 30, 0.95);
+        border: 2px solid #444;
+        border-radius: 8px;
+        padding: 20px;
+        z-index: 10000;
+        min-width: 400px;
+    `;
+    
+    panel.innerHTML = `
+        <h3 style="color: #ffd700; margin-bottom: 15px;">Select and Mask Workspace</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">View Mode:</label>
+            <select id="sam-view-mode" style="width: 100%; padding: 5px; margin-top: 5px;">
+                <option value="onBlack">On Black</option>
+                <option value="onWhite">On White</option>
+                <option value="onLayers">On Layers</option>
+                <option value="marching">Marching Ants</option>
+                <option value="overlay">Overlay</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">Refine Edge Radius: <span id="sam-radius-value">10</span>px</label>
+            <input type="range" id="sam-refine-radius" min="1" max="50" value="10" style="width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">Smooth: <span id="sam-smooth-value">5</span></label>
+            <input type="range" id="sam-smoothness" min="0" max="20" value="5" style="width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">Feather: <span id="sam-feather-value">1</span>px</label>
+            <input type="range" id="sam-feather" min="0" max="50" value="1" style="width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">Contrast: <span id="sam-contrast-value">0</span>%</label>
+            <input type="range" id="sam-contrast" min="-100" max="100" value="0" style="width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">Shift Edge: <span id="sam-shift-value">0</span>px</label>
+            <input type="range" id="sam-shift-edge" min="-100" max="100" value="0" style="width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="color: #fff;">
+                <input type="checkbox" id="sam-decontaminate"> Decontaminate Colors
+            </label>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="sam-apply" style="flex: 1; padding: 10px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply</button>
+            <button id="sam-cancel" style="flex: 1; padding: 10px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    // Add event listeners
+    document.getElementById('sam-refine-radius').addEventListener('input', (e) => {
+        document.getElementById('sam-radius-value').textContent = e.target.value;
+        state.selection.selectAndMask.refineRadius = parseInt(e.target.value);
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-smoothness').addEventListener('input', (e) => {
+        document.getElementById('sam-smooth-value').textContent = e.target.value;
+        state.selection.selectAndMask.smoothness = parseInt(e.target.value);
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-feather').addEventListener('input', (e) => {
+        document.getElementById('sam-feather-value').textContent = e.target.value;
+        state.selection.selectAndMask.feather = parseInt(e.target.value);
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-contrast').addEventListener('input', (e) => {
+        document.getElementById('sam-contrast-value').textContent = e.target.value;
+        state.selection.selectAndMask.contrast = parseInt(e.target.value);
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-shift-edge').addEventListener('input', (e) => {
+        document.getElementById('sam-shift-value').textContent = e.target.value;
+        state.selection.selectAndMask.shiftEdge = parseInt(e.target.value);
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-view-mode').addEventListener('change', (e) => {
+        state.selection.selectAndMask.viewMode = e.target.value;
+        compositeAllLayers();
+    });
+    
+    document.getElementById('sam-decontaminate').addEventListener('change', (e) => {
+        state.selection.selectAndMask.decontaminate = e.target.checked;
+        applySelectAndMaskRefinement();
+    });
+    
+    document.getElementById('sam-apply').addEventListener('click', () => {
+        state.selection.selectAndMask.active = false;
+        document.getElementById('select-mask-workspace').remove();
+    });
+    
+    document.getElementById('sam-cancel').addEventListener('click', () => {
+        state.selection.selectAndMask.active = false;
+        document.getElementById('select-mask-workspace').remove();
+    });
+}
+
+function applySelectAndMaskRefinement() {
+    if (!state.selection.mask) return;
+    
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    let mask = new Uint8Array(state.selection.mask);
+    
+    // Apply smoothness
+    if (state.selection.selectAndMask.smoothness > 0) {
+        mask = smoothSelectionMask(mask, width, height, state.selection.selectAndMask.smoothness);
+    }
+    
+    // Apply feather
+    if (state.selection.selectAndMask.feather > 0) {
+        mask = applyFeathering(mask, width, height, state.selection.selectAndMask.feather);
+    }
+    
+    // Apply contrast
+    if (state.selection.selectAndMask.contrast !== 0) {
+        const factor = (259 * (state.selection.selectAndMask.contrast + 255)) / (255 * (259 - state.selection.selectAndMask.contrast));
+        for (let i = 0; i < mask.length; i++) {
+            mask[i] = Math.max(0, Math.min(255, factor * (mask[i] - 128) + 128));
+        }
+    }
+    
+    // Apply shift edge
+    if (state.selection.selectAndMask.shiftEdge !== 0) {
+        mask = shiftSelectionEdge(mask, width, height, state.selection.selectAndMask.shiftEdge);
+    }
+    
+    state.selection.mask = mask;
+    compositeAllLayers();
+}
+
+/**
+ * Edge Detection Refinement
+ */
+function refineSelectionEdges(softEdge = true, featherRadius = 5) {
+    if (!state.selection.mask) return;
+    
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    let mask = state.selection.mask;
+    
+    if (softEdge) {
+        // Apply edge smoothing
+        mask = smoothSelectionMask(mask, width, height, 2);
+    }
+    
+    // Apply feathering
+    if (featherRadius > 0) {
+        mask = applyFeathering(mask, width, height, featherRadius);
+    }
+    
+    state.selection.mask = mask;
+    compositeAllLayers();
+}
+
+/**
+ * Hair/Fur Selection Tools
+ */
+function refineHairSelection(radius = 10) {
+    if (!state.selection.mask) return;
+    
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    const mask = state.selection.mask;
+    
+    // Find edges of selection
+    const edges = findSelectionEdges(mask, width, height);
+    
+    // Refine edges using fine detail detection
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, width, height);
+    
+    for (const edge of edges) {
+        refineEdgePoint(edge, imageData, mask, width, height, radius);
+    }
+    
+    state.selection.mask = mask;
+    compositeAllLayers();
+}
+
+function findSelectionEdges(mask, width, height) {
+    const edges = [];
+    
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = y * width + x;
+            
+            if (mask[idx] > 0) {
+                // Check if this is an edge pixel
+                const neighbors = [
+                    mask[idx - 1], mask[idx + 1],
+                    mask[idx - width], mask[idx + width]
+                ];
+                
+                if (neighbors.some(n => n === 0)) {
+                    edges.push({ x, y, idx });
+                }
+            }
+        }
+    }
+    
+    return edges;
+}
+
+function refineEdgePoint(edge, imageData, mask, width, height, radius) {
+    const pixels = imageData.data;
+    
+    // Sample pixels around edge point
+    for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+            const x = edge.x + dx;
+            const y = edge.y + dy;
+            
+            if (x < 0 || x >= width || y < 0 || y >= height) continue;
+            
+            const idx = y * width + x;
+            const pixIdx = idx * 4;
+            
+            // Check for fine details (high frequency changes)
+            const gradient = calculateLocalGradient(pixels, x, y, width, height);
+            
+            if (gradient > 50) {
+                // Likely a hair/fur strand
+                mask[idx] = Math.max(mask[idx], 200);
+            }
+        }
+    }
+}
+
+function calculateLocalGradient(pixels, x, y, width, height) {
+    if (x < 1 || x >= width - 1 || y < 1 || y >= height - 1) return 0;
+    
+    const getGray = (px, py) => {
+        const idx = (py * width + px) * 4;
+        return (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3;
+    };
+    
+    const center = getGray(x, y);
+    const left = getGray(x - 1, y);
+    const right = getGray(x + 1, y);
+    const top = getGray(x, y - 1);
+    const bottom = getGray(x, y + 1);
+    
+    const gx = Math.abs(right - left);
+    const gy = Math.abs(bottom - top);
+    
+    return Math.sqrt(gx * gx + gy * gy);
+}
+
+/**
+ * Selection Algebra
+ * Combine selections using boolean operations
+ */
+function applySelectionAlgebra(newMask, operation = 'add') {
+    if (!state.selection.mask) {
+        state.selection.mask = newMask;
+        return;
+    }
+    
+    const mask = state.selection.mask;
+    const length = Math.min(mask.length, newMask.length);
+    
+    for (let i = 0; i < length; i++) {
+        switch (operation) {
+            case 'add':
+            case 'union':
+                mask[i] = Math.max(mask[i], newMask[i]);
+                break;
+            case 'subtract':
+                mask[i] = Math.max(0, mask[i] - newMask[i]);
+                break;
+            case 'intersect':
+                mask[i] = Math.min(mask[i], newMask[i]);
+                break;
+            case 'xor':
+                mask[i] = mask[i] > 0 && newMask[i] > 0 ? 0 : Math.max(mask[i], newMask[i]);
+                break;
+            case 'replace':
+            default:
+                mask[i] = newMask[i];
+                break;
+        }
+    }
+    
+    state.selection.algebra = operation;
+}
+
+/**
+ * Selection Transform
+ * Move, rotate, scale, perspective transform selection
+ */
+function transformSelection(mode = 'move') {
+    if (!state.selection.active && !state.selection.mask) return;
+    
+    state.selection.transformSelection.enabled = true;
+    state.selection.transformSelection.mode = mode;
+    
+    // Enable transform mode for selection
+    alert(`Selection Transform: ${mode} mode activated. Click and drag to transform the selection.`);
+}
+
+function applySelectionTransform(dx, dy, angle = 0, scaleX = 1, scaleY = 1) {
+    if (!state.selection.mask) return;
+    
+    const width = state.canvas.width;
+    const height = state.canvas.height;
+    const oldMask = state.selection.mask;
+    const newMask = new Uint8Array(width * height);
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            // Apply inverse transform
+            let tx = x - dx - centerX;
+            let ty = y - dy - centerY;
+            
+            // Rotate
+            const rx = tx * cosA + ty * sinA;
+            const ry = -tx * sinA + ty * cosA;
+            
+            // Scale
+            const sx = rx / scaleX;
+            const sy = ry / scaleY;
+            
+            // Back to image space
+            const sourceX = Math.round(sx + centerX);
+            const sourceY = Math.round(sy + centerY);
+            
+            if (sourceX >= 0 && sourceX < width && sourceY >= 0 && sourceY < height) {
+                newMask[y * width + x] = oldMask[sourceY * width + sourceX];
+            }
+        }
+    }
+    
+    state.selection.mask = newMask;
+    compositeAllLayers();
+}
+
+// ==================== Masking Features ====================
+
+/**
+ * Vector Masks
+ * Resolution-independent bezier path masks
+ */
+function createVectorMask(paths) {
+    if (!state.activeLayer) return;
+    
+    state.activeLayer.vectorMask = {
+        paths: paths,
+        type: 'vector',
+        editable: true
+    };
+    
+    // Rasterize vector mask for rendering
+    rasterizeVectorMask();
+    compositeAllLayers();
+}
+
+function rasterizeVectorMask() {
+    if (!state.activeLayer || !state.activeLayer.vectorMask) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = state.canvas.width;
+    canvas.height = state.canvas.height;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw vector paths
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    state.activeLayer.vectorMask.paths.forEach(path => {
+        ctx.beginPath();
+        path.points.forEach((point, i) => {
+            if (i === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                if (point.handleIn) {
+                    ctx.bezierCurveTo(
+                        path.points[i - 1].handleOut.x, path.points[i - 1].handleOut.y,
+                        point.handleIn.x, point.handleIn.y,
+                        point.x, point.y
+                    );
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            }
+        });
+        ctx.closePath();
+        ctx.fillStyle = 'black';
+        ctx.fill();
+    });
+    
+    state.activeLayer.mask = canvas;
+    state.activeLayer.maskEnabled = true;
+    state.activeLayer.maskProperties.type = 'vector';
+}
+
+/**
+ * Gradient Masks
+ * Smooth gradient transitions for masks
+ */
+function createGradientMask(type = 'linear', startX, startY, endX, endY, stops = null) {
+    if (!state.activeLayer) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = state.canvas.width;
+    canvas.height = state.canvas.height;
+    const ctx = canvas.getContext('2d');
+    
+    let gradient;
+    if (type === 'linear') {
+        gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+    } else if (type === 'radial') {
+        const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        gradient = ctx.createRadialGradient(startX, startY, 0, startX, startY, radius);
+    }
+    
+    // Add color stops
+    if (stops) {
+        stops.forEach(stop => {
+            gradient.addColorStop(stop.position, stop.color);
+        });
+    } else {
+        gradient.addColorStop(0, 'white');
+        gradient.addColorStop(1, 'black');
+    }
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    state.activeLayer.gradientMask = {
+        type: type,
+        startX: startX,
+        startY: startY,
+        endX: endX,
+        endY: endY,
+        stops: stops
+    };
+    state.activeLayer.mask = canvas;
+    state.activeLayer.maskEnabled = true;
+    state.activeLayer.maskProperties.type = 'gradient';
+    compositeAllLayers();
+}
+
+/**
+ * Layer Mask Properties
+ * Advanced mask control
+ */
+function setMaskDensity(density) {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    state.activeLayer.maskProperties.density = Math.max(0, Math.min(100, density));
+    compositeAllLayers();
+}
+
+function setMaskFeather(feather) {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    state.activeLayer.maskProperties.feather = Math.max(0, Math.min(250, feather));
+    
+    // Re-apply mask with feathering
+    applyMaskFeathering();
+    compositeAllLayers();
+}
+
+function invertMask() {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    state.activeLayer.maskProperties.invert = !state.activeLayer.maskProperties.invert;
+    compositeAllLayers();
+}
+
+function applyMaskFeathering() {
+    if (!state.activeLayer || !state.activeLayer.mask) return;
+    
+    const feather = state.activeLayer.maskProperties.feather;
+    if (feather === 0) return;
+    
+    const ctx = state.activeLayer.mask.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.mask.width, state.activeLayer.mask.height);
+    const pixels = imageData.data;
+    
+    // Apply gaussian blur for feathering
+    const blurred = gaussianBlur(pixels, state.activeLayer.mask.width, state.activeLayer.mask.height, feather / 3);
+    
+    for (let i = 0; i < pixels.length; i++) {
+        pixels[i] = blurred[i];
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function gaussianBlur(pixels, width, height, radius) {
+    const result = new Uint8ClampedArray(pixels.length);
+    const kernel = createGaussianKernel(radius);
+    const size = kernel.length;
+    const half = Math.floor(size / 2);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            for (let c = 0; c < 4; c++) {
+                let sum = 0;
+                let weightSum = 0;
+                
+                for (let ky = 0; ky < size; ky++) {
+                    for (let kx = 0; kx < size; kx++) {
+                        const px = x + kx - half;
+                        const py = y + ky - half;
+                        
+                        if (px >= 0 && px < width && py >= 0 && py < height) {
+                            const weight = kernel[ky][kx];
+                            sum += pixels[(py * width + px) * 4 + c] * weight;
+                            weightSum += weight;
+                        }
+                    }
+                }
+                
+                result[(y * width + x) * 4 + c] = sum / weightSum;
+            }
+        }
+    }
+    
+    return result;
+}
+
+function createGaussianKernel(radius) {
+    const size = Math.ceil(radius) * 2 + 1;
+    const kernel = [];
+    const sigma = radius / 3;
+    const s2 = 2 * sigma * sigma;
+    const sqrtPiS2 = Math.sqrt(Math.PI * s2);
+    const center = Math.floor(size / 2);
+    
+    for (let y = 0; y < size; y++) {
+        kernel[y] = [];
+        for (let x = 0; x < size; x++) {
+            const dx = x - center;
+            const dy = y - center;
+            const d2 = dx * dx + dy * dy;
+            kernel[y][x] = Math.exp(-d2 / s2) / sqrtPiS2;
+        }
+    }
+    
+    return kernel;
+}
+
+// ==================== Helper Functions ====================
+
+function smoothSelectionMask(mask, width, height, iterations = 1) {
+    let result = new Uint8Array(mask);
+    
+    for (let iter = 0; iter < iterations; iter++) {
+        const temp = new Uint8Array(result);
+        
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = y * width + x;
+                
+                // 3x3 averaging
+                const sum = temp[idx - width - 1] + temp[idx - width] + temp[idx - width + 1] +
+                            temp[idx - 1] + temp[idx] + temp[idx + 1] +
+                            temp[idx + width - 1] + temp[idx + width] + temp[idx + width + 1];
+                
+                result[idx] = sum / 9;
+            }
+        }
+    }
+    
+    return result;
+}
+
+function shiftSelectionEdge(mask, width, height, pixels) {
+    if (pixels === 0) return mask;
+    
+    const result = new Uint8Array(mask.length);
+    
+    if (pixels > 0) {
+        // Dilate (expand)
+        for (let iter = 0; iter < pixels; iter++) {
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    if (mask[idx] > 0) {
+                        // Set neighbors
+                        if (x > 0) result[idx - 1] = 255;
+                        if (x < width - 1) result[idx + 1] = 255;
+                        if (y > 0) result[idx - width] = 255;
+                        if (y < height - 1) result[idx + width] = 255;
+                        result[idx] = 255;
+                    }
+                }
+            }
+            mask = new Uint8Array(result);
+        }
+    } else {
+        // Erode (contract)
+        for (let iter = 0; iter < Math.abs(pixels); iter++) {
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    if (mask[idx] > 0) {
+                        // Check if all neighbors are selected
+                        const allSelected = 
+                            (x === 0 || mask[idx - 1] > 0) &&
+                            (x === width - 1 || mask[idx + 1] > 0) &&
+                            (y === 0 || mask[idx - width] > 0) &&
+                            (y === height - 1 || mask[idx + width] > 0);
+                        
+                        result[idx] = allSelected ? 255 : 0;
+                    }
+                }
+            }
+            mask = new Uint8Array(result);
+        }
+    }
+    
+    return result;
+}
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+// ==================================================================
+// END CATEGORY 4: SELECTION & MASKING TOOLS
+// ==================================================================
 
 // Initialize on load
 window.addEventListener('DOMContentLoaded', init);
