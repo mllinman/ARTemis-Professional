@@ -25,7 +25,9 @@
                     <button class="menu-btn" data-action="file-save">Save (Ctrl+S)</button>
                     <button class="menu-btn" data-action="file-save-as">Save As... (Ctrl+Shift+S)</button>
                     <button class="menu-btn" data-action="file-export">Export Image... (Ctrl+E)</button>
+                    <button class="menu-btn" data-action="file-export-advanced">Advanced Export... (Ctrl+Shift+E)</button>
                     <button class="menu-btn" data-action="file-settings">Settings (Ctrl+,)</button>
+                    <button class="menu-btn" data-action="file-memory-monitor">Memory Monitor...</button>
                 </div>
             </div>
             <div class="menu-item">
@@ -2068,6 +2070,188 @@
             </div>
             <div class="dialog-footer">
                 <button class="dialog-btn primary" id="manage-custom-blends-ok">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 15: Advanced Export Dialog -->
+    <div id="advanced-export-dialog" class="dialog hidden">
+        <div class="dialog-content" style="max-width: 700px;">
+            <div class="dialog-header">
+                <h3>Advanced Export Options</h3>
+                <button class="dialog-close" id="advanced-export-close">&times;</button>
+            </div>
+            <div class="dialog-body" style="max-height: 60vh; overflow-y: auto;">
+                
+                <!-- Export Source Selection -->
+                <div class="setting-group">
+                    <label style="font-weight: bold;">Export Source:</label>
+                    <div style="margin: 10px 0;">
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="export-source" value="all" checked> Entire Canvas (All Layers Flattened)
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="export-source" value="current"> Current Layer Only
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="export-source" value="visible"> All Visible Layers
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="export-source" value="selected"> Selected Layers
+                        </label>
+                        <label style="display: block; margin-bottom: 8px;">
+                            <input type="radio" name="export-source" value="batch"> Batch Export (Each Layer Separately)
+                        </label>
+                    </div>
+                    
+                    <!-- Layer Selection -->
+                    <div id="layer-selection-container" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;">Select Layers to Export:</label>
+                        <div id="export-layer-list" style="max-height: 150px; overflow-y: auto;">
+                            <!-- Layers will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Format Options -->
+                <div class="setting-group" style="margin-top: 20px;">
+                    <label for="export-format-select" style="font-weight: bold;">Export Format:</label>
+                    <select id="export-format-select" class="brush-input" style="width: 100%; margin-top: 5px;">
+                        <option value="png">PNG - Lossless with transparency</option>
+                        <option value="jpeg">JPEG - Best for photos, no transparency</option>
+                        <option value="webp">WebP - Modern format, good compression</option>
+                    </select>
+                </div>
+                
+                <!-- Quality Settings (for JPEG/WebP) -->
+                <div id="quality-settings" class="setting-group hidden" style="margin-top: 15px;">
+                    <label for="export-quality-slider">Quality: <span id="export-quality-value">95</span>%</label>
+                    <input type="range" id="export-quality-slider" class="slider" min="1" max="100" value="95" />
+                </div>
+                
+                <!-- Web Optimization Options -->
+                <div class="setting-group" style="margin-top: 20px;">
+                    <label style="font-weight: bold;">
+                        <input type="checkbox" id="enable-web-optimization"> Enable Web Optimization
+                    </label>
+                </div>
+                
+                <div id="web-optimization-options" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <!-- Resize Options -->
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="resize-on-export"> Resize on Export
+                        </label>
+                        <div id="resize-options" class="hidden" style="margin-top: 10px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label for="export-width">Width (px):</label>
+                                    <input type="number" id="export-width" class="brush-input" value="1920" min="1" />
+                                </div>
+                                <div>
+                                    <label for="export-height">Height (px):</label>
+                                    <input type="number" id="export-height" class="brush-input" value="1080" min="1" />
+                                </div>
+                            </div>
+                            <label style="display: block; margin-top: 8px;">
+                                <input type="checkbox" id="maintain-aspect-ratio" checked> Maintain Aspect Ratio
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Format Recommendation -->
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(100,150,255,0.1); border-left: 3px solid #6496ff; font-size: 12px;">
+                        <strong>💡 Format Recommendation:</strong>
+                        <p id="format-recommendation" style="margin: 5px 0 0 0;">Select options to see recommendations</p>
+                    </div>
+                </div>
+                
+                <!-- Export Preset -->
+                <div class="setting-group" style="margin-top: 20px;">
+                    <label style="font-weight: bold;">Export Preset:</label>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <select id="export-preset-select" class="brush-input" style="flex: 1;">
+                            <option value="">-- Select Preset --</option>
+                            <option value="web-standard">Web Standard (1920x1080, PNG)</option>
+                            <option value="web-optimized">Web Optimized (1920x1080, WebP 90%)</option>
+                            <option value="social-media">Social Media (1200x1200, JPEG 85%)</option>
+                            <option value="print-quality">Print Quality (Full Size, PNG)</option>
+                            <option value="thumbnail">Thumbnail (400x400, JPEG 80%)</option>
+                        </select>
+                        <button id="save-export-preset" class="dialog-btn secondary" style="white-space: nowrap;">Save Preset</button>
+                    </div>
+                </div>
+                
+                <!-- Memory & Performance Info -->
+                <div id="export-memory-info" style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Estimated Export Size:</span>
+                        <span id="estimated-export-size">--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Current Memory Usage:</span>
+                        <span id="current-memory-usage">--</span>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn secondary" id="advanced-export-cancel">Cancel</button>
+                <button class="dialog-btn primary" id="advanced-export-execute">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 15: Memory Monitor Dialog -->
+    <div id="memory-monitor-dialog" class="dialog hidden">
+        <div class="dialog-content" style="max-width: 600px;">
+            <div class="dialog-header">
+                <h3>Memory & Performance Monitor</h3>
+                <button class="dialog-close" id="memory-monitor-close">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div class="setting-group">
+                    <h4>Memory Usage</h4>
+                    <div id="memory-stats" style="font-family: monospace; font-size: 12px; line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Canvas Memory:</span>
+                            <span id="canvas-memory">-- MB</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Layer Count:</span>
+                            <span id="layer-count-display">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>History States:</span>
+                            <span id="history-count-display">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Estimated Total:</span>
+                            <span id="total-memory-estimate">-- MB</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-group" style="margin-top: 20px;">
+                    <h4>Performance Settings</h4>
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="checkbox" id="enable-memory-cleanup"> Enable Automatic Memory Cleanup
+                    </label>
+                    <label style="display: block; margin-bottom: 10px;">
+                        Max History States: <span id="max-history-value">50</span>
+                    </label>
+                    <input type="range" id="max-history-slider" class="slider" min="10" max="100" value="50" />
+                </div>
+                
+                <div class="setting-group" style="margin-top: 20px;">
+                    <h4>Cleanup Actions</h4>
+                    <button id="cleanup-history-btn" class="dialog-btn secondary" style="width: 100%; margin-bottom: 8px;">Clear Undo History (Keep Current State)</button>
+                    <button id="cleanup-thumbnails-btn" class="dialog-btn secondary" style="width: 100%; margin-bottom: 8px;">Regenerate Layer Thumbnails</button>
+                    <button id="force-gc-btn" class="dialog-btn secondary" style="width: 100%;">Force Garbage Collection</button>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="dialog-btn primary" id="memory-monitor-ok">Close</button>
             </div>
         </div>
     </div>
