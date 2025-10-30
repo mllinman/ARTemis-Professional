@@ -120,6 +120,9 @@ class WebGLRenderer {
                 // Calculate distance from brush center
                 vec2 brushCoord = (v_texCoord - u_brushPosition) / u_brushSize;
                 
+                // Clamp coordinates to valid range [0, 1]
+                brushCoord = clamp(brushCoord, 0.0, 1.0);
+                
                 // Get brush texture value
                 vec4 brushValue = texture2D(u_brushTexture, brushCoord);
                 
@@ -249,8 +252,22 @@ class WebGLRenderer {
             const pixels = new Uint8Array(this.canvas.width * this.canvas.height * 4);
             this.gl.readPixels(0, 0, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
             
+            // Flip pixels vertically (WebGL Y-axis is inverted)
+            const flippedPixels = new Uint8ClampedArray(pixels.length);
+            const width = this.canvas.width;
+            const height = this.canvas.height;
+            const rowSize = width * 4;
+            
+            for (let y = 0; y < height; y++) {
+                const srcRow = (height - 1 - y) * rowSize;
+                const dstRow = y * rowSize;
+                for (let x = 0; x < rowSize; x++) {
+                    flippedPixels[dstRow + x] = pixels[srcRow + x];
+                }
+            }
+            
             // Create ImageData and put on 2D canvas
-            const imageData = new ImageData(new Uint8ClampedArray(pixels), this.canvas.width, this.canvas.height);
+            const imageData = new ImageData(flippedPixels, this.canvas.width, this.canvas.height);
             ctx.putImageData(imageData, 0, 0);
         }
         

@@ -622,7 +622,15 @@ const state = {
     theme: 'dark', // 'dark' or 'light'
     // Phase 10: Interface scaling
     interfaceScale: 1.0, // 0.75, 1.0, 1.25, 1.5
-    previousScale: null // Track previous scale for relative adjustments
+    previousScale: null, // Track previous scale for relative adjustments
+    // Phase 15: Performance & Rendering enhancements
+    webglAvailable: false,         // WebGL support detected
+    webglEnabled: false,           // WebGL acceleration enabled
+    webglRenderer: null,           // WebGL renderer instance
+    tiledRenderingEnabled: false,  // Tiled rendering enabled
+    tiledCanvasInstance: null,     // Tiled canvas instance
+    progressiveLoadingEnabled: true, // Progressive loading enabled
+    useTiledCanvas: false          // Currently using tiled canvas
 };
 
 // Default keyboard shortcuts (for reset functionality)
@@ -13885,6 +13893,90 @@ function initSettingsDialog() {
     
     // Setup Brush Engine functionality
     initBrushEngine();
+    
+    // Setup Phase 15 Performance & Rendering settings
+    initPhase15Settings();
+}
+
+// Initialize Phase 15 Performance & Rendering settings
+function initPhase15Settings() {
+    // WebGL Acceleration checkbox
+    const webglCheckbox = document.getElementById('enable-webgl-acceleration');
+    if (webglCheckbox) {
+        // Check WebGL availability and update UI
+        if (typeof WebGLRenderer !== 'undefined' && WebGLRenderer.isWebGLAvailable()) {
+            const statusSpan = document.getElementById('webgl-support-status');
+            const infoStatus = document.getElementById('webgl-info-status');
+            if (statusSpan) statusSpan.textContent = '✓ WebGL is available';
+            if (infoStatus) infoStatus.textContent = 'Available';
+            infoStatus.style.color = '#4CAF50';
+            
+            // Load saved preference
+            const savedPref = localStorage.getItem('artemis-webgl-enabled');
+            if (savedPref === 'true') {
+                webglCheckbox.checked = true;
+                state.webglEnabled = true;
+            }
+            
+            // Handle checkbox change
+            webglCheckbox.addEventListener('change', (e) => {
+                state.webglEnabled = e.target.checked;
+                localStorage.setItem('artemis-webgl-enabled', e.target.checked);
+                console.log('WebGL acceleration:', e.target.checked ? 'enabled' : 'disabled');
+            });
+        } else {
+            const statusSpan = document.getElementById('webgl-support-status');
+            const infoStatus = document.getElementById('webgl-info-status');
+            if (statusSpan) statusSpan.textContent = '✗ WebGL not supported on this device';
+            if (infoStatus) infoStatus.textContent = 'Not available';
+            infoStatus.style.color = '#f44336';
+            webglCheckbox.disabled = true;
+        }
+    }
+    
+    // Tiled Rendering checkbox
+    const tiledCheckbox = document.getElementById('enable-tiled-rendering');
+    if (tiledCheckbox) {
+        // Load saved preference
+        const savedPref = localStorage.getItem('artemis-tiled-rendering-enabled');
+        if (savedPref === 'true') {
+            tiledCheckbox.checked = true;
+            state.tiledRenderingEnabled = true;
+        }
+        
+        // Handle checkbox change
+        tiledCheckbox.addEventListener('change', (e) => {
+            state.tiledRenderingEnabled = e.target.checked;
+            localStorage.setItem('artemis-tiled-rendering-enabled', e.target.checked);
+            console.log('Tiled rendering:', e.target.checked ? 'enabled' : 'disabled');
+            
+            // Update status
+            const statusSpan = document.getElementById('tiled-rendering-status');
+            if (statusSpan) {
+                statusSpan.textContent = e.target.checked ? 'Enabled' : 'Not active';
+            }
+        });
+    }
+    
+    // Progressive Loading checkbox
+    const progressiveCheckbox = document.getElementById('enable-progressive-loading');
+    if (progressiveCheckbox) {
+        // Load saved preference
+        const savedPref = localStorage.getItem('artemis-progressive-loading-enabled');
+        if (savedPref === 'false') {
+            progressiveCheckbox.checked = false;
+            state.progressiveLoadingEnabled = false;
+        } else {
+            state.progressiveLoadingEnabled = true;
+        }
+        
+        // Handle checkbox change
+        progressiveCheckbox.addEventListener('change', (e) => {
+            state.progressiveLoadingEnabled = e.target.checked;
+            localStorage.setItem('artemis-progressive-loading-enabled', e.target.checked);
+            console.log('Progressive loading:', e.target.checked ? 'enabled' : 'disabled');
+        });
+    }
 }
 
 // Brush Engine functionality
