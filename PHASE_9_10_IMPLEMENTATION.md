@@ -756,7 +756,7 @@ Note: The 3 remaining items (icon packs, cloud sync, brush libraries) require ex
 **Completed Features:**
 1. ✅ Customizable keyboard shortcuts (48 actions)
 2. ✅ Workspace presets (4 presets + custom management)
-3. ✅ Customizable panel layouts (drag-and-drop, floating, docking, nesting) ✅
+3. ✅ Customizable panel layouts (drag-and-drop, floating, docking, nesting)
 4. ✅ Theme customization (light/dark toggle)
 5. ✅ Custom theme system (7 presets + creator)
 6. ✅ Theme import/export (JSON format)
