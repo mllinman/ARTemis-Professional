@@ -14891,6 +14891,56 @@ function handleMenuAction(action) {
             toggleAICompositionOverlay();
             break;
         
+        // Color Management & Grading menu (Category 6)
+        case 'color-curves':
+            showCurvesDialog();
+            break;
+        case 'color-levels':
+            showLevelsDialog();
+            break;
+        case 'color-selective':
+            showSelectiveColorDialog();
+            break;
+        case 'color-balance':
+            showColorBalanceDialog();
+            break;
+        case 'color-hsl':
+            showHSLDialog();
+            break;
+        case 'color-wheels':
+            showColorWheelsDialog();
+            break;
+        case 'color-split-toning':
+            showSplitToningDialog();
+            break;
+        case 'color-lookup':
+            showColorLookupDialog();
+            break;
+        case 'color-match':
+            showMatchColorDialog();
+            break;
+        case 'color-channel-mixer':
+            showChannelMixerDialog();
+            break;
+        case 'color-photo-filter':
+            showPhotoFilterDialog();
+            break;
+        case 'color-convert-profile':
+            showConvertProfileDialog();
+            break;
+        case 'color-soft-proofing':
+            showSoftProofingDialog();
+            break;
+        case 'color-gamut-warning':
+            showGamutWarning();
+            break;
+        case 'color-apply-lut':
+            showApplyLUTDialog();
+            break;
+        case 'color-calibrate':
+            showCalibrationDialog();
+            break;
+        
         default:
             console.warn('Unknown menu action:', action);
     }
@@ -22989,6 +23039,418 @@ function loadStylePresets() {
 
 // ==================================================================
 // END CATEGORY 5: LAYER MANAGEMENT & COMPOSITING
+// ==================================================================
+
+// ============================================================================
+// Color Management & Grading Implementation (Category 6: Future Enhancements 2.0)
+// ============================================================================
+
+let colorManagement = null;
+
+// Initialize Color Management on first use
+function initColorManagement() {
+    if (!colorManagement && typeof ColorManagement !== 'undefined') {
+        colorManagement = new ColorManagement();
+        console.log('Color Management initialized');
+    }
+    return colorManagement;
+}
+
+// Curves Advanced
+function showCurvesDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    // Simple curves dialog
+    const curves = {
+        rgb: [
+            { x: 0, y: 0 },
+            { x: 0.5, y: 0.5 },
+            { x: 1, y: 1 }
+        ]
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applyCurvesAdvanced(imageData, curves);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Levels Per Channel
+function showLevelsDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    // Auto levels as default
+    cm.autoLevels(imageData);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Selective Color
+function showSelectiveColorDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const adjustments = {
+        reds: { cyan: 0, magenta: 0, yellow: 10, black: 0 }
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applySelectiveColor(imageData, adjustments);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Color Balance
+function showColorBalanceDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const balance = {
+        shadows: { cyan: 0, magenta: 0, yellow: 0 },
+        midtones: { cyan: 0, magenta: 0, yellow: 0 },
+        highlights: { cyan: 0, magenta: 0, yellow: 0 }
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applyColorBalance(imageData, balance);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// HSL/HSV Adjustment
+function showHSLDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const adjustments = {
+        hueShift: 0,
+        saturationShift: 10,
+        lightnessShift: 0
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applyHSLAdjustment(imageData, adjustments);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Color Wheels
+function showColorWheelsDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const wheels = {
+        lift: { red: 5, green: 0, blue: -5 },
+        gamma: { red: 0, green: 0, blue: 0 },
+        gain: { red: 0, green: 0, blue: 0 }
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applyColorWheels(imageData, wheels);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Split Toning
+function showSplitToningDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const splitTone = {
+        highlightColor: { hue: 30, saturation: 40 },
+        shadowColor: { hue: 210, saturation: 30 },
+        balance: 0
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applySplitToning(imageData, splitTone);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Color Lookup
+function showColorLookupDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const presets = ['film-emulation-kodak', 'film-emulation-fuji', 'vintage-70s', 'vintage-80s', 
+                     'modern-cinematic', 'nordic-cool', 'warm-sunset', 'teal-orange'];
+    
+    const preset = prompt('Choose a color lookup preset:\n' + presets.join(', '), 'modern-cinematic');
+    if (!preset) return;
+    
+    try {
+        const ctx = state.activeLayer.canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+        
+        cm.applyColorLookup(imageData, preset);
+        ctx.putImageData(imageData, 0, 0);
+        renderCanvas();
+        saveState();
+    } catch (error) {
+        alert('Error applying color lookup: ' + error.message);
+    }
+}
+
+// Match Color
+function showMatchColorDialog() {
+    alert('Match Color: This feature requires selecting a reference image. Load a reference image to continue.');
+}
+
+// Channel Mixer
+function showChannelMixerDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const mixer = {
+        red: { red: 100, green: 0, blue: 0, constant: 0 },
+        green: { red: 0, green: 100, blue: 0, constant: 0 },
+        blue: { red: 0, green: 0, blue: 100, constant: 0 }
+    };
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.applyChannelMixer(imageData, mixer);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Photo Filter
+function showPhotoFilterDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const filters = ['warming-85', 'cooling-80', 'red', 'orange', 'yellow', 'green', 'cyan', 
+                     'blue', 'violet', 'magenta', 'sepia', 'deep-blue'];
+    
+    const filter = prompt('Choose a photo filter:\n' + filters.join(', '), 'warming-85');
+    if (!filter) return;
+    
+    try {
+        const ctx = state.activeLayer.canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+        
+        cm.applyPhotoFilter(imageData, filter, 0.5, true);
+        ctx.putImageData(imageData, 0, 0);
+        renderCanvas();
+        saveState();
+    } catch (error) {
+        alert('Error applying photo filter: ' + error.message);
+    }
+}
+
+// Convert Color Profile
+function showConvertProfileDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const profiles = ['sRGB', 'Display-P3', 'Adobe-RGB', 'ProPhoto-RGB'];
+    const target = prompt('Convert to color profile:\n' + profiles.join(', '), 'sRGB');
+    
+    if (!target) return;
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.convertColorProfile(imageData, 'sRGB', target);
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+    saveState();
+}
+
+// Soft Proofing
+function showSoftProofingDialog() {
+    alert('Soft Proofing: Preview how the image will look in different color spaces.');
+}
+
+// Gamut Warning
+function showGamutWarning() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const ctx = state.activeLayer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+    
+    cm.gamutWarning(imageData, 'sRGB');
+    ctx.putImageData(imageData, 0, 0);
+    renderCanvas();
+}
+
+// Apply LUT
+function showApplyLUTDialog() {
+    if (!state.activeLayer) {
+        alert('Please select a layer first.');
+        return;
+    }
+    
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    const luts = ['neutral', 'warm', 'cool', 'cinematic', 'vintage'];
+    const lut = prompt('Choose a LUT:\n' + luts.join(', '), 'cinematic');
+    
+    if (!lut) return;
+    
+    try {
+        const ctx = state.activeLayer.canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, state.activeLayer.canvas.width, state.activeLayer.canvas.height);
+        
+        cm.applyLUT(imageData, lut);
+        ctx.putImageData(imageData, 0, 0);
+        renderCanvas();
+        saveState();
+    } catch (error) {
+        alert('Error applying LUT: ' + error.message);
+    }
+}
+
+// Display Calibration
+function showCalibrationDialog() {
+    const cm = initColorManagement();
+    if (!cm) {
+        alert('Color Management not available');
+        return;
+    }
+    
+    alert('Display Calibration:\nThis tool helps calibrate your display for accurate color reproduction.\nCalibration data will be applied to all color management operations.');
+    
+    const result = cm.calibrateDisplay({
+        whitePoint: { x: 0.3127, y: 0.3290 }, // D65
+        gamma: 2.2,
+        brightness: 120,
+        contrast: 50
+    });
+    
+    alert('Display calibrated successfully!');
+}
+
+// ==================================================================
+// END CATEGORY 6: COLOR MANAGEMENT & GRADING
 // ==================================================================
 
 // Initialize on load

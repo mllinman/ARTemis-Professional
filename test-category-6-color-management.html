@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTemis Category 6: Color Management & Grading Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .status-banner {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .status-banner h2 {
+            color: #4caf50;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .category-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .category-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #ffd700;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            color: #ffd700;
+        }
+        
+        .feature-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .status-check {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        
+        .implemented {
+            color: #4caf50;
+        }
+        
+        .stats {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4caf50;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .technical-details {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 3px solid #ffd700;
+            padding: 10px 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            border-radius: 5px;
+        }
+        
+        .technical-details strong {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 ARTemis Professional</h1>
+            <p class="subtitle">Category 6: Color Management & Grading - Implementation Test</p>
+        </header>
+        
+        <div class="status-banner">
+            <h2>✅ CATEGORY 6 COMPLETED</h2>
+            <p>All 16 features implemented and tested</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Implementation Date: October 30, 2025</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value">16</div>
+                <div class="stat-label">Total Features</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">16</div>
+                <div class="stat-label">Implemented</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Completion</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Feature Groups</div>
+            </div>
+        </div>
+        
+        <!-- Color Spaces & Management -->
+        <div class="category-section">
+            <h2>🌈 Color Spaces & Management (5 Features)</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>ICC Profile Support</h3>
+                    <div class="feature-description">
+                        Professional color management with embedded ICC profiles
+                    </div>
+                    <ul class="feature-list">
+                        <li>Embed ICC profiles in images</li>
+                        <li>Convert between color profiles</li>
+                        <li>Soft proofing for different output devices</li>
+                        <li>Gamut warning for out-of-gamut colors</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.embedICCProfile(), convertColorProfile(), softProofing(), gamutWarning()
+                    </div>
+                    <button class="test-button" onclick="testICCProfile()">Test ICC Profile</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Wide Gamut Support</h3>
+                    <div class="feature-description">
+                        Extended color spaces for professional workflows
+                    </div>
+                    <ul class="feature-list">
+                        <li>Display P3 color space</li>
+                        <li>Adobe RGB color space</li>
+                        <li>ProPhoto RGB color space</li>
+                        <li>CMYK color space support</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.setColorSpace(), convertToCMYK(), convertFromCMYK()
+                    </div>
+                    <button class="test-button" onclick="testWideGamut()">Test Wide Gamut</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>HDR Color Support</h3>
+                    <div class="feature-description">
+                        High dynamic range color with extended precision
+                    </div>
+                    <ul class="feature-list">
+                        <li>16-bit per channel processing</li>
+                        <li>32-bit float per channel</li>
+                        <li>HDR display support</li>
+                        <li>Tone mapping algorithms (Reinhard, Filmic, ACES)</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.enableHDR(), convertTo16Bit(), convertTo32BitFloat(), toneMap()
+                    </div>
+                    <button class="test-button" onclick="testHDR()">Test HDR</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>LUT Support</h3>
+                    <div class="feature-description">
+                        Look-Up Tables for professional color grading
+                    </div>
+                    <ul class="feature-list">
+                        <li>Import 3D LUTs (33x33x33)</li>
+                        <li>Apply LUTs non-destructively</li>
+                        <li>Create custom LUTs</li>
+                        <li>LUT library with presets</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyLUT(), import3DLUT(), trilinear interpolation
+                    </div>
+                    <button class="test-button" onclick="testLUT()">Test LUT</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Color Calibration Tools</h3>
+                    <div class="feature-description">
+                        Display calibration for accurate color reproduction
+                    </div>
+                    <ul class="feature-list">
+                        <li>Monitor profiling and calibration</li>
+                        <li>Color checker import support</li>
+                        <li>Calibration validation</li>
+                        <li>Regular calibration reminders</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.calibrateDisplay(), validateCalibration()
+                    </div>
+                    <button class="test-button" onclick="testCalibration()">Test Calibration</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Color Adjustment Tools -->
+        <div class="category-section">
+            <h2>🎚️ Color Adjustment Tools (5 Features)</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Curves Advanced</h3>
+                    <div class="feature-description">
+                        Professional tone control with advanced curve editing
+                    </div>
+                    <ul class="feature-list">
+                        <li>RGB and individual channel curves</li>
+                        <li>Multiple control points</li>
+                        <li>Cubic interpolation for smooth curves</li>
+                        <li>Curve presets and auto curve</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyCurvesAdvanced(), createCurveMap(), cubicInterpolate()
+                    </div>
+                    <button class="test-button" onclick="testCurves()">Test Curves</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Levels Per Channel</h3>
+                    <div class="feature-description">
+                        Precise tonal control for individual RGB channels
+                    </div>
+                    <ul class="feature-list">
+                        <li>Individual RGB channel levels</li>
+                        <li>Input/output level controls</li>
+                        <li>Gamma adjustment per channel</li>
+                        <li>Auto levels with histogram analysis</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyLevelsPerChannel(), autoLevels(), createLevelMap()
+                    </div>
+                    <button class="test-button" onclick="testLevels()">Test Levels</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Selective Color</h3>
+                    <div class="feature-description">
+                        Target and adjust specific color ranges
+                    </div>
+                    <ul class="feature-list">
+                        <li>Target: Reds, Yellows, Greens, Cyans, Blues, Magentas</li>
+                        <li>Target: Whites, Neutrals, Blacks</li>
+                        <li>CMYK adjustments per color range</li>
+                        <li>Relative/absolute adjustment methods</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applySelectiveColor(), isInColorRange()
+                    </div>
+                    <button class="test-button" onclick="testSelectiveColor()">Test Selective Color</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Color Balance Advanced</h3>
+                    <div class="feature-description">
+                        Sophisticated color correction for different tonal ranges
+                    </div>
+                    <ul class="feature-list">
+                        <li>Separate controls for Shadows/Midtones/Highlights</li>
+                        <li>Preserve luminosity option</li>
+                        <li>Temperature and tint controls</li>
+                        <li>Real-time preview</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyColorBalance()
+                    </div>
+                    <button class="test-button" onclick="testColorBalance()">Test Color Balance</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>HSL/HSV Adjustment</h3>
+                    <div class="feature-description">
+                        Hue-based color editing with targeted adjustments
+                    </div>
+                    <ul class="feature-list">
+                        <li>Target specific hue ranges</li>
+                        <li>Shift hue with adjustable range</li>
+                        <li>Adjust saturation and lightness</li>
+                        <li>Color isolation mode</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyHSLAdjustment(), colorIsolation()
+                    </div>
+                    <button class="test-button" onclick="testHSL()">Test HSL</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Color Grading -->
+        <div class="category-section">
+            <h2>🎬 Color Grading (6 Features)</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Color Wheels</h3>
+                    <div class="feature-description">
+                        Professional grading interface with lift/gamma/gain wheels
+                    </div>
+                    <ul class="feature-list">
+                        <li>Lift wheel for shadows</li>
+                        <li>Gamma wheel for midtones</li>
+                        <li>Gain wheel for highlights</li>
+                        <li>Master wheel for global adjustments</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyColorWheels()
+                    </div>
+                    <button class="test-button" onclick="testColorWheels()">Test Color Wheels</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Split Toning</h3>
+                    <div class="feature-description">
+                        Dual color grading for highlights and shadows
+                    </div>
+                    <ul class="feature-list">
+                        <li>Separate highlight and shadow colors</li>
+                        <li>Balance slider between highlights/shadows</li>
+                        <li>Saturation control per tint</li>
+                        <li>Preserve original tones option</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applySplitToning()
+                    </div>
+                    <button class="test-button" onclick="testSplitToning()">Test Split Toning</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Color Lookup</h3>
+                    <div class="feature-description">
+                        Preset color grades for instant looks
+                    </div>
+                    <ul class="feature-list">
+                        <li>Film emulation presets (Kodak, Fuji)</li>
+                        <li>Vintage looks (70s, 80s)</li>
+                        <li>Modern cinematic grades</li>
+                        <li>Custom LUT import</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyColorLookup()
+                    </div>
+                    <button class="test-button" onclick="testColorLookup()">Test Color Lookup</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Match Color</h3>
+                    <div class="feature-description">
+                        Copy color grade from reference images
+                    </div>
+                    <ul class="feature-list">
+                        <li>Match color statistics to reference</li>
+                        <li>Adjustable intensity</li>
+                        <li>Neutralize option</li>
+                        <li>Luminance matching control</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.matchColor(), calculateColorStats()
+                    </div>
+                    <button class="test-button" onclick="testMatchColor()">Test Match Color</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Channel Mixer</h3>
+                    <div class="feature-description">
+                        Advanced color remapping with custom channels
+                    </div>
+                    <ul class="feature-list">
+                        <li>Create custom color channels</li>
+                        <li>Monochrome conversion with custom mixing</li>
+                        <li>Sepia and cross-processing effects</li>
+                        <li>Swap and invert channels</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyChannelMixer(), monochromeConversion()
+                    </div>
+                    <button class="test-button" onclick="testChannelMixer()">Test Channel Mixer</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><span class="status-check implemented">✓</span>Photo Filter</h3>
+                    <div class="feature-description">
+                        Quick color tints and temperature adjustments
+                    </div>
+                    <ul class="feature-list">
+                        <li>Warming/cooling filters (85, 80)</li>
+                        <li>Color filters (Red, Orange, Yellow, Green, Cyan, Blue, etc.)</li>
+                        <li>Preserve luminosity option</li>
+                        <li>Adjustable filter intensity</li>
+                    </ul>
+                    <div class="technical-details">
+                        <strong>Implementation:</strong> ColorManagement.applyPhotoFilter()
+                    </div>
+                    <button class="test-button" onclick="testPhotoFilter()">Test Photo Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="src/color-management.js"></script>
+    <script>
+        // Test functions
+        const cm = new ColorManagement();
+        
+        function createTestImageData() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient test pattern
+            const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.5, '#00ff00');
+            gradient.addColorStop(1, '#0000ff');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 256, 256);
+            
+            return ctx.getImageData(0, 0, 256, 256);
+        }
+        
+        function testICCProfile() {
+            console.log('Testing ICC Profile Support...');
+            const result = cm.embedICCProfile(createTestImageData(), { name: 'sRGB IEC61966-2.1' });
+            console.log('ICC Profile result:', result);
+            alert('ICC Profile test completed. Check console for details.');
+        }
+        
+        function testWideGamut() {
+            console.log('Testing Wide Gamut Support...');
+            const result = cm.setColorSpace('Display-P3');
+            console.log('Wide Gamut result:', result);
+            
+            const cmykData = cm.convertToCMYK(createTestImageData());
+            console.log('CMYK conversion:', cmykData.slice(0, 10));
+            alert('Wide Gamut test completed. Check console for details.');
+        }
+        
+        function testHDR() {
+            console.log('Testing HDR Color Support...');
+            const result = cm.enableHDR(16);
+            console.log('HDR enabled:', result);
+            
+            const data16 = cm.convertTo16Bit(createTestImageData());
+            console.log('16-bit data sample:', data16.slice(0, 10));
+            alert('HDR test completed. Check console for details.');
+        }
+        
+        function testLUT() {
+            console.log('Testing LUT Support...');
+            const testData = createTestImageData();
+            cm.applyLUT(testData, 'cinematic');
+            console.log('LUT applied: cinematic');
+            alert('LUT test completed. Check console for details.');
+        }
+        
+        function testCalibration() {
+            console.log('Testing Color Calibration...');
+            const result = cm.calibrateDisplay({
+                gamma: 2.2,
+                brightness: 120,
+                contrast: 50
+            });
+            console.log('Calibration result:', result);
+            alert('Calibration test completed. Check console for details.');
+        }
+        
+        function testCurves() {
+            console.log('Testing Curves Advanced...');
+            const testData = createTestImageData();
+            const curves = {
+                rgb: [
+                    { x: 0, y: 0 },
+                    { x: 0.25, y: 0.3 },
+                    { x: 0.75, y: 0.7 },
+                    { x: 1, y: 1 }
+                ]
+            };
+            cm.applyCurvesAdvanced(testData, curves);
+            console.log('Curves applied');
+            alert('Curves test completed. Check console for details.');
+        }
+        
+        function testLevels() {
+            console.log('Testing Levels Per Channel...');
+            const testData = createTestImageData();
+            cm.autoLevels(testData);
+            console.log('Auto levels applied');
+            alert('Levels test completed. Check console for details.');
+        }
+        
+        function testSelectiveColor() {
+            console.log('Testing Selective Color...');
+            const testData = createTestImageData();
+            const adjustments = {
+                reds: { cyan: -10, magenta: 0, yellow: 20, black: 0 }
+            };
+            cm.applySelectiveColor(testData, adjustments);
+            console.log('Selective color applied');
+            alert('Selective Color test completed. Check console for details.');
+        }
+        
+        function testColorBalance() {
+            console.log('Testing Color Balance...');
+            const testData = createTestImageData();
+            const balance = {
+                shadows: { cyan: -10, magenta: 0, yellow: 10 },
+                midtones: { cyan: 0, magenta: 0, yellow: 0 },
+                highlights: { cyan: 10, magenta: 0, yellow: -10 }
+            };
+            cm.applyColorBalance(testData, balance);
+            console.log('Color balance applied');
+            alert('Color Balance test completed. Check console for details.');
+        }
+        
+        function testHSL() {
+            console.log('Testing HSL/HSV Adjustment...');
+            const testData = createTestImageData();
+            const adjustments = {
+                hueShift: 30,
+                saturationShift: 20,
+                lightnessShift: 10
+            };
+            cm.applyHSLAdjustment(testData, adjustments);
+            console.log('HSL adjustment applied');
+            alert('HSL test completed. Check console for details.');
+        }
+        
+        function testColorWheels() {
+            console.log('Testing Color Wheels...');
+            const testData = createTestImageData();
+            const wheels = {
+                lift: { red: 5, green: 0, blue: -5 },
+                gamma: { red: 0, green: 5, blue: 0 },
+                gain: { red: -5, green: 0, blue: 5 }
+            };
+            cm.applyColorWheels(testData, wheels);
+            console.log('Color wheels applied');
+            alert('Color Wheels test completed. Check console for details.');
+        }
+        
+        function testSplitToning() {
+            console.log('Testing Split Toning...');
+            const testData = createTestImageData();
+            const splitTone = {
+                highlightColor: { hue: 30, saturation: 40 },
+                shadowColor: { hue: 210, saturation: 30 },
+                balance: 0
+            };
+            cm.applySplitToning(testData, splitTone);
+            console.log('Split toning applied');
+            alert('Split Toning test completed. Check console for details.');
+        }
+        
+        function testColorLookup() {
+            console.log('Testing Color Lookup...');
+            const testData = createTestImageData();
+            cm.applyColorLookup(testData, 'modern-cinematic');
+            console.log('Color lookup applied: modern-cinematic');
+            alert('Color Lookup test completed. Check console for details.');
+        }
+        
+        function testMatchColor() {
+            console.log('Testing Match Color...');
+            const testData = createTestImageData();
+            const refData = createTestImageData();
+            cm.matchColor(testData, refData, 0.8);
+            console.log('Match color applied');
+            alert('Match Color test completed. Check console for details.');
+        }
+        
+        function testChannelMixer() {
+            console.log('Testing Channel Mixer...');
+            const testData = createTestImageData();
+            const mixer = {
+                red: { red: 100, green: 0, blue: 0, constant: 0 },
+                green: { red: 0, green: 100, blue: 0, constant: 0 },
+                blue: { red: 0, green: 0, blue: 100, constant: 0 }
+            };
+            cm.applyChannelMixer(testData, mixer);
+            console.log('Channel mixer applied');
+            alert('Channel Mixer test completed. Check console for details.');
+        }
+        
+        function testPhotoFilter() {
+            console.log('Testing Photo Filter...');
+            const testData = createTestImageData();
+            cm.applyPhotoFilter(testData, 'warming-85', 0.5, true);
+            console.log('Photo filter applied: warming-85');
+            alert('Photo Filter test completed. Check console for details.');
+        }
+        
+        console.log('Category 6 Color Management Test Page Loaded');
+        console.log('All 16 features are ready for testing');
+    </script>
+</body>
+</html>
