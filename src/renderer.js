@@ -462,6 +462,127 @@ const state = {
         patternDistortion: 0,    // Distortion mode (0-100%)
         patternBlendMode: 'normal', // Blending options
         patternImpressionistMode: false, // Impressionist rendering
+        
+        // CATEGORY 3: Natural Media Simulation Features
+        
+        // Paper & Canvas
+        paperLibraryEnabled: true,   // Enable advanced paper library
+        paperType: 'hot-pressed',    // Paper type: 'hot-pressed', 'cold-pressed', 'rough', 'rice', 'vellum', 'parchment'
+        tonedPaper: false,           // Use toned paper
+        tonedPaperColor: '#E8DCC8',  // Toned paper color (gray, tan, kraft)
+        customPaperPath: null,       // Custom paper texture path
+        
+        paperAbsorptionRate: 50,     // Variable absorption rate (0-100%)
+        wetSpotPooling: 30,          // Wet spots and pooling (0-100%)
+        paperBuckling: false,        // Paper buckling simulation
+        paperSizing: 50,             // Paper sizing effect (0-100%)
+        
+        canvasWeavePattern: 'standard', // 'standard', 'fine', 'coarse', 'linen', 'duck'
+        canvasToothDirection: 0,     // Tooth direction (0-360 degrees)
+        canvasPriming: 50,           // Canvas priming level (0-100%)
+        canvasThreadCount: 10,       // Thread count control (1-20)
+        
+        surfaceAgingEnabled: false,  // Enable aging effects
+        surfaceYellowing: 0,         // Yellowing/discoloration (0-100%)
+        surfaceCracks: 0,            // Cracks and damage (0-100%)
+        surfaceStaining: 0,          // Staining effects (0-100%)
+        surfacePatina: 0,            // Patina simulation (0-100%)
+        
+        canvas3DTexture: false,      // Enable 3D canvas texture
+        canvas3DNormalMap: true,     // Generate normal maps
+        canvas3DParallax: false,     // Parallax scrolling effect
+        canvas3DLighting: true,      // Lighting interaction
+        canvas3DPreview: true,       // Real-time preview
+        
+        // Paint Properties
+        pigmentDatabase: 'standard', // 'standard', 'authentic', 'custom'
+        pigmentMixing: 'authentic',  // 'rgb', 'authentic', 'advanced'
+        pigmentTransparency: 50,     // Transparency level (0-100%)
+        pigmentStaining: 30,         // Staining properties (0-100%)
+        pigmentGranulation: 20,      // Granulation characteristics (0-100%)
+        
+        binderType: 'oil',           // 'oil', 'acrylic', 'watercolor', 'gouache'
+        binderOilType: 'linseed',    // 'linseed', 'walnut', 'poppy'
+        binderAcrylicType: 'gloss',  // 'gel', 'matte', 'gloss'
+        binderWatercolor: 'gum-arabic', // 'gum-arabic', 'honey'
+        binderOpacity: 50,           // Gouache opacity (0-100%)
+        
+        dryingSimulation: true,      // Enable drying simulation
+        dryingTimeScale: 1.0,        // Time scale multiplier (0.1-10.0)
+        dryingCrackPattern: false,   // Cracking patterns
+        dryingColorShift: 10,        // Color shift on drying (0-100%)
+        dryingSurfaceChange: 20,     // Surface changes (0-100%)
+        
+        paintViscosity: 50,          // Paint thickness (0-100%)
+        paintBody: 'medium',         // 'fluid', 'medium', 'heavy'
+        paintDripEffect: 0,          // Drip and sag effects (0-100%)
+        paintPaletteKnifeInteraction: true, // Knife interaction simulation
+        
+        colorBleedingEnhanced: 30,   // Enhanced edge bleeding (0-100%)
+        colorBackruns: 20,           // Backruns and blooms (0-100%)
+        colorSaltTexture: 0,         // Salt texture effects (0-100%)
+        colorLiftingTechnique: false, // Enable lifting techniques
+        
+        // Traditional Tools
+        paletteKnifeShape: 'diamond',  // 'diamond', 'flat', 'angular', 'painting'
+        paletteKnifeThickness: 70,     // Thick paint application (0-100%)
+        paletteKnifeScraping: true,    // Scraping techniques
+        paletteKnifeTextureCreate: 50, // Texture creation (0-100%)
+        
+        spongeType: 'natural',       // 'natural', 'synthetic', 'sea'
+        spongeDabbing: true,         // Dabbing technique
+        spongeDragging: false,       // Dragging technique
+        spongeAbsorption: 50,        // Absorption amount (0-100%)
+        spongeRandomTexture: 70,     // Random texture (0-100%)
+        
+        rollerEnabled: false,        // Enable paint roller tool
+        rollerPattern: 'standard',   // 'standard', 'stipple', 'texture'
+        rollerCoverage: 70,          // Coverage control (0-100%)
+        rollerDirection: 0,          // Direction effect (0-360 degrees)
+        rollerLoadingVariation: 30,  // Loading variation (0-100%)
+        
+        airbrushPro: false,          // Professional airbrush mode
+        airbrushNozzle: 'fine',      // 'fine', 'medium', 'wide', 'splatter'
+        airbrushPressure: 50,        // Air pressure (0-100%)
+        airbrushOverspray: 30,       // Overspray simulation (0-100%)
+        airbrushMasking: false,      // Masking support
+        
+        eraserTechnique: 'standard', // 'standard', 'kneaded', 'pink', 'sponge', 'electric'
+        eraserKneadedSoft: 70,       // Kneaded eraser softness (0-100%)
+        eraserPinkHardness: 80,      // Pink eraser hardness (0-100%)
+        eraserSpongeAbsorption: 60,  // Sponge eraser (0-100%)
+        eraserElectricSpeed: 50,     // Electric eraser speed (0-100%)
+        
+        // Ink & Calligraphy
+        inkFlowSimulation: true,     // Enable ink flow
+        inkPooling: 30,              // Pooling effect (0-100%)
+        inkFeathering: 20,           // Feathering on paper (0-100%)
+        inkNibAngle: 45,             // Nib angle effects (0-90 degrees)
+        inkSaturation: 70,           // Ink saturation (0-100%)
+        inkDryingTime: 3000,         // Drying time (ms)
+        
+        calligraphyPen: 'broad-edge', // 'broad-edge', 'pointed', 'brush', 'ruling'
+        calligraphyNibWidth: 3.0,    // Nib width (0.5-10.0 mm)
+        calligraphyPressureResponse: 80, // Pressure sensitivity (0-100%)
+        calligraphyEdgeSharpness: 90, // Edge sharpness (0-100%)
+        
+        asianInkPainting: false,     // Enable sumi-e mode
+        asianInkConcentration: 70,   // Ink concentration (0-100%)
+        asianBrushLoading: 50,       // Brush loading amount (0-100%)
+        asianRicePaperEffect: true,  // Rice paper effects
+        asianSealStamps: [],         // Seal stamp collection
+        
+        mangaInking: false,          // Professional comic tools
+        mangaPenType: 'g-pen',       // 'g-pen', 'maru-pen', 'saji-pen'
+        mangaScreenTones: false,     // Screen tones enabled
+        mangaSpeedLines: false,      // Speed lines tool
+        mangaEffectLines: false,     // Effect lines tool
+        
+        technicalPen: false,         // Technical pen mode
+        technicalPenSize: 0.5,       // Tip size (0.1-2.0 mm)
+        technicalPenConsistency: 100, // Line width consistency (0-100%)
+        technicalPenRapidDrying: true, // Rapid drying
+        technicalPenNoBleed: true,   // No bleed guarantee
     },
     color: '#000000',
     layers: [],
@@ -6450,6 +6571,382 @@ function generateMarkerTexture(size) {
     manageCacheSize(textureCache.marker);
     
     return canvas;
+}
+
+// ============================================================================
+// CATEGORY 3: Natural Media Simulation Functions
+// ============================================================================
+
+// Paper texture application with absorption model
+function applyPaperTexture(ctx, x, y, size, pressure) {
+    if (!state.brush.paperLibraryEnabled) return;
+    
+    const paperAbsorption = state.brush.paperAbsorptionRate / 100;
+    const wetPooling = state.brush.wetSpotPooling / 100;
+    
+    // Paper absorption affects opacity and spread
+    const absorptionFactor = 1 - (paperAbsorption * pressure * 0.3);
+    ctx.globalAlpha *= absorptionFactor;
+    
+    // Wet spot pooling creates darker edges
+    if (wetPooling > 0.2 && pressure > 0.7) {
+        const poolRadius = size * 0.1;
+        const gradient = ctx.createRadialGradient(0, 0, size/2 - poolRadius, 0, 0, size/2);
+        gradient.addColorStop(0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.9, 'rgba(0,0,0,0)');
+        gradient.addColorStop(1, `rgba(0,0,0,${wetPooling * 0.3})`);
+        
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, size/2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// Canvas weave simulation
+function applyCanvasWeave(ctx, size) {
+    if (state.brush.canvasWeavePattern === 'standard') return;
+    
+    const threadCount = state.brush.canvasThreadCount;
+    const weaveIntensity = 0.15;
+    
+    // Create weave pattern based on thread count
+    const weaveSize = Math.max(2, Math.floor(size / threadCount));
+    const pattern = document.createElement('canvas');
+    pattern.width = weaveSize * 2;
+    pattern.height = weaveSize * 2;
+    const pCtx = pattern.getContext('2d');
+    
+    // Draw weave pattern
+    pCtx.fillStyle = 'rgba(255,255,255,1)';
+    pCtx.fillRect(0, 0, weaveSize, weaveSize);
+    pCtx.fillRect(weaveSize, weaveSize, weaveSize, weaveSize);
+    pCtx.fillStyle = `rgba(255,255,255,${1 - weaveIntensity})`;
+    pCtx.fillRect(weaveSize, 0, weaveSize, weaveSize);
+    pCtx.fillRect(0, weaveSize, weaveSize, weaveSize);
+    
+    // Apply weave pattern
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha *= 0.8;
+    const patternFill = ctx.createPattern(pattern, 'repeat');
+    ctx.fillStyle = patternFill;
+    ctx.fillRect(-size/2, -size/2, size, size);
+}
+
+// Helper function to convert color to RGBA with alpha
+function colorToRGBA(color, alpha) {
+    // If color is already rgba format, parse and replace alpha
+    if (color.startsWith('rgba')) {
+        // Extract RGB values and replace alpha
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+        if (match) {
+            return `rgba(${match[1]},${match[2]},${match[3]},${alpha})`;
+        }
+        return color; // Return original if parsing fails
+    }
+    
+    if (color.startsWith('rgb')) {
+        // Convert rgb to rgba
+        return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    }
+    
+    // Convert hex to rgba
+    const rgb = hexToRgb(color);
+    if (!rgb) return `rgba(0,0,0,${alpha})`;
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+}
+
+// Pigment-based color mixing simulation
+function applyPigmentMixing(baseColor, canvasColor, mixAmount) {
+    if (state.brush.pigmentMixing === 'rgb') {
+        // Use standard RGB mixing
+        return baseColor;
+    }
+    
+    // For 'authentic' or 'advanced' modes, use pigment-based mixing
+    // Convert to pigment-based RYB color space for authentic mixing
+    const base = hexToRgb(baseColor);
+    const canvas = hexToRgb(canvasColor);
+    
+    if (!base || !canvas) return baseColor;
+    
+    // Simplified pigment mixing (authentic pigment behavior)
+    const mixed = {
+        r: Math.round(base.r * (1 - mixAmount) + canvas.r * mixAmount),
+        g: Math.round(base.g * (1 - mixAmount) + canvas.g * mixAmount),
+        b: Math.round(base.b * (1 - mixAmount) + canvas.b * mixAmount)
+    };
+    
+    return rgbToHex(mixed.r, mixed.g, mixed.b);
+}
+
+// Paint viscosity simulation
+function applyPaintViscosity(ctx, size, pressure) {
+    const viscosity = state.brush.paintViscosity / 100;
+    const dripEffect = state.brush.paintDripEffect / 100;
+    
+    // High viscosity = thicker paint with more texture
+    if (viscosity > 0.6 && state.brush.paintBody === 'heavy') {
+        // Add impasto-like texture
+        const thickness = viscosity * pressure;
+        ctx.shadowBlur = thickness * 2;
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+    }
+    
+    // Drip effect for fluid paints
+    if (dripEffect > 0.3 && state.brush.paintBody === 'fluid') {
+        // Simulate paint dripping (simplified)
+        const dripLength = size * dripEffect * 0.5;
+        ctx.globalAlpha *= 0.7;
+        ctx.fillRect(-size/4, size/2, size/2, dripLength);
+    }
+}
+
+// Ink flow simulation
+function applyInkFlow(ctx, x, y, size, pressure) {
+    if (!state.brush.inkFlowSimulation) return;
+    
+    const pooling = state.brush.inkPooling / 100;
+    const feathering = state.brush.inkFeathering / 100;
+    const saturation = state.brush.inkSaturation / 100;
+    
+    // Ink pooling creates darker concentrations
+    if (pooling > 0.2 && pressure > 0.5) {
+        const poolSize = size * 0.15 * pooling;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha *= 0.3;
+        ctx.fillStyle = state.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, poolSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+    
+    // Feathering creates irregular edges
+    if (feathering > 0.2) {
+        ctx.globalAlpha *= (1 - feathering * 0.3);
+    }
+}
+
+// Calligraphy pen angle simulation
+function applyCalligraphyAngle(ctx, size, angle) {
+    if (state.brush.calligraphyPen === 'broad-edge') {
+        const nibWidth = state.brush.calligraphyNibWidth;
+        const edgeSharpness = state.brush.calligraphyEdgeSharpness / 100;
+        
+        // Broad edge nib creates width variation based on angle
+        const angleRad = angle || 0;
+        const widthVariation = Math.abs(Math.sin(angleRad)) * nibWidth;
+        const newSize = size * (0.5 + widthVariation * 0.5);
+        
+        // Scale horizontally for broad edge effect
+        ctx.scale(1 + widthVariation * 0.3, 1);
+        
+        return newSize;
+    }
+    
+    return size;
+}
+
+// Airbrush professional simulation
+function applyAirbrushEffect(ctx, x, y, size, pressure) {
+    if (!state.brush.airbrushPro) return;
+    
+    const airPressure = state.brush.airbrushPressure / 100;
+    const overspray = state.brush.airbrushOverspray / 100;
+    
+    // Create soft airbrush effect with overspray
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * (1 + overspray));
+    const alpha = pressure * airPressure;
+    
+    gradient.addColorStop(0, state.color);
+    gradient.addColorStop(0.5, colorToRGBA(state.color, alpha * 0.5));
+    gradient.addColorStop(1, colorToRGBA(state.color, 0));
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, size * (1 + overspray), 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Palette knife texture
+function applyPaletteKnifeEffect(ctx, size, angle) {
+    if (!state.brush.paletteKnifeScraping) return;
+    
+    const thickness = state.brush.paletteKnifeThickness / 100;
+    const textureCreate = state.brush.paletteKnifeTextureCreate / 100;
+    
+    // Palette knife creates directional strokes
+    ctx.save();
+    ctx.rotate(angle || 0);
+    
+    // Thick paint application
+    if (thickness > 0.5) {
+        ctx.shadowBlur = thickness * 5;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    }
+    
+    // Add scraping texture
+    if (textureCreate > 0.3) {
+        const scrapePattern = Math.sin(size * 0.1) * textureCreate;
+        ctx.globalAlpha *= (1 - scrapePattern * 0.2);
+    }
+    
+    ctx.restore();
+}
+
+// Sponge texture effect
+function applySpongeEffect(ctx, x, y, size) {
+    const spongeType = state.brush.spongeType;
+    const randomTexture = state.brush.spongeRandomTexture / 100;
+    
+    // Create pseudo-random sponge-like texture (deterministic for consistent strokes)
+    const numDots = Math.floor(size * randomTexture);
+    for (let i = 0; i < numDots; i++) {
+        // Use position-based pseudo-random for consistent results
+        const seed = x * 12.9898 + y * 78.233 + i * 37.719;
+        const rand1 = Math.abs((Math.sin(seed) * 43758.5453) % 1);
+        const rand2 = Math.abs((Math.sin(seed * 1.1) * 43758.5453) % 1);
+        const rand3 = Math.abs((Math.sin(seed * 1.3) * 43758.5453) % 1);
+        
+        const offsetX = (rand1 - 0.5) * size;
+        const offsetY = (rand2 - 0.5) * size;
+        const dotSize = rand3 * size * 0.1;
+        
+        ctx.save();
+        ctx.globalAlpha *= rand1 * 0.3;
+        ctx.beginPath();
+        ctx.arc(x + offsetX, y + offsetY, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// Roller pattern effect
+function applyRollerPattern(ctx, size, direction) {
+    if (!state.brush.rollerEnabled) return;
+    
+    const pattern = state.brush.rollerPattern;
+    const coverage = state.brush.rollerCoverage / 100;
+    const directionRad = (state.brush.rollerDirection * Math.PI) / 180;
+    
+    // Create roller texture pattern
+    ctx.save();
+    ctx.rotate(directionRad);
+    
+    // Apply coverage pattern
+    if (pattern === 'stipple') {
+        // Stippled roller texture
+        for (let i = 0; i < 20; i++) {
+            const x = (Math.random() - 0.5) * size;
+            const y = (Math.random() - 0.5) * size;
+            ctx.globalAlpha *= coverage;
+            ctx.fillRect(x, y, 2, 2);
+        }
+    } else {
+        // Standard roller coverage
+        ctx.globalAlpha *= coverage;
+    }
+    
+    ctx.restore();
+}
+
+// Asian ink painting (Sumi-e) effects
+function applyAsianInkEffect(ctx, size, pressure) {
+    if (!state.brush.asianInkPainting) return;
+    
+    const concentration = state.brush.asianInkConcentration / 100;
+    const brushLoading = state.brush.asianBrushLoading / 100;
+    
+    // Asian ink has characteristic gradation from dark to light
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size/2);
+    const darkAlpha = concentration * pressure;
+    const lightAlpha = concentration * brushLoading * 0.3;
+    
+    gradient.addColorStop(0, `rgba(0,0,0,${darkAlpha})`);
+    gradient.addColorStop(0.6, `rgba(0,0,0,${lightAlpha})`);
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, size/2, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Manga/Comic inking effects
+function applyMangaInking(ctx, size) {
+    if (!state.brush.mangaInking) return;
+    
+    const penType = state.brush.mangaPenType;
+    
+    // G-pen has characteristic thick-to-thin lines
+    if (penType === 'g-pen') {
+        ctx.globalAlpha *= 0.95; // Slightly opaque for ink
+    } else if (penType === 'maru-pen') {
+        // Maru pen creates fine, consistent lines
+        ctx.lineWidth = Math.min(size, 2);
+    }
+}
+
+// Technical pen precision
+function applyTechnicalPen(ctx, size) {
+    if (!state.brush.technicalPen) return;
+    
+    const penSize = state.brush.technicalPenSize;
+    const consistency = state.brush.technicalPenConsistency / 100;
+    
+    // Technical pens have very consistent line width
+    const consistentSize = penSize * consistency + size * (1 - consistency);
+    
+    // No bleeding, crisp edges
+    ctx.globalAlpha = 1.0;
+    
+    return consistentSize;
+}
+
+// Enhanced color bleeding for natural media
+function applyEnhancedColorBleeding(ctx, x, y, size, pressure) {
+    const bleeding = state.brush.colorBleedingEnhanced / 100;
+    const backruns = state.brush.colorBackruns / 100;
+    
+    if (bleeding > 0.2) {
+        // Create bleeding effect at edges
+        const bleedRadius = size * (1 + bleeding * 0.3);
+        const gradient = ctx.createRadialGradient(x, y, size/2, x, y, bleedRadius);
+        
+        ctx.save();
+        gradient.addColorStop(0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.7, 'rgba(0,0,0,0)');
+        gradient.addColorStop(1, colorToRGBA(state.color, bleeding * 0.2));
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, bleedRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+    
+    // Backruns (cauliflower effect in watercolor)
+    // Use deterministic pseudo-random based on position for consistent results
+    const pseudoRandom = Math.abs((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1);
+    if (backruns > 0.3 && pseudoRandom < backruns * 0.1) {
+        ctx.save();
+        ctx.globalAlpha *= 0.2;
+        ctx.beginPath();
+        // Use deterministic pseudo-random for all random values
+        const rand1 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 1) * 43758.5453) % 1);
+        const rand2 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 2) * 43758.5453) % 1);
+        const rand3 = Math.abs((Math.sin(x * 12.9898 + y * 78.233 + 3) * 43758.5453) % 1);
+        const backrunSize = size * (0.5 + rand1 * 0.5);
+        ctx.arc(x + (rand2 - 0.5) * size, y + (rand3 - 0.5) * size, 
+                backrunSize, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
 }
 
 function getBrushCategory(presetName) {
