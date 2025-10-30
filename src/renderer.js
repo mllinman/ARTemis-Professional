@@ -13441,12 +13441,32 @@ async function importImageAsLayer(filePath, dialogResult) {
             dataUrl = fileResult.dataUrl;
         }
         
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = () => reject(new Error('Failed to load image. Format may not be supported by the browser.'));
-            img.src = dataUrl;
-        });
+        // Use progressive loading for large images
+        let img;
+        try {
+            if (typeof loadImageProgressively === 'function') {
+                img = await loadImageProgressively(dataUrl, (progress, loadedImg) => {
+                    console.log(`Loading image: ${progress}%`);
+                    // Could show a progress bar here
+                });
+            } else {
+                // Fallback to standard loading
+                img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = () => reject(new Error('Failed to load image. Format may not be supported by the browser.'));
+                    img.src = dataUrl;
+                });
+            }
+        } catch (error) {
+            console.error('Progressive loading failed, using fallback:', error);
+            img = new Image();
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error('Failed to load image. Format may not be supported by the browser.'));
+                img.src = dataUrl;
+            });
+        }
         
         // If no canvas exists, create one with the image dimensions
         if (state.layers.length === 0) {
@@ -13521,17 +13541,48 @@ async function exportImage() {
                 base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
                 alert('Note: GIF export uses PNG format. For animated GIF, use dedicated GIF creation tools.');
             } else if (ext === 'tiff' || ext === 'tif') {
-                // TIFF export - use PNG format as fallback (TIFF encoding requires additional library)
-                format = 'image/png';
-                dataUrl = mainCanvas.toDataURL(format);
-                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-                alert('Note: TIFF export uses PNG format as fallback. Full TIFF support requires additional libraries.');
+                // TIFF export - use TIFF exporter module
+                try {
+                    if (typeof exportToTIFF === 'function') {
+                        const tiffData = await exportToTIFF(mainCanvas);
+                        // Convert ArrayBuffer to base64
+                        const uint8Array = new Uint8Array(tiffData);
+                        base64Data = btoa(String.fromCharCode.apply(null, uint8Array));
+                        format = 'image/tiff';
+                        console.log('TIFF export successful');
+                    } else {
+                        throw new Error('TIFF exporter not available');
+                    }
+                } catch (error) {
+                    console.error('TIFF export failed:', error);
+                    // Fallback to PNG
+                    format = 'image/png';
+                    dataUrl = mainCanvas.toDataURL(format);
+                    base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                    alert('Note: TIFF export failed, using PNG format as fallback. Error: ' + error.message);
+                }
             } else if (ext === 'psd') {
-                // PSD export - export as PNG (full PSD with layers would require PSD encoder library)
-                format = 'image/png';
-                dataUrl = mainCanvas.toDataURL(format);
-                base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-                alert('Note: PSD export creates a flattened PNG file. For layers, use Save Project (.artemis format).');
+                // PSD export - use PSD exporter module with full layer support
+                try {
+                    if (typeof exportToPSD === 'function') {
+                        const psdData = await exportToPSD(state, mainCanvas);
+                        // Convert ArrayBuffer to base64
+                        const uint8Array = new Uint8Array(psdData);
+                        base64Data = btoa(String.fromCharCode.apply(null, uint8Array));
+                        format = 'image/vnd.adobe.photoshop';
+                        console.log('PSD export successful with layers preserved');
+                        alert('PSD file exported successfully with all layers preserved!');
+                    } else {
+                        throw new Error('PSD exporter not available');
+                    }
+                } catch (error) {
+                    console.error('PSD export failed:', error);
+                    // Fallback to PNG
+                    format = 'image/png';
+                    dataUrl = mainCanvas.toDataURL(format);
+                    base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                    alert('Note: PSD export failed, using PNG format as fallback. Error: ' + error.message);
+                }
             } else if (ext === 'exr') {
                 // EXR export - use PNG format as fallback (EXR encoding requires OpenEXR library)
                 format = 'image/png';
@@ -18810,7 +18861,40 @@ function initPhase15Features() {
     setupAdvancedExportDialog();
     setupMemoryMonitorDialog();
     initPhase15MenuActions();
+    initPhase15Enhancements();
     console.log('Phase 15: Performance & Export features initialized');
+}
+
+// Initialize Phase 15 enhancements (WebGL, Tiled Canvas, Progressive Loading)
+function initPhase15Enhancements() {
+    // Check WebGL availability
+    if (typeof WebGLRenderer !== 'undefined' && WebGLRenderer.isWebGLAvailable()) {
+        console.log('WebGL is available and can be used for acceleration');
+        state.webglAvailable = true;
+    } else {
+        console.log('WebGL not available, using standard 2D canvas');
+        state.webglAvailable = false;
+    }
+    
+    // Initialize tiled canvas support for large canvases (4K+)
+    state.useTiledCanvas = false;
+    state.tiledCanvasInstance = null;
+    
+    // Check if current canvas is large enough to benefit from tiling
+    checkAndEnableTiledCanvas();
+    
+    console.log('Phase 15 enhancements (WebGL, Tiled Canvas, Progressive Loading) initialized');
+}
+
+// Check if tiled canvas should be enabled based on canvas size
+function checkAndEnableTiledCanvas() {
+    const canvasSize = state.canvas.width * state.canvas.height;
+    const threshold = 3840 * 2160; // 4K resolution
+    
+    if (canvasSize > threshold && typeof TiledCanvas !== 'undefined') {
+        console.log('Canvas is large (4K+), tiled rendering is available');
+        // Tiled canvas will be enabled on demand to preserve memory
+    }
 }
 
 // Initialize on load

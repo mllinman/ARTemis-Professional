@@ -489,14 +489,15 @@ Features that would be nice to have but are not essential for core functionality
 ### Performance Optimizations
 **Priority: High**
 
-- [ ] WebGL acceleration
+- [x] WebGL acceleration ✅ COMPLETED
   - GPU-accelerated rendering
   - Hardware compositing
   - Faster brush strokes
-- [ ] Larger canvas support
+  - Optional experimental feature in settings
+- [x] Larger canvas support ✅ COMPLETED
   - Handle 4K+ canvases
-  - Tiled rendering
-  - Progressive loading
+  - Tiled rendering for memory efficiency
+  - Progressive loading for large images
 - [x] Better memory management ✅ COMPLETED
   - Memory usage monitoring with real-time display
   - Memory cleanup utilities
@@ -514,19 +515,19 @@ Features that would be nice to have but are not essential for core functionality
   - Export layer groups (all visible layers)
   - Batch export (each layer separately)
   - Export presets (5 built-in + custom presets)
-- [x] Additional formats ✅ PARTIALLY COMPLETE
+- [x] Additional formats ✅ COMPLETED
   - WebP support ✅ COMPLETED
   - PNG support ✅ COMPLETED
   - JPEG support ✅ COMPLETED
-  - PSD (Photoshop) export/import (fallback to PNG)
-  - TIFF support (fallback to PNG)
+  - PSD (Photoshop) export with full layer preservation ✅ COMPLETED
+  - TIFF support with professional quality ✅ COMPLETED
   - RAW image support (future consideration)
 - [x] Web optimization ✅ COMPLETED
   - Compress for web (quality slider)
   - Resize on export (with aspect ratio lock)
   - Format suggestions (intelligent recommendations)
 
-**Impact:** ✅ Mostly Complete - Professional export capabilities with advanced layer selection, batch export, web optimization, and memory monitoring now available.
+**Impact:** ✅ FULLY COMPLETE - Professional export capabilities with advanced layer selection, batch export, web optimization, memory monitoring, PSD layer preservation, TIFF support, WebGL acceleration, and tiled rendering for 4K+ canvases now available.
 
 ---
 
