@@ -1312,6 +1312,414 @@ let drawCanvas;
 let mainCtx;
 let drawCtx;
 
+// ==================================================================
+// CATEGORY 5: SETUP EVENT LISTENERS
+// ==================================================================
+
+function setupCategory5Features() {
+    // Convert to Smart Object button
+    const convertToSmartObjectBtn = document.getElementById('convert-to-smart-object-btn');
+    if (convertToSmartObjectBtn) {
+        convertToSmartObjectBtn.addEventListener('click', () => {
+            if (state.activeLayer) {
+                enhanceSmartObjectLayer(state.activeLayer);
+            }
+        });
+    }
+    
+    // Link Layers button
+    const linkLayersBtn = document.getElementById('link-layers-btn');
+    if (linkLayersBtn) {
+        linkLayersBtn.addEventListener('click', () => {
+            // TODO: Show dialog to select layers to link
+            showNotification('ℹ️ Select multiple layers (hold Ctrl) then click Link Layers', 'info');
+        });
+    }
+    
+    // Create Fill Layer button
+    const createFillLayerBtn = document.getElementById('create-fill-layer-btn');
+    if (createFillLayerBtn) {
+        createFillLayerBtn.addEventListener('click', () => {
+            showFillLayerDialog();
+        });
+    }
+    
+    // Create Shape Layer button
+    const createShapeLayerBtn = document.getElementById('create-shape-layer-btn');
+    if (createShapeLayerBtn) {
+        createShapeLayerBtn.addEventListener('click', () => {
+            showShapeLayerDialog();
+        });
+    }
+    
+    // Layer Comps button
+    const layerCompsBtn = document.getElementById('layer-comps-btn');
+    if (layerCompsBtn) {
+        layerCompsBtn.addEventListener('click', () => {
+            showLayerCompsDialog();
+        });
+    }
+    
+    // Layer search input
+    const layerSearchInput = document.getElementById('layer-search-input');
+    if (layerSearchInput) {
+        layerSearchInput.addEventListener('input', (e) => {
+            layerFilters.searchText = e.target.value;
+            updateLayersList();
+        });
+    }
+    
+    // Layer filter type
+    const layerFilterType = document.getElementById('layer-filter-type');
+    if (layerFilterType) {
+        layerFilterType.addEventListener('change', (e) => {
+            layerFilters.filterType = e.target.value;
+            updateLayersList();
+        });
+    }
+    
+    // Layer lock checkboxes
+    const lockPosition = document.getElementById('lock-position');
+    const lockPixels = document.getElementById('lock-pixels');
+    const lockTransparency = document.getElementById('lock-transparency');
+    const lockAll = document.getElementById('lock-all');
+    
+    if (lockPosition) {
+        lockPosition.addEventListener('change', (e) => {
+            if (state.activeLayer) {
+                setLayerLock(state.activeLayer, 'position', e.target.checked);
+            }
+        });
+    }
+    
+    if (lockPixels) {
+        lockPixels.addEventListener('change', (e) => {
+            if (state.activeLayer) {
+                setLayerLock(state.activeLayer, 'pixels', e.target.checked);
+            }
+        });
+    }
+    
+    if (lockTransparency) {
+        lockTransparency.addEventListener('change', (e) => {
+            if (state.activeLayer) {
+                setLayerLock(state.activeLayer, 'transparency', e.target.checked);
+            }
+        });
+    }
+    
+    if (lockAll) {
+        lockAll.addEventListener('change', (e) => {
+            if (state.activeLayer) {
+                setLayerLock(state.activeLayer, 'all', e.target.checked);
+            }
+        });
+    }
+    
+    // Color label buttons
+    const colorLabelBtns = document.querySelectorAll('.color-label-btn');
+    colorLabelBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const color = btn.dataset.color;
+            if (state.activeLayer) {
+                setLayerColorLabel(state.activeLayer, color);
+                
+                // Update active state
+                colorLabelBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        });
+    });
+    
+    // Layer Style Presets button
+    const layerStylePresetsBtn = document.getElementById('layer-style-presets-btn');
+    if (layerStylePresetsBtn) {
+        layerStylePresetsBtn.addEventListener('click', () => {
+            showLayerStylePresetsDialog();
+        });
+    }
+    
+    // Global Light controls
+    const globalLightAngle = document.getElementById('global-light-angle');
+    const globalLightAngleValue = document.getElementById('global-light-angle-value');
+    const applyGlobalLightBtn = document.getElementById('apply-global-light-btn');
+    
+    if (globalLightAngle && globalLightAngleValue) {
+        globalLightAngle.addEventListener('input', (e) => {
+            globalLightAngleValue.textContent = e.target.value + '°';
+        });
+    }
+    
+    if (applyGlobalLightBtn) {
+        applyGlobalLightBtn.addEventListener('click', () => {
+            const angle = parseInt(globalLightAngle.value);
+            setGlobalLight(angle, 30);
+            showNotification('✅ Global light applied to all layers', 'success');
+        });
+    }
+    
+    // Load style presets from localStorage
+    loadStylePresets();
+}
+
+// Dialog functions for Category 5 features
+function showFillLayerDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Create Fill Layer</h2>
+            <div class="setting-group">
+                <label>Fill Type:</label>
+                <select id="fill-type-select" class="brush-select">
+                    <option value="solid">Solid Color</option>
+                    <option value="gradient">Gradient</option>
+                    <option value="pattern">Pattern</option>
+                </select>
+            </div>
+            <div id="solid-fill-options" class="setting-group">
+                <label>Color:</label>
+                <input type="color" id="fill-color-input" value="${state.color}" class="color-input">
+            </div>
+            <div id="gradient-fill-options" class="setting-group" style="display: none;">
+                <label>Gradient Type:</label>
+                <select id="gradient-type-select" class="brush-select">
+                    <option value="linear">Linear</option>
+                    <option value="radial">Radial</option>
+                </select>
+                <p style="font-size: 12px; color: #888; margin-top: 10px;">Gradient will use default colors. Use gradient editor to customize.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" id="create-fill-layer-confirm">Create</button>
+                <button class="btn" id="cancel-fill-layer">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    const fillTypeSelect = dialog.querySelector('#fill-type-select');
+    const solidOptions = dialog.querySelector('#solid-fill-options');
+    const gradientOptions = dialog.querySelector('#gradient-fill-options');
+    
+    fillTypeSelect.addEventListener('change', () => {
+        solidOptions.style.display = fillTypeSelect.value === 'solid' ? 'block' : 'none';
+        gradientOptions.style.display = fillTypeSelect.value === 'gradient' ? 'block' : 'none';
+    });
+    
+    dialog.querySelector('#create-fill-layer-confirm').addEventListener('click', () => {
+        const fillType = fillTypeSelect.value;
+        let fillData = {};
+        
+        if (fillType === 'solid') {
+            fillData = { color: dialog.querySelector('#fill-color-input').value };
+        } else if (fillType === 'gradient') {
+            const gradientType = dialog.querySelector('#gradient-type-select').value;
+            fillData = {
+                type: gradientType,
+                stops: [
+                    { position: 0, color: state.color },
+                    { position: 1, color: state.secondaryColor || '#ffffff' }
+                ],
+                x0: 0, y0: 0,
+                x1: state.canvas.width, y1: state.canvas.height
+            };
+        }
+        
+        createFillLayer(fillType, fillData);
+        document.body.removeChild(dialog);
+        showNotification('✅ Fill layer created', 'success');
+    });
+    
+    dialog.querySelector('#cancel-fill-layer').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+    });
+}
+
+function showShapeLayerDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Create Shape Layer</h2>
+            <div class="setting-group">
+                <label>Shape Type:</label>
+                <select id="shape-type-select" class="brush-select">
+                    <option value="rectangle">Rectangle</option>
+                    <option value="ellipse">Ellipse</option>
+                    <option value="polygon">Polygon</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Fill Color:</label>
+                <input type="color" id="shape-fill-color" value="${state.color}" class="color-input">
+            </div>
+            <div class="setting-group">
+                <label>Stroke Width:</label>
+                <input type="range" id="shape-stroke-width" min="0" max="20" value="0" class="slider">
+                <span id="shape-stroke-width-value">0</span>
+            </div>
+            <div class="setting-group">
+                <label>Stroke Color:</label>
+                <input type="color" id="shape-stroke-color" value="#000000" class="color-input">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" id="create-shape-layer-confirm">Create</button>
+                <button class="btn" id="cancel-shape-layer">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    const strokeWidthInput = dialog.querySelector('#shape-stroke-width');
+    const strokeWidthValue = dialog.querySelector('#shape-stroke-width-value');
+    
+    strokeWidthInput.addEventListener('input', () => {
+        strokeWidthValue.textContent = strokeWidthInput.value;
+    });
+    
+    dialog.querySelector('#create-shape-layer-confirm').addEventListener('click', () => {
+        const shapeType = dialog.querySelector('#shape-type-select').value;
+        const centerX = state.canvas.width / 2;
+        const centerY = state.canvas.height / 2;
+        
+        let shapeData = {
+            fillColor: dialog.querySelector('#shape-fill-color').value,
+            strokeColor: dialog.querySelector('#shape-stroke-color').value,
+            strokeWidth: parseInt(strokeWidthInput.value)
+        };
+        
+        if (shapeType === 'rectangle') {
+            shapeData = { 
+                ...shapeData,
+                x: centerX - 100, 
+                y: centerY - 100, 
+                width: 200, 
+                height: 200 
+            };
+        } else if (shapeType === 'ellipse') {
+            shapeData = { 
+                ...shapeData,
+                cx: centerX, 
+                cy: centerY, 
+                rx: 100, 
+                ry: 100 
+            };
+        } else if (shapeType === 'polygon') {
+            shapeData = { 
+                ...shapeData,
+                points: [
+                    { x: centerX, y: centerY - 100 },
+                    { x: centerX + 100, y: centerY + 100 },
+                    { x: centerX - 100, y: centerY + 100 }
+                ]
+            };
+        }
+        
+        createShapeLayer(shapeType, shapeData);
+        document.body.removeChild(dialog);
+        showNotification('✅ Shape layer created', 'success');
+    });
+    
+    dialog.querySelector('#cancel-shape-layer').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+    });
+}
+
+function showLayerCompsDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>Layer Comps</h2>
+            <div class="setting-group">
+                <button class="btn" id="create-new-comp-btn" style="width: 100%;">Create New Comp</button>
+            </div>
+            <div id="layer-comps-list" style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
+                ${layerComps.length === 0 ? '<p style="color: #888; text-align: center;">No layer comps yet</p>' : ''}
+                ${layerComps.map(comp => `
+                    <div class="comp-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #2a2a2a; margin: 5px 0; border-radius: 4px;">
+                        <span>${comp.name}</span>
+                        <div>
+                            <button class="btn" onclick="applyLayerComp(${comp.id})">Apply</button>
+                            <button class="btn" onclick="deleteLayerComp(${comp.id}); this.closest('.comp-item').remove();">Delete</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" id="close-comps-dialog">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    dialog.querySelector('#create-new-comp-btn').addEventListener('click', () => {
+        const name = prompt('Enter name for layer comp:');
+        if (name) {
+            createLayerComp(name);
+            document.body.removeChild(dialog);
+            showLayerCompsDialog(); // Refresh dialog
+        }
+    });
+    
+    dialog.querySelector('#close-comps-dialog').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+    });
+}
+
+function showLayerStylePresetsDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'modal';
+    dialog.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>Layer Style Presets</h2>
+            <div class="setting-group">
+                <button class="btn" id="save-current-style-btn" style="width: 100%;">Save Current Style as Preset</button>
+            </div>
+            <div id="style-presets-list" style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
+                ${Object.keys(layerStylePresets).map(key => {
+                    const preset = layerStylePresets[key];
+                    return `
+                        <div class="preset-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #2a2a2a; margin: 5px 0; border-radius: 4px;">
+                            <span>${preset.name}</span>
+                            <button class="btn" onclick="applyStylePreset(state.activeLayer, '${key}')">Apply</button>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" id="close-presets-dialog">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    dialog.querySelector('#save-current-style-btn').addEventListener('click', () => {
+        if (!state.activeLayer) {
+            showNotification('⚠️ No active layer', 'warning');
+            return;
+        }
+        const name = prompt('Enter name for style preset:');
+        if (name) {
+            saveStylePreset(name, state.activeLayer);
+            document.body.removeChild(dialog);
+            showLayerStylePresetsDialog(); // Refresh dialog
+        }
+    });
+    
+    dialog.querySelector('#close-presets-dialog').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+    });
+}
+
+// ==================================================================
+// END CATEGORY 5: SETUP EVENT LISTENERS
+// ==================================================================
+
 // Initialize Application
 function init() {
     // Initialize canvas elements after DOM is ready
@@ -1375,6 +1783,9 @@ function init() {
     
     // Category 1: Initialize AI Tools rendering hooks
     setupAIRenderingHook();
+    
+    // Category 5: Initialize Layer Management & Compositing features
+    setupCategory5Features();
     
     // Create initial layer
     addLayer('Background');
@@ -4580,12 +4991,22 @@ function updateLayersList() {
     const layersList = document.getElementById('layers-list');
     layersList.innerHTML = '';
     
+    // Category 5: Apply filters
+    const filteredLayers = layerFilters.searchText || layerFilters.filterType !== 'all' ? 
+        filterLayers() : state.layers;
+    
     // Display layers in reverse order (top to bottom)
-    [...state.layers].reverse().forEach(layer => {
+    [...filteredLayers].reverse().forEach(layer => {
         const layerItem = document.createElement('div');
         layerItem.className = 'layer-item';
         const layerType = layer.type || 'paint';
         layerItem.setAttribute('data-layer-type', layerType);
+        
+        // Category 5: Add color label
+        if (layer.colorLabel) {
+            layerItem.setAttribute('data-color-label', layer.colorLabel);
+        }
+        
         if (layer === state.activeLayer) {
             layerItem.classList.add('active');
         }
@@ -4602,8 +5023,38 @@ function updateLayersList() {
         const layerInfo = document.createElement('div');
         layerInfo.className = 'layer-info';
         const typeIcon = getLayerTypeIcon(layerType);
+        
+        // Category 5: Add layer badges and lock indicators
+        let badges = '';
+        if (layer.isSmartObject) {
+            badges += '<span class="layer-type-badge smart-object">SO</span>';
+        }
+        if (layer.linkedTo) {
+            badges += '<span class="layer-type-badge linked">🔗</span>';
+        }
+        if (layer.type === 'fill') {
+            badges += '<span class="layer-type-badge fill">F</span>';
+        }
+        if (layer.type === 'shape') {
+            badges += '<span class="layer-type-badge shape">S</span>';
+        }
+        if (layer.type === 'parametric') {
+            badges += '<span class="layer-type-badge parametric">P</span>';
+        }
+        
+        let lockIndicators = '';
+        if (layer.locks) {
+            if (layer.locks.all) {
+                lockIndicators += '<span class="layer-lock-indicator" title="All locked">🔒</span>';
+            } else {
+                if (layer.locks.position) lockIndicators += '<span class="layer-lock-indicator" title="Position locked">📍</span>';
+                if (layer.locks.pixels) lockIndicators += '<span class="layer-lock-indicator" title="Pixels locked">🖌️</span>';
+                if (layer.locks.transparency) lockIndicators += '<span class="layer-lock-indicator" title="Transparency locked">👁️</span>';
+            }
+        }
+        
         layerInfo.innerHTML = `
-            <div class="layer-name">${layer.name}</div>
+            <div class="layer-name">${layer.name}${badges}${lockIndicators}</div>
             <div class="layer-type" title="${layerType}">${typeIcon}</div>
         `;
         
@@ -4677,6 +5128,31 @@ function compositeAllLayers() {
                 
                 // Apply custom blend formula
                 applyCustomBlendMode(tempCanvas, sourceCanvas, customBlendModes[blendMode].formula);
+                
+                // Draw blended result
+                mainCtx.globalAlpha = 1.0;
+                mainCtx.globalCompositeOperation = 'source-over';
+                mainCtx.drawImage(tempCanvas, 0, 0);
+            } else if (advancedBlendModes[blendMode]) {
+                // Category 5: Advanced blend mode
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = mainCanvas.width;
+                tempCanvas.height = mainCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Copy current main canvas state
+                tempCtx.drawImage(mainCanvas, 0, 0);
+                
+                // Create source canvas with layer content at correct opacity
+                const sourceCanvas = document.createElement('canvas');
+                sourceCanvas.width = mainCanvas.width;
+                sourceCanvas.height = mainCanvas.height;
+                const sourceCtx = sourceCanvas.getContext('2d');
+                sourceCtx.globalAlpha = layer.opacity;
+                sourceCtx.drawImage(layer.canvas, 0, 0);
+                
+                // Apply advanced blend mode
+                applyAdvancedBlendMode(tempCanvas, sourceCanvas, blendMode);
                 
                 // Draw blended result
                 mainCtx.globalAlpha = 1.0;
@@ -21698,6 +22174,821 @@ function shiftSelectionEdge(mask, width, height, pixels) {
 
 // ==================================================================
 // END CATEGORY 4: SELECTION & MASKING TOOLS
+// ==================================================================
+
+// ==================================================================
+// CATEGORY 5: LAYER MANAGEMENT & COMPOSITING
+// ==================================================================
+
+// 1. ADVANCED LAYER TYPES
+
+// Smart Objects - Enhanced implementation
+function enhanceSmartObjectLayer(layer) {
+    if (!layer) return;
+    
+    // Store original layer data
+    const originalCanvas = document.createElement('canvas');
+    originalCanvas.width = layer.canvas.width;
+    originalCanvas.height = layer.canvas.height;
+    const ctx = originalCanvas.getContext('2d');
+    ctx.drawImage(layer.canvas, 0, 0);
+    
+    layer.smartObject = {
+        originalCanvas: originalCanvas,
+        originalWidth: originalCanvas.width,
+        originalHeight: originalCanvas.height,
+        transformHistory: [],
+        filters: [],
+        linkedLayers: [] // For linked smart objects
+    };
+    layer.isSmartObject = true;
+    
+    updateLayersList();
+    showNotification('✅ Layer converted to Smart Object', 'success');
+}
+
+function updateLinkedSmartObjects(sourceLayer) {
+    if (!sourceLayer.smartObject || !sourceLayer.smartObject.linkedLayers) return;
+    
+    sourceLayer.smartObject.linkedLayers.forEach(linkedId => {
+        const linkedLayer = state.layers.find(l => l.id === linkedId);
+        if (linkedLayer && linkedLayer.smartObject) {
+            // Copy source canvas to linked layer
+            linkedLayer.canvas.width = sourceLayer.canvas.width;
+            linkedLayer.canvas.height = sourceLayer.canvas.height;
+            const ctx = linkedLayer.canvas.getContext('2d');
+            ctx.clearRect(0, 0, linkedLayer.canvas.width, linkedLayer.canvas.height);
+            ctx.drawImage(sourceLayer.canvas, 0, 0);
+        }
+    });
+    
+    compositeAllLayers();
+}
+
+// Linked Layers - Synchronized layer editing
+function linkLayers(layerIds) {
+    if (!layerIds || layerIds.length < 2) {
+        showNotification('⚠️ Select at least 2 layers to link', 'warning');
+        return;
+    }
+    
+    const layers = layerIds.map(id => state.layers.find(l => l.id === id)).filter(Boolean);
+    if (layers.length < 2) return;
+    
+    // Create linked group ID
+    const linkGroupId = Date.now();
+    
+    layers.forEach(layer => {
+        if (!layer.linkedTo) {
+            layer.linkedTo = linkGroupId;
+            layer.linkedLayers = layerIds.filter(id => id !== layer.id);
+        }
+    });
+    
+    updateLayersList();
+    showNotification(`✅ Linked ${layers.length} layers`, 'success');
+}
+
+function unlinkLayer(layer) {
+    if (!layer || !layer.linkedTo) return;
+    
+    const linkGroupId = layer.linkedTo;
+    const linkedLayers = state.layers.filter(l => l.linkedTo === linkGroupId);
+    
+    linkedLayers.forEach(l => {
+        delete l.linkedTo;
+        delete l.linkedLayers;
+    });
+    
+    updateLayersList();
+    showNotification('✅ Layers unlinked', 'success');
+}
+
+// Fill Layers - Procedural fill layers
+function createFillLayer(fillType, fillData) {
+    const canvas = document.createElement('canvas');
+    canvas.width = state.canvas.width;
+    canvas.height = state.canvas.height;
+    const ctx = canvas.getContext('2d');
+    
+    const layer = {
+        id: Date.now(),
+        name: `${fillType} Fill`,
+        canvas: canvas,
+        visible: true,
+        opacity: 1,
+        type: 'fill',
+        blendMode: 'normal',
+        fillType: fillType, // 'solid', 'gradient', 'pattern'
+        fillData: fillData,
+        maskProperties: {
+            density: 100,
+            feather: 0,
+            invert: false,
+            type: 'raster'
+        },
+        layerStyles: {
+            enabled: false,
+            dropShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            outerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            stroke: { enabled: false, size: 2, color: '#000000', position: 'outside' },
+            bevelEmboss: { enabled: false, size: 5, depth: 50, angle: 135, highlight: 75, shadow: 75 }
+        }
+    };
+    
+    // Apply fill
+    applyFillToLayer(layer);
+    
+    state.layers.push(layer);
+    state.activeLayer = layer;
+    updateLayersList();
+    compositeAllLayers();
+    
+    return layer;
+}
+
+function applyFillToLayer(layer) {
+    if (!layer || layer.type !== 'fill') return;
+    
+    const ctx = layer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
+    
+    switch (layer.fillType) {
+        case 'solid':
+            ctx.fillStyle = layer.fillData.color || '#ffffff';
+            ctx.fillRect(0, 0, layer.canvas.width, layer.canvas.height);
+            break;
+            
+        case 'gradient':
+            const gd = layer.fillData;
+            let gradient;
+            if (gd.type === 'linear') {
+                gradient = ctx.createLinearGradient(
+                    gd.x0 || 0, gd.y0 || 0,
+                    gd.x1 || layer.canvas.width, gd.y1 || layer.canvas.height
+                );
+            } else if (gd.type === 'radial') {
+                const cx = gd.cx || layer.canvas.width / 2;
+                const cy = gd.cy || layer.canvas.height / 2;
+                const r = gd.radius || Math.max(layer.canvas.width, layer.canvas.height) / 2;
+                gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            }
+            
+            if (gradient && gd.stops) {
+                gd.stops.forEach(stop => {
+                    gradient.addColorStop(stop.position, stop.color);
+                });
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, layer.canvas.width, layer.canvas.height);
+            }
+            break;
+            
+        case 'pattern':
+            if (layer.fillData.patternCanvas) {
+                const pattern = ctx.createPattern(layer.fillData.patternCanvas, 'repeat');
+                if (pattern) {
+                    ctx.fillStyle = pattern;
+                    ctx.fillRect(0, 0, layer.canvas.width, layer.canvas.height);
+                }
+            }
+            break;
+    }
+}
+
+// Shape Layers - Vector shape layers
+function createShapeLayer(shapeType, shapeData) {
+    const canvas = document.createElement('canvas');
+    canvas.width = state.canvas.width;
+    canvas.height = state.canvas.height;
+    
+    const layer = {
+        id: Date.now(),
+        name: `${shapeType} Shape`,
+        canvas: canvas,
+        visible: true,
+        opacity: 1,
+        type: 'shape',
+        blendMode: 'normal',
+        shapeType: shapeType, // 'rectangle', 'ellipse', 'polygon', 'custom'
+        shapeData: shapeData,
+        fillColor: shapeData.fillColor || '#000000',
+        strokeColor: shapeData.strokeColor || '#000000',
+        strokeWidth: shapeData.strokeWidth || 0,
+        maskProperties: {
+            density: 100,
+            feather: 0,
+            invert: false,
+            type: 'raster'
+        },
+        layerStyles: {
+            enabled: false,
+            dropShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            outerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            stroke: { enabled: false, size: 2, color: '#000000', position: 'outside' },
+            bevelEmboss: { enabled: false, size: 5, depth: 50, angle: 135, highlight: 75, shadow: 75 }
+        }
+    };
+    
+    // Render shape
+    renderShapeLayer(layer);
+    
+    state.layers.push(layer);
+    state.activeLayer = layer;
+    updateLayersList();
+    compositeAllLayers();
+    
+    return layer;
+}
+
+function renderShapeLayer(layer) {
+    if (!layer || layer.type !== 'shape') return;
+    
+    const ctx = layer.canvas.getContext('2d');
+    ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
+    
+    ctx.fillStyle = layer.fillColor;
+    ctx.strokeStyle = layer.strokeColor;
+    ctx.lineWidth = layer.strokeWidth;
+    
+    const sd = layer.shapeData;
+    
+    switch (layer.shapeType) {
+        case 'rectangle':
+            if (sd.fillColor) {
+                ctx.fillRect(sd.x, sd.y, sd.width, sd.height);
+            }
+            if (sd.strokeWidth > 0) {
+                ctx.strokeRect(sd.x, sd.y, sd.width, sd.height);
+            }
+            break;
+            
+        case 'ellipse':
+            ctx.beginPath();
+            ctx.ellipse(sd.cx, sd.cy, sd.rx, sd.ry, 0, 0, Math.PI * 2);
+            if (sd.fillColor) ctx.fill();
+            if (sd.strokeWidth > 0) ctx.stroke();
+            break;
+            
+        case 'polygon':
+            if (sd.points && sd.points.length > 2) {
+                ctx.beginPath();
+                ctx.moveTo(sd.points[0].x, sd.points[0].y);
+                for (let i = 1; i < sd.points.length; i++) {
+                    ctx.lineTo(sd.points[i].x, sd.points[i].y);
+                }
+                ctx.closePath();
+                if (sd.fillColor) ctx.fill();
+                if (sd.strokeWidth > 0) ctx.stroke();
+            }
+            break;
+    }
+}
+
+// Parametric Layers - Formula-based layers
+function createParametricLayer(formula, parameters) {
+    const canvas = document.createElement('canvas');
+    canvas.width = state.canvas.width;
+    canvas.height = state.canvas.height;
+    
+    const layer = {
+        id: Date.now(),
+        name: 'Parametric Layer',
+        canvas: canvas,
+        visible: true,
+        opacity: 1,
+        type: 'parametric',
+        blendMode: 'normal',
+        formula: formula,
+        parameters: parameters || {},
+        maskProperties: {
+            density: 100,
+            feather: 0,
+            invert: false,
+            type: 'raster'
+        },
+        layerStyles: {
+            enabled: false,
+            dropShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            outerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            stroke: { enabled: false, size: 2, color: '#000000', position: 'outside' },
+            bevelEmboss: { enabled: false, size: 5, depth: 50, angle: 135, highlight: 75, shadow: 75 }
+        }
+    };
+    
+    // Render parametric layer
+    renderParametricLayer(layer);
+    
+    state.layers.push(layer);
+    state.activeLayer = layer;
+    updateLayersList();
+    compositeAllLayers();
+    
+    return layer;
+}
+
+function renderParametricLayer(layer) {
+    if (!layer || layer.type !== 'parametric') return;
+    
+    const ctx = layer.canvas.getContext('2d');
+    const imageData = ctx.createImageData(layer.canvas.width, layer.canvas.height);
+    const data = imageData.data;
+    
+    try {
+        // Safe evaluation of formula
+        const params = layer.parameters;
+        const w = layer.canvas.width;
+        const h = layer.canvas.height;
+        
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const i = (y * w + x) * 4;
+                
+                // Normalized coordinates
+                const nx = x / w;
+                const ny = y / h;
+                
+                // Evaluate formula
+                let result;
+                if (layer.formula === 'noise') {
+                    result = Math.random() * 255;
+                } else if (layer.formula === 'gradient') {
+                    result = nx * 255;
+                } else if (layer.formula === 'radial') {
+                    const dx = nx - 0.5;
+                    const dy = ny - 0.5;
+                    result = (1 - Math.sqrt(dx * dx + dy * dy) * 2) * 255;
+                } else if (layer.formula === 'checkerboard') {
+                    const size = params.size || 32;
+                    const cx = Math.floor(x / size);
+                    const cy = Math.floor(y / size);
+                    result = ((cx + cy) % 2 === 0) ? 255 : 0;
+                } else {
+                    result = 0;
+                }
+                
+                result = Math.max(0, Math.min(255, result));
+                data[i] = result;
+                data[i + 1] = result;
+                data[i + 2] = result;
+                data[i + 3] = 255;
+            }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    } catch (error) {
+        console.error('Error rendering parametric layer:', error);
+    }
+}
+
+// 2. LAYER ORGANIZATION
+
+// Layer Search & Filter
+const layerFilters = {
+    searchText: '',
+    filterType: 'all', // 'all', 'paint', 'vector', 'shape', 'fill', 'adjustment', 'group'
+    filterEffect: '',
+    filterColorLabel: ''
+};
+
+function filterLayers() {
+    const filtered = state.layers.filter(layer => {
+        // Search by name
+        if (layerFilters.searchText) {
+            if (!layer.name.toLowerCase().includes(layerFilters.searchText.toLowerCase())) {
+                return false;
+            }
+        }
+        
+        // Filter by type
+        if (layerFilters.filterType !== 'all') {
+            if (layer.type !== layerFilters.filterType) {
+                return false;
+            }
+        }
+        
+        // Filter by effect
+        if (layerFilters.filterEffect) {
+            if (!layer.layerStyles || !layer.layerStyles.enabled) {
+                return false;
+            }
+        }
+        
+        // Filter by color label
+        if (layerFilters.filterColorLabel) {
+            if (layer.colorLabel !== layerFilters.filterColorLabel) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    return filtered;
+}
+
+// Layer Color Labels
+const colorLabels = {
+    'red': '#ff5555',
+    'orange': '#ffaa55',
+    'yellow': '#ffff55',
+    'green': '#55ff55',
+    'cyan': '#55ffff',
+    'blue': '#5555ff',
+    'purple': '#aa55ff',
+    'pink': '#ff55ff'
+};
+
+function setLayerColorLabel(layer, color) {
+    if (!layer) return;
+    layer.colorLabel = color;
+    updateLayersList();
+}
+
+// Layer Locking Options
+function setLayerLock(layer, lockType, locked) {
+    if (!layer) return;
+    
+    if (!layer.locks) {
+        layer.locks = {
+            position: false,
+            transparency: false,
+            pixels: false,
+            all: false
+        };
+    }
+    
+    layer.locks[lockType] = locked;
+    
+    if (lockType === 'all') {
+        layer.locks.position = locked;
+        layer.locks.transparency = locked;
+        layer.locks.pixels = locked;
+    }
+    
+    updateLayersList();
+}
+
+function isLayerLocked(layer, action) {
+    if (!layer || !layer.locks) return false;
+    
+    if (layer.locks.all) return true;
+    
+    switch (action) {
+        case 'move':
+        case 'transform':
+            return layer.locks.position;
+        case 'paint':
+        case 'edit':
+            return layer.locks.pixels;
+        case 'opacity':
+        case 'blend':
+            return layer.locks.transparency;
+        default:
+            return false;
+    }
+}
+
+// Layer Nesting (already supported via group layers, enhance it)
+function createLayerGroup(name, selectedLayers) {
+    const groupLayer = {
+        id: Date.now(),
+        name: name || 'Group',
+        canvas: null,
+        visible: true,
+        opacity: 1,
+        type: 'group',
+        blendMode: 'normal',
+        children: [],
+        expanded: true
+    };
+    
+    if (selectedLayers && selectedLayers.length > 0) {
+        selectedLayers.forEach(layer => {
+            const index = state.layers.indexOf(layer);
+            if (index !== -1) {
+                state.layers.splice(index, 1);
+                groupLayer.children.push(layer);
+            }
+        });
+    }
+    
+    state.layers.push(groupLayer);
+    state.activeLayer = groupLayer;
+    updateLayersList();
+    compositeAllLayers();
+    
+    return groupLayer;
+}
+
+function ungroupLayers(groupLayer) {
+    if (!groupLayer || groupLayer.type !== 'group') return;
+    
+    const index = state.layers.indexOf(groupLayer);
+    if (index === -1) return;
+    
+    // Insert children at group position
+    state.layers.splice(index, 1);
+    groupLayer.children.reverse().forEach(child => {
+        state.layers.splice(index, 0, child);
+    });
+    
+    updateLayersList();
+    compositeAllLayers();
+}
+
+// Layer Comps - Save layer visibility states
+const layerComps = [];
+
+function createLayerComp(name) {
+    const comp = {
+        id: Date.now(),
+        name: name || `Comp ${layerComps.length + 1}`,
+        layerStates: state.layers.map(layer => ({
+            id: layer.id,
+            visible: layer.visible,
+            opacity: layer.opacity,
+            blendMode: layer.blendMode,
+            position: { x: layer.x || 0, y: layer.y || 0 }
+        }))
+    };
+    
+    layerComps.push(comp);
+    showNotification(`✅ Layer comp "${name}" created`, 'success');
+    return comp;
+}
+
+function applyLayerComp(compId) {
+    const comp = layerComps.find(c => c.id === compId);
+    if (!comp) return;
+    
+    comp.layerStates.forEach(savedState => {
+        const layer = state.layers.find(l => l.id === savedState.id);
+        if (layer) {
+            layer.visible = savedState.visible;
+            layer.opacity = savedState.opacity;
+            layer.blendMode = savedState.blendMode;
+            if (savedState.position) {
+                layer.x = savedState.position.x;
+                layer.y = savedState.position.y;
+            }
+        }
+    });
+    
+    updateLayersList();
+    compositeAllLayers();
+    showNotification(`✅ Applied layer comp "${comp.name}"`, 'success');
+}
+
+function deleteLayerComp(compId) {
+    const index = layerComps.findIndex(c => c.id === compId);
+    if (index !== -1) {
+        layerComps.splice(index, 1);
+        showNotification('✅ Layer comp deleted', 'success');
+    }
+}
+
+// 3. BLEND MODE ENHANCEMENTS
+
+// Advanced Blend Modes
+const advancedBlendModes = {
+    'linear-dodge': (dst, src) => {
+        return Math.min(255, dst + src);
+    },
+    'vivid-light': (dst, src) => {
+        if (src < 128) {
+            return Math.max(0, 255 - (255 - dst) / (2 * src / 255));
+        } else {
+            return Math.min(255, dst / (2 * (255 - src) / 255));
+        }
+    },
+    'linear-light': (dst, src) => {
+        return Math.max(0, Math.min(255, dst + 2 * src - 255));
+    },
+    'pin-light': (dst, src) => {
+        if (src < 128) {
+            return Math.min(dst, 2 * src);
+        } else {
+            return Math.max(dst, 2 * (src - 128));
+        }
+    },
+    'hard-mix': (dst, src) => {
+        const sum = dst + src;
+        return sum < 255 ? 0 : 255;
+    }
+};
+
+function applyAdvancedBlendMode(dstCanvas, srcCanvas, blendMode) {
+    const dstCtx = dstCanvas.getContext('2d');
+    const srcCtx = srcCanvas.getContext('2d');
+    
+    const dstData = dstCtx.getImageData(0, 0, dstCanvas.width, dstCanvas.height);
+    const srcData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+    
+    const blendFunc = advancedBlendModes[blendMode];
+    if (!blendFunc) return;
+    
+    for (let i = 0; i < dstData.data.length; i += 4) {
+        const alpha = srcData.data[i + 3] / 255;
+        
+        for (let c = 0; c < 3; c++) {
+            const dst = dstData.data[i + c];
+            const src = srcData.data[i + c];
+            const blended = blendFunc(dst, src);
+            dstData.data[i + c] = dst * (1 - alpha) + blended * alpha;
+        }
+    }
+    
+    dstCtx.putImageData(dstData, 0, 0);
+}
+
+// Blend If - Advanced blend control
+function applyBlendIf(layer, blendIfSettings) {
+    if (!layer || !blendIfSettings || !blendIfSettings.enabled) return;
+    
+    const ctx = layer.canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, layer.canvas.width, layer.canvas.height);
+    const data = imageData.data;
+    
+    const channel = blendIfSettings.channel || 'gray'; // 'gray', 'red', 'green', 'blue'
+    const srcMin = blendIfSettings.srcMin || 0;
+    const srcMax = blendIfSettings.srcMax || 255;
+    const dstMin = blendIfSettings.dstMin || 0;
+    const dstMax = blendIfSettings.dstMax || 255;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        let value;
+        
+        if (channel === 'gray') {
+            value = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        } else if (channel === 'red') {
+            value = data[i];
+        } else if (channel === 'green') {
+            value = data[i + 1];
+        } else if (channel === 'blue') {
+            value = data[i + 2];
+        }
+        
+        // Apply conditional blending
+        if (value < srcMin || value > srcMax) {
+            data[i + 3] = 0; // Make transparent
+        } else if (value >= dstMin && value <= dstMax) {
+            // Keep as is
+        } else {
+            // Fade based on distance
+            const fadeOut = Math.min(
+                Math.abs(value - srcMin) / 32,
+                Math.abs(value - srcMax) / 32,
+                1
+            );
+            data[i + 3] *= fadeOut;
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Knock-Out Options
+function applyKnockout(layer, knockoutType) {
+    if (!layer || !knockoutType) return;
+    
+    layer.knockout = knockoutType; // 'none', 'shallow', 'deep'
+    
+    // Knockout affects how layer transparency interacts with layers below
+    // Implementation would be in the compositing function
+    compositeAllLayers();
+}
+
+// 4. LAYER EFFECTS/STYLES ENHANCEMENTS
+
+// Enhanced Parametric Effects
+function addLayerEffect(layer, effectType, effectSettings) {
+    if (!layer) return;
+    
+    if (!layer.layerStyles) {
+        layer.layerStyles = {
+            enabled: true,
+            dropShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            innerShadow: { enabled: false, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 },
+            outerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            innerGlow: { enabled: false, size: 10, color: '#ffffff', opacity: 0.5 },
+            bevelEmboss: { enabled: false, size: 5, depth: 50, angle: 135, highlight: 75, shadow: 75 },
+            satin: { enabled: false, color: '#000000', opacity: 0.5, angle: 135, distance: 10, size: 10 },
+            colorOverlay: { enabled: false, color: '#000000', opacity: 1 },
+            gradientOverlay: { enabled: false, gradient: null, opacity: 1, angle: 0 },
+            patternOverlay: { enabled: false, pattern: null, opacity: 1, scale: 100 },
+            stroke: { enabled: false, size: 2, color: '#000000', position: 'outside' }
+        };
+    }
+    
+    layer.layerStyles.enabled = true;
+    
+    if (effectType && effectSettings) {
+        layer.layerStyles[effectType] = { ...effectSettings, enabled: true };
+    }
+    
+    compositeAllLayers();
+}
+
+// Global Light for consistent lighting
+const globalLight = {
+    enabled: false,
+    angle: 135,
+    altitude: 30
+};
+
+function setGlobalLight(angle, altitude) {
+    globalLight.enabled = true;
+    globalLight.angle = angle;
+    globalLight.altitude = altitude;
+    
+    // Update all layers using global light
+    state.layers.forEach(layer => {
+        if (layer.layerStyles && layer.layerStyles.enabled) {
+            if (layer.layerStyles.dropShadow && layer.layerStyles.dropShadow.useGlobalLight) {
+                layer.layerStyles.dropShadow.angle = angle;
+            }
+            if (layer.layerStyles.bevelEmboss && layer.layerStyles.bevelEmboss.useGlobalLight) {
+                layer.layerStyles.bevelEmboss.angle = angle;
+            }
+        }
+    });
+    
+    compositeAllLayers();
+}
+
+// Layer Style Presets
+const layerStylePresets = {
+    'default-shadow': {
+        name: 'Default Shadow',
+        styles: {
+            enabled: true,
+            dropShadow: { enabled: true, offsetX: 5, offsetY: 5, blur: 10, color: '#000000', opacity: 0.5 }
+        }
+    },
+    'glass-effect': {
+        name: 'Glass Effect',
+        styles: {
+            enabled: true,
+            innerGlow: { enabled: true, size: 10, color: '#ffffff', opacity: 0.3 },
+            bevelEmboss: { enabled: true, size: 5, depth: 100, angle: 135, highlight: 75, shadow: 50 }
+        }
+    },
+    'neon-glow': {
+        name: 'Neon Glow',
+        styles: {
+            enabled: true,
+            outerGlow: { enabled: true, size: 20, color: '#00ffff', opacity: 0.8 },
+            innerGlow: { enabled: true, size: 10, color: '#ffffff', opacity: 0.5 }
+        }
+    },
+    'metal': {
+        name: 'Metal',
+        styles: {
+            enabled: true,
+            bevelEmboss: { enabled: true, size: 10, depth: 150, angle: 135, highlight: 90, shadow: 40 },
+            satin: { enabled: true, color: '#000000', opacity: 0.3, angle: 135, distance: 10, size: 10 }
+        }
+    }
+};
+
+function applyStylePreset(layer, presetName) {
+    if (!layer) return;
+    
+    const preset = layerStylePresets[presetName];
+    if (!preset) return;
+    
+    layer.layerStyles = JSON.parse(JSON.stringify(preset.styles));
+    compositeAllLayers();
+    showNotification(`✅ Applied style preset "${preset.name}"`, 'success');
+}
+
+function saveStylePreset(name, layer) {
+    if (!layer || !layer.layerStyles) return;
+    
+    layerStylePresets[name] = {
+        name: name,
+        styles: JSON.parse(JSON.stringify(layer.layerStyles))
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('artemis-layer-style-presets', JSON.stringify(layerStylePresets));
+    showNotification(`✅ Style preset "${name}" saved`, 'success');
+}
+
+function loadStylePresets() {
+    try {
+        const saved = localStorage.getItem('artemis-layer-style-presets');
+        if (saved) {
+            const loaded = JSON.parse(saved);
+            Object.assign(layerStylePresets, loaded);
+        }
+    } catch (error) {
+        console.error('Error loading style presets:', error);
+    }
+}
+
+// ==================================================================
+// END CATEGORY 5: LAYER MANAGEMENT & COMPOSITING
 // ==================================================================
 
 // Initialize on load

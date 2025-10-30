@@ -1615,6 +1615,10 @@
                         <option value="adjustment">⚙️ Adjust</option>
                         <option value="group">📁 Group</option>
                         <option value="file">📄 File</option>
+                        <!-- Category 5: New Layer Types -->
+                        <option value="fill">🎨 Fill Layer</option>
+                        <option value="shape">⬜ Shape Layer</option>
+                        <option value="parametric">🔢 Parametric</option>
                     </select>
                 </div>
                 <div class="panel-content">
@@ -1678,6 +1682,12 @@
                                 <option value="saturation">Saturation</option>
                                 <option value="color">Color</option>
                                 <option value="luminosity">Luminosity</option>
+                                <!-- Category 5: Advanced Blend Modes -->
+                                <option value="linear-dodge">Linear Dodge (Add)</option>
+                                <option value="vivid-light">Vivid Light</option>
+                                <option value="linear-light">Linear Light</option>
+                                <option value="pin-light">Pin Light</option>
+                                <option value="hard-mix">Hard Mix</option>
                             </select>
                         </div>
                         
@@ -1708,6 +1718,62 @@
                             </label>
                         </div>
                         
+                        <!-- Category 5: Layer Management Features -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Layer Management:</label>
+                            <div style="display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                                <button class="filter-btn" id="convert-to-smart-object-btn" style="flex: 1; min-width: 120px;">Smart Object</button>
+                                <button class="filter-btn" id="link-layers-btn" style="flex: 1; min-width: 120px;">Link Layers</button>
+                            </div>
+                            <div style="display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                                <button class="filter-btn" id="create-fill-layer-btn" style="flex: 1; min-width: 120px;">Fill Layer</button>
+                                <button class="filter-btn" id="create-shape-layer-btn" style="flex: 1; min-width: 120px;">Shape Layer</button>
+                            </div>
+                            <button class="filter-btn" id="layer-comps-btn" style="margin-top: 5px; width: 100%;">Layer Comps...</button>
+                        </div>
+                        
+                        <!-- Category 5: Layer Organization -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Layer Search:</label>
+                            <input type="text" id="layer-search-input" placeholder="Search layers..." style="width: 100%; padding: 4px; margin-top: 5px;">
+                            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                <select id="layer-filter-type" class="brush-select" style="flex: 1;">
+                                    <option value="all">All Types</option>
+                                    <option value="paint">Paint</option>
+                                    <option value="vector">Vector</option>
+                                    <option value="fill">Fill</option>
+                                    <option value="shape">Shape</option>
+                                    <option value="group">Group</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Category 5: Layer Locks -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Layer Locks:</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
+                                <label style="font-size: 11px;"><input type="checkbox" id="lock-position"> Position</label>
+                                <label style="font-size: 11px;"><input type="checkbox" id="lock-pixels"> Pixels</label>
+                                <label style="font-size: 11px;"><input type="checkbox" id="lock-transparency"> Transparency</label>
+                                <label style="font-size: 11px;"><input type="checkbox" id="lock-all"> Lock All</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Category 5: Color Labels -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Color Label:</label>
+                            <div style="display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap;">
+                                <button class="color-label-btn" data-color="" style="background: transparent; border: 1px solid #666;" title="None">⊘</button>
+                                <button class="color-label-btn" data-color="red" style="background: #ff5555;" title="Red"></button>
+                                <button class="color-label-btn" data-color="orange" style="background: #ffaa55;" title="Orange"></button>
+                                <button class="color-label-btn" data-color="yellow" style="background: #ffff55;" title="Yellow"></button>
+                                <button class="color-label-btn" data-color="green" style="background: #55ff55;" title="Green"></button>
+                                <button class="color-label-btn" data-color="cyan" style="background: #55ffff;" title="Cyan"></button>
+                                <button class="color-label-btn" data-color="blue" style="background: #5555ff;" title="Blue"></button>
+                                <button class="color-label-btn" data-color="purple" style="background: #aa55ff;" title="Purple"></button>
+                            </div>
+                        </div>
+                        
                         <!-- Phase 5: Layer Styles Control -->
                         <div class="setting-group" style="margin-top: 10px;">
                             <label>
@@ -1715,6 +1781,16 @@
                                 Enable Layer Styles
                             </label>
                             <button class="filter-btn" id="layer-styles-settings-btn" style="margin-top: 5px; width: 100%;">Layer Styles Settings...</button>
+                            <button class="filter-btn" id="layer-style-presets-btn" style="margin-top: 5px; width: 100%;">Style Presets...</button>
+                        </div>
+                        
+                        <!-- Category 5: Global Light -->
+                        <div class="setting-group" style="margin-top: 10px;">
+                            <label style="font-weight: bold;">Global Light:</label>
+                            <label style="margin-top: 5px;">Angle:</label>
+                            <input type="range" id="global-light-angle" min="0" max="360" value="135" class="slider">
+                            <span id="global-light-angle-value">135°</span>
+                            <button class="filter-btn" id="apply-global-light-btn" style="margin-top: 5px; width: 100%;">Apply to All</button>
                         </div>
                     </div>
                     <div id="layers-list"></div>

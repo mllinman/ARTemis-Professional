@@ -1869,3 +1869,106 @@ kbd {
 .color-input:hover {
     border-color: var(--accent-color, #007acc);
 }
+
+/* ==================================================================
+   CATEGORY 5: LAYER MANAGEMENT & COMPOSITING STYLES
+   ================================================================== */
+
+/* Color Label Buttons */
+.color-label-btn {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #666;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.color-label-btn:hover {
+    transform: scale(1.1);
+    border-color: #fff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.color-label-btn.active {
+    border-color: #fff;
+    border-width: 3px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Layer item with color label */
+.layer-item[data-color-label]:not([data-color-label=""]) {
+    border-left: 4px solid;
+}
+
+.layer-item[data-color-label="red"] {
+    border-left-color: #ff5555;
+}
+
+.layer-item[data-color-label="orange"] {
+    border-left-color: #ffaa55;
+}
+
+.layer-item[data-color-label="yellow"] {
+    border-left-color: #ffff55;
+}
+
+.layer-item[data-color-label="green"] {
+    border-left-color: #55ff55;
+}
+
+.layer-item[data-color-label="cyan"] {
+    border-left-color: #55ffff;
+}
+
+.layer-item[data-color-label="blue"] {
+    border-left-color: #5555ff;
+}
+
+.layer-item[data-color-label="purple"] {
+    border-left-color: #aa55ff;
+}
+
+/* Layer lock indicators */
+.layer-lock-indicator {
+    display: inline-block;
+    font-size: 10px;
+    margin-left: 4px;
+    opacity: 0.7;
+}
+
+/* Layer type badges */
+.layer-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+.layer-type-badge.smart-object {
+    background: #007acc;
+    color: white;
+}
+
+.layer-type-badge.linked {
+    background: #ff6b00;
+    color: white;
+}
+
+.layer-type-badge.fill {
+    background: #7c4dff;
+    color: white;
+}
+
+.layer-type-badge.shape {
+    background: #00c853;
+    color: white;
+}
+
+.layer-type-badge.parametric {
+    background: #ff1744;
+    color: white;
+}
