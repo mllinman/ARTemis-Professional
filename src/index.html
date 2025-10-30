@@ -6,6 +6,7 @@
     <title>ARTemis - Professional Digital Painting</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="advanced-colorwheel.css">
+    <link rel="stylesheet" href="node-editor.css">
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Stripe -->
@@ -73,6 +74,7 @@
                     <button class="menu-btn" data-action="window-show-toolbar">Show Toolbar</button>
                     <button class="menu-btn" data-action="window-show-contextual">Show Contextual Taskbar</button>
                     <button class="menu-btn" data-action="window-toggle-rulers" id="toggle-rulers-btn">Toggle Rulers</button>
+                    <button class="menu-btn" data-action="window-node-editor">Node-Based Brush Editor</button>
                 </div>
             </div>
         </div>
@@ -2371,6 +2373,9 @@
     <!-- Phase 14: Cloud & Collaboration -->
     <script src="cloud-sync.js"></script>
     <script src="cloud-sync-ui.js"></script>
+    
+    <!-- Node-Based Brush System -->
+    <script src="node-editor.js"></script>
     
     <script src="renderer.js"></script>
 </body>
