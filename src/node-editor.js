@@ -207,6 +207,49 @@ class NodeEditor {
                         </button>
                     </div>
                     <div class="node-category">
+                        <h4>Painting Effects</h4>
+                        <button class="node-type-btn" data-node-type="smudge" title="Smudge and blend paint">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Smudge
+                        </button>
+                        <button class="node-type-btn" data-node-type="blend-mode" title="Advanced blending between strokes">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Blend Mode
+                        </button>
+                        <button class="node-type-btn" data-node-type="bristle" title="Bristle brush simulation">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Bristle
+                        </button>
+                        <button class="node-type-btn" data-node-type="canvas-texture" title="Canvas surface texture">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Canvas Texture
+                        </button>
+                        <button class="node-type-btn" data-node-type="paint-buildup" title="Paint accumulation effect">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Paint Buildup
+                        </button>
+                        <button class="node-type-btn" data-node-type="drip" title="Paint dripping effect">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Drip
+                        </button>
+                        <button class="node-type-btn" data-node-type="splatter" title="Paint splatter effect">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Splatter
+                        </button>
+                        <button class="node-type-btn" data-node-type="watercolor-edge" title="Watercolor edge darkening">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Watercolor Edge
+                        </button>
+                        <button class="node-type-btn" data-node-type="impasto" title="Thick paint texture effect">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Impasto
+                        </button>
+                        <button class="node-type-btn" data-node-type="glazing" title="Transparent glaze layers">
+                            <span class="node-type-icon" style="background: #ff6b9d;"></span>
+                            Glazing
+                        </button>
+                    </div>
+                    <div class="node-category">
                         <h4>Color Nodes</h4>
                         <button class="node-type-btn" data-node-type="hsv-adjust">
                             <span class="node-type-icon" style="background: #ff6b6b;"></span>
@@ -413,9 +456,26 @@ class NodeEditor {
             });
         });
         
-        // Node type buttons
+        // Node type buttons - now with drag and drop support
         const nodeTypeButtons = document.querySelectorAll('.node-type-btn');
         nodeTypeButtons.forEach(btn => {
+            // Make buttons draggable
+            btn.setAttribute('draggable', 'true');
+            
+            // Drag start event
+            btn.addEventListener('dragstart', (e) => {
+                const nodeType = e.currentTarget.getAttribute('data-node-type');
+                e.dataTransfer.setData('nodeType', nodeType);
+                e.dataTransfer.effectAllowed = 'copy';
+                e.currentTarget.style.opacity = '0.5';
+            });
+            
+            // Drag end event
+            btn.addEventListener('dragend', (e) => {
+                e.currentTarget.style.opacity = '1';
+            });
+            
+            // Click event (fallback for non-drag creation)
             btn.addEventListener('click', (e) => {
                 const nodeType = e.currentTarget.getAttribute('data-node-type');
                 // Create node near center of visible area
@@ -423,6 +483,26 @@ class NodeEditor {
                 const y = -this.canvas.offsetY + 200;
                 this.createNode(nodeType, x, y);
             });
+        });
+        
+        // Add drop zone to canvas container
+        const container = document.getElementById('node-canvas-container');
+        
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        });
+        
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const nodeType = e.dataTransfer.getData('nodeType');
+            if (nodeType) {
+                // Calculate node position from drop location, accounting for canvas transform
+                const containerRect = this.nodeCanvas.getBoundingClientRect();
+                const x = (e.clientX - containerRect.left) / this.canvas.zoom;
+                const y = (e.clientY - containerRect.top) / this.canvas.zoom;
+                this.createNode(nodeType, x, y);
+            }
         });
         
         // Mouse wheel zoom
@@ -457,8 +537,10 @@ class NodeEditor {
                 this.updateCanvasTransform();
             } else if (this.draggingNode) {
                 const node = this.draggingNode;
-                node.x = e.clientX - this.canvas.offsetX - this.dragOffsetX;
-                node.y = e.clientY - this.canvas.offsetY - this.dragOffsetY;
+                const containerRect = this.nodeCanvas.getBoundingClientRect();
+                // Convert mouse position to canvas coordinates, accounting for zoom
+                node.x = (e.clientX - containerRect.left) / this.canvas.zoom - this.dragOffsetX;
+                node.y = (e.clientY - containerRect.top) / this.canvas.zoom - this.dragOffsetY;
                 this.updateNodePosition(node);
                 this.updateConnections();
             } else if (this.connecting) {
@@ -835,6 +917,57 @@ class NodeEditor {
                 outputs: [{ name: 'Clamped', type: 'number' }],
                 parameters: { min: 0, max: 100 }
             },
+            // Painting Effect Nodes
+            'smudge': {
+                inputs: [{ name: 'Strength', type: 'number' }],
+                outputs: [{ name: 'Smudge', type: 'number' }],
+                parameters: { strength: 50, radius: 20, softness: 80 }
+            },
+            'blend-mode': {
+                inputs: [{ name: 'Intensity', type: 'number' }],
+                outputs: [{ name: 'Blend', type: 'string' }],
+                parameters: { mode: 'multiply', intensity: 100 }
+            },
+            'bristle': {
+                inputs: [{ name: 'Stiffness', type: 'number' }],
+                outputs: [{ name: 'Bristle Count', type: 'number' }, { name: 'Spread', type: 'number' }],
+                parameters: { count: 20, stiffness: 70, spread: 15, length: 50 }
+            },
+            'canvas-texture': {
+                inputs: [{ name: 'Scale', type: 'number' }],
+                outputs: [{ name: 'Texture', type: 'texture' }],
+                parameters: { scale: 100, depth: 30, roughness: 50 }
+            },
+            'paint-buildup': {
+                inputs: [{ name: 'Amount', type: 'number' }],
+                outputs: [{ name: 'Buildup', type: 'number' }],
+                parameters: { amount: 50, threshold: 30, decay: 10 }
+            },
+            'drip': {
+                inputs: [{ name: 'Gravity', type: 'number' }],
+                outputs: [{ name: 'Drip X', type: 'number' }, { name: 'Drip Y', type: 'number' }],
+                parameters: { gravity: 50, viscosity: 70, length: 40 }
+            },
+            'splatter': {
+                inputs: [{ name: 'Intensity', type: 'number' }],
+                outputs: [{ name: 'Splatter', type: 'number' }],
+                parameters: { intensity: 50, count: 10, size: 5, spread: 100 }
+            },
+            'watercolor-edge': {
+                inputs: [{ name: 'Wetness', type: 'number' }],
+                outputs: [{ name: 'Edge Dark', type: 'number' }],
+                parameters: { edgeDarkness: 50, width: 20, softness: 60, wetness: 70 }
+            },
+            'impasto': {
+                inputs: [{ name: 'Thickness', type: 'number' }],
+                outputs: [{ name: 'Height', type: 'number' }],
+                parameters: { thickness: 50, texture: 70, highlights: 60, shadows: 40 }
+            },
+            'glazing': {
+                inputs: [{ name: 'Transparency', type: 'number' }],
+                outputs: [{ name: 'Glaze', type: 'number' }],
+                parameters: { transparency: 80, tint: 20, layers: 3 }
+            },
             'brush-output': {
                 inputs: [
                     { name: 'Size', type: 'number' },
@@ -1050,6 +1183,16 @@ class NodeEditor {
             'color-mix': 'Color Mix',
             'color-ramp': 'Color Ramp',
             'curve': 'Curve',
+            'smudge': 'Smudge',
+            'blend-mode': 'Blend Mode',
+            'bristle': 'Bristle',
+            'canvas-texture': 'Canvas Texture',
+            'paint-buildup': 'Paint Buildup',
+            'drip': 'Drip',
+            'splatter': 'Splatter',
+            'watercolor-edge': 'Watercolor Edge',
+            'impasto': 'Impasto',
+            'glazing': 'Glazing',
             'brush-output': 'Brush Output'
         };
         return names[type] || type;
@@ -1058,8 +1201,11 @@ class NodeEditor {
     startDragging(node, e) {
         this.draggingNode = node;
         const rect = node.element.getBoundingClientRect();
-        this.dragOffsetX = e.clientX - rect.left - this.canvas.offsetX;
-        this.dragOffsetY = e.clientY - rect.top - this.canvas.offsetY;
+        const containerRect = this.nodeCanvas.getBoundingClientRect();
+        // Calculate offset from mouse position to node position in canvas coordinates
+        // The rect.left/top are in viewport coordinates, so we need to convert to canvas coordinates
+        this.dragOffsetX = (e.clientX - containerRect.left) / this.canvas.zoom - node.x;
+        this.dragOffsetY = (e.clientY - containerRect.top) / this.canvas.zoom - node.y;
     }
     
     updateNodePosition(node) {
@@ -1091,6 +1237,23 @@ class NodeEditor {
             // Remove from array
             this.nodes.splice(index, 1);
             
+            this.updateConnections();
+            this.updateBrushPreview();
+            this.updateStats();
+        }
+    }
+    
+    deleteConnection(fromNodeId, fromSocket, toNodeId, toSocket) {
+        // Find and remove the connection
+        const index = this.connections.findIndex(conn => 
+            conn.from.nodeId === fromNodeId && 
+            conn.from.socketIndex === fromSocket &&
+            conn.to.nodeId === toNodeId && 
+            conn.to.socketIndex === toSocket
+        );
+        
+        if (index !== -1) {
+            this.connections.splice(index, 1);
             this.updateConnections();
             this.updateBrushPreview();
             this.updateStats();
@@ -1192,6 +1355,22 @@ class NodeEditor {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', `M ${x1} ${y1} C ${x1 + handleOffset} ${y1}, ${x2 - handleOffset} ${y2}, ${x2} ${y2}`);
         path.classList.add('node-connection');
+        
+        // Store connection data on the path for deletion
+        path.dataset.fromNodeId = conn.from.nodeId;
+        path.dataset.fromSocket = conn.from.socketIndex;
+        path.dataset.toNodeId = conn.to.nodeId;
+        path.dataset.toSocket = conn.to.socketIndex;
+        
+        // Make connection clickable to delete
+        path.style.cursor = 'pointer';
+        path.setAttribute('title', 'Click to delete connection');
+        
+        // Add click handler to delete connection
+        path.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteConnection(conn.from.nodeId, conn.from.socketIndex, conn.to.nodeId, conn.to.socketIndex);
+        });
         
         // Mark sockets as connected
         fromSocket.classList.add('connected');
@@ -1481,6 +1660,51 @@ class NodeEditor {
                 const curveInput = this.getInputValue(node, 0) || 0;
                 return this.applyCurve(curveInput, node.parameters.curve || 'linear', 
                                       node.parameters.strength || 50);
+            
+            // Painting Effect Nodes
+            case 'smudge':
+                const smudgeStrength = this.getInputValue(node, 0) || node.parameters.strength || 50;
+                return smudgeStrength * (node.parameters.radius || 20) / 100;
+            
+            case 'blend-mode':
+                const blendIntensity = this.getInputValue(node, 0) || node.parameters.intensity || 100;
+                return node.parameters.mode || 'multiply';
+            
+            case 'bristle':
+                const stiffness = this.getInputValue(node, 0) || node.parameters.stiffness || 70;
+                if (outputIndex === 0) return node.parameters.count || 20;
+                if (outputIndex === 1) return (node.parameters.spread || 15) * (stiffness / 100);
+                return 0;
+            
+            case 'canvas-texture':
+                const texScale = this.getInputValue(node, 0) || node.parameters.scale || 100;
+                return texScale * (node.parameters.depth || 30) / 100;
+            
+            case 'paint-buildup':
+                const buildupAmount = this.getInputValue(node, 0) || node.parameters.amount || 50;
+                return buildupAmount * (node.parameters.threshold || 30) / 100;
+            
+            case 'drip':
+                const gravity = this.getInputValue(node, 0) || node.parameters.gravity || 50;
+                if (outputIndex === 0) return 0; // X drip (horizontal)
+                if (outputIndex === 1) return gravity * (node.parameters.length || 40) / (node.parameters.viscosity || 70);
+                return 0;
+            
+            case 'splatter':
+                const splatterIntensity = this.getInputValue(node, 0) || node.parameters.intensity || 50;
+                return splatterIntensity * (node.parameters.count || 10) / 100;
+            
+            case 'watercolor-edge':
+                const wetness = this.getInputValue(node, 0) || node.parameters.wetness || 70;
+                return (node.parameters.edgeDarkness || 50) * (wetness / 100);
+            
+            case 'impasto':
+                const thickness = this.getInputValue(node, 0) || node.parameters.thickness || 50;
+                return thickness * (node.parameters.texture || 70) / 100;
+            
+            case 'glazing':
+                const transparency = this.getInputValue(node, 0) || node.parameters.transparency || 80;
+                return 100 - transparency; // Invert for opacity effect
             
             default:
                 return 0;
