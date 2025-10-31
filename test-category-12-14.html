@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Category 12 & 14 Features - ARTemis Professional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #canvas {
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: crosshair;
+            margin-bottom: 15px;
+        }
+        
+        .output {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            color: #333;
+        }
+        
+        .output div {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+        
+        .output .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .output .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .output .info {
+            border-left-color: #17a2b8;
+            background: #d1ecf1;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 ARTemis Professional - Category 12 & 14 Test Suite</h1>
+        <p class="subtitle">Testing Export & File Management + Performance & Canvas Features</p>
+        
+        <div class="test-section">
+            <h2>📐 Test Canvas</h2>
+            <canvas id="canvas" width="800" height="400"></canvas>
+            <div class="button-group">
+                <button onclick="drawTestPattern()">Draw Test Pattern</button>
+                <button onclick="clearCanvas()">Clear Canvas</button>
+            </div>
+        </div>
+        
+        <!-- Category 12: Export & File Management -->
+        <div class="test-section">
+            <h2>💾 Category 12: Export & File Management <span class="badge">COMPLETED</span></h2>
+            
+            <h3 style="margin-top: 20px; color: #555;">Export Manager</h3>
+            <div class="button-group">
+                <button onclick="testExportManager()">Test Multi-Format Export</button>
+                <button onclick="testBatchExport()">Test Batch Export</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">Slicing Tool</h3>
+            <div class="button-group">
+                <button onclick="testSlicingTool()">Test Slicing Tool</button>
+                <button onclick="testAutoSlice()">Test Auto-Slice Grid</button>
+                <button onclick="testMultiResExport()">Test Multi-Resolution Export</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">Print Settings</h3>
+            <div class="button-group">
+                <button onclick="testPrintSettings()">Test Print Settings</button>
+                <button onclick="testPrintMarks()">Test Crop & Registration Marks</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">PDF Export</h3>
+            <div class="button-group">
+                <button onclick="testPDFExport()">Test PDF Export</button>
+            </div>
+        </div>
+        
+        <!-- Category 14: Performance & Canvas Features -->
+        <div class="test-section">
+            <h2>⚡ Category 14: Performance & Canvas Features <span class="badge">COMPLETED</span></h2>
+            
+            <h3 style="margin-top: 20px; color: #555;">Performance Manager</h3>
+            <div class="button-group">
+                <button onclick="testPerformanceManager()">Test Background Processing</button>
+                <button onclick="testWorkerPool()">Test Worker Pool</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">Memory Manager</h3>
+            <div class="button-group">
+                <button onclick="testMemoryManager()">Test Memory Management</button>
+                <button onclick="testCaching()">Test Caching System</button>
+                <button onclick="showMemoryStats()">Show Memory Stats</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">Canvas Rotation</h3>
+            <div class="button-group">
+                <button onclick="testCanvasRotation()">Test Canvas Rotation</button>
+                <button onclick="rotateCanvas(45)">Rotate 45°</button>
+                <button onclick="rotateCanvas(90)">Rotate 90°</button>
+                <button onclick="resetRotation()">Reset Rotation</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #555;">Reference Canvas</h3>
+            <div class="button-group">
+                <button onclick="testReferenceCanvas()">Test Reference Canvas</button>
+                <button onclick="toggleReference()">Toggle Reference Window</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Output</h2>
+            <div id="output" class="output"></div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="exportCount">0</div>
+                    <div class="stat-label">Exports Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="taskCount">0</div>
+                    <div class="stat-label">Background Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cacheHits">0</div>
+                    <div class="stat-label">Cache Hits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="memoryUsed">0MB</div>
+                    <div class="stat-label">Memory Used</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load all modules asynchronously to improve page load performance -->
+    <script defer src="src/export-manager.js"></script>
+    <script defer src="src/slicing-tool.js"></script>
+    <script defer src="src/print-settings.js"></script>
+    <script defer src="src/pdf-exporter.js"></script>
+    <script defer src="src/performance-manager.js"></script>
+    <script defer src="src/memory-manager.js"></script>
+    <script defer src="src/canvas-rotation.js"></script>
+    <script defer src="src/reference-canvas.js"></script>
+    
+    <script>
+        // Initialize
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const output = document.getElementById('output');
+        
+        let exportManager, slicingTool, printSettings, performanceManager, memoryManager, canvasRotation, referenceCanvas;
+        let stats = { exports: 0, tasks: 0, cacheHits: 0 };
+        
+        function init() {
+            // Initialize all managers
+            exportManager = new ExportManager();
+            slicingTool = new SlicingTool();
+            printSettings = new PrintSettings();
+            performanceManager = new PerformanceManager();
+            memoryManager = new MemoryManager();
+            canvasRotation = new CanvasRotation(canvas);
+            referenceCanvas = new ReferenceCanvas();
+            
+            log('✅ All modules initialized successfully', 'success');
+            drawTestPattern();
+        }
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.insertBefore(div, output.firstChild);
+        }
+        
+        function updateStats() {
+            document.getElementById('exportCount').textContent = stats.exports;
+            document.getElementById('taskCount').textContent = stats.tasks;
+            document.getElementById('cacheHits').textContent = stats.cacheHits;
+            
+            const memory = memoryManager.getMemoryUsage();
+            if (memory) {
+                document.getElementById('memoryUsed').textContent = 
+                    (memory.used / 1048576).toFixed(2) + 'MB';
+            }
+        }
+        
+        function drawTestPattern() {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw colorful gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
+            
+            // Draw some shapes
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(100, 100, 150, 100);
+            ctx.beginPath();
+            ctx.arc(400, 200, 80, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(550, 100, 150, 100);
+            
+            // Draw text
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ARTemis Professional', canvas.width / 2, canvas.height / 2);
+            ctx.font = '16px Arial';
+            ctx.fillText('Category 12 & 14 Test Pattern', canvas.width / 2, canvas.height / 2 + 30);
+            
+            log('✏️ Test pattern drawn', 'info');
+        }
+        
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            log('🗑️ Canvas cleared', 'info');
+        }
+        
+        // Category 12 Tests
+        async function testExportManager() {
+            try {
+                log('🔄 Testing multi-format export...', 'info');
+                const formats = exportManager.getSupportedFormats();
+                log(`✅ Supported formats: ${formats.join(', ')}`, 'success');
+                
+                const blob = await exportManager.exportToFormat(canvas, 'png');
+                log(`✅ PNG export successful (${blob.size} bytes)`, 'success');
+                stats.exports++;
+                updateStats();
+            } catch (error) {
+                log(`❌ Export failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBatchExport() {
+            try {
+                log('🔄 Testing batch export...', 'info');
+                const formats = [
+                    { format: 'png', options: { quality: 1.0 } },
+                    { format: 'jpg', options: { quality: 0.95 } }
+                ];
+                
+                const results = await exportManager.batchExport(canvas, formats, 
+                    (current, total, format) => {
+                        log(`Exporting ${format}: ${current}/${total}`, 'info');
+                    }
+                );
+                
+                log(`✅ Batch export completed: ${results.length} files`, 'success');
+                stats.exports += results.length;
+                updateStats();
+            } catch (error) {
+                log(`❌ Batch export failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testSlicingTool() {
+            try {
+                log('🔄 Testing slicing tool...', 'info');
+                slicingTool.createSlice(0, 0, 200, 200, { name: 'test-slice' });
+                const slices = slicingTool.getSlices();
+                log(`✅ Created ${slices.length} slice(s)`, 'success');
+            } catch (error) {
+                log(`❌ Slicing failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testAutoSlice() {
+            try {
+                log('🔄 Testing auto-slice grid...', 'info');
+                slicingTool.autoSliceGrid(canvas.width, canvas.height, 2, 2);
+                const slices = slicingTool.getSlices();
+                log(`✅ Created ${slices.length} slices in 2x2 grid`, 'success');
+            } catch (error) {
+                log(`❌ Auto-slice failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMultiResExport() {
+            try {
+                log('🔄 Testing multi-resolution export...', 'info');
+                slicingTool.clear();
+                slicingTool.createSlice(100, 100, 200, 200, { name: 'icon' });
+                
+                const results = await slicingTool.exportMultiResolution(canvas, [1, 2]);
+                log(`✅ Multi-res export completed: ${results.length} files`, 'success');
+                stats.exports += results.length;
+                updateStats();
+            } catch (error) {
+                log(`❌ Multi-res export failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testPrintSettings() {
+            try {
+                log('🔄 Testing print settings...', 'info');
+                printSettings.updateSettings({
+                    pageSize: 'A4',
+                    orientation: 'portrait',
+                    dpi: 300
+                });
+                const dims = printSettings.getPageDimensions();
+                log(`✅ Page dimensions: ${dims.width}mm x ${dims.height}mm`, 'success');
+            } catch (error) {
+                log(`❌ Print settings failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testPrintMarks() {
+            try {
+                log('🔄 Testing crop & registration marks...', 'info');
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 800;
+                testCanvas.height = 600;
+                const testCtx = testCanvas.getContext('2d');
+                
+                printSettings.drawCropMarks(testCanvas, testCtx);
+                printSettings.drawRegistrationMarks(testCanvas, testCtx);
+                log(`✅ Print marks generated successfully`, 'success');
+            } catch (error) {
+                log(`❌ Print marks failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testPDFExport() {
+            log('ℹ️ PDF export requires jsPDF library', 'info');
+            log('ℹ️ Add jsPDF script to enable PDF export', 'info');
+        }
+        
+        // Category 14 Tests
+        async function testPerformanceManager() {
+            try {
+                log('🔄 Testing background processing...', 'info');
+                performanceManager.initWorkerPool();
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const result = await performanceManager.applyFilterAsync(imageData, 'grayscale');
+                
+                log(`✅ Background filter applied successfully`, 'success');
+                stats.tasks++;
+                updateStats();
+            } catch (error) {
+                log(`❌ Background processing failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testWorkerPool() {
+            try {
+                log('🔄 Testing worker pool...', 'info');
+                performanceManager.initWorkerPool();
+                const metrics = performanceManager.getMetrics();
+                log(`✅ Worker pool: ${metrics.totalWorkers} workers, ${metrics.availableWorkers} available`, 'success');
+            } catch (error) {
+                log(`❌ Worker pool failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testMemoryManager() {
+            try {
+                log('🔄 Testing memory management...', 'info');
+                const usage = memoryManager.getMemoryUsage();
+                if (usage) {
+                    log(`✅ Memory: ${usage.percentUsed.toFixed(2)}% used`, 'success');
+                } else {
+                    log('ℹ️ Memory API not available in this browser', 'info');
+                }
+            } catch (error) {
+                log(`❌ Memory management failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testCaching() {
+            try {
+                log('🔄 Testing caching system...', 'info');
+                memoryManager.cacheItem('test-canvas', canvas);
+                const cached = memoryManager.getCacheItem('test-canvas');
+                const stats = memoryManager.getCacheStats();
+                log(`✅ Cache: ${stats.cacheItems} items, ${stats.hitRate}% hit rate`, 'success');
+            } catch (error) {
+                log(`❌ Caching failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function showMemoryStats() {
+            try {
+                const cacheStats = memoryManager.getCacheStats();
+                const usage = memoryManager.getMemoryUsage();
+                
+                log('📊 Memory Statistics:', 'info');
+                log(`  Cache items: ${cacheStats.cacheItems}`, 'info');
+                log(`  Cache size: ${(cacheStats.cacheSize / 1024 / 1024).toFixed(2)}MB`, 'info');
+                log(`  Hit rate: ${cacheStats.hitRate}%`, 'info');
+                if (usage) {
+                    log(`  Memory used: ${(usage.used / 1048576).toFixed(2)}MB`, 'info');
+                    log(`  Memory percent: ${usage.percentUsed.toFixed(2)}%`, 'info');
+                }
+            } catch (error) {
+                log(`❌ Stats failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testCanvasRotation() {
+            try {
+                log('🔄 Testing canvas rotation...', 'info');
+                const info = canvasRotation.getRotationInfo();
+                log(`✅ Current rotation: ${info.rotation}°`, 'success');
+            } catch (error) {
+                log(`❌ Canvas rotation failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function rotateCanvas(angle) {
+            try {
+                canvasRotation.rotate(angle, true);
+                log(`🔄 Rotated canvas by ${angle}°`, 'success');
+            } catch (error) {
+                log(`❌ Rotation failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function resetRotation() {
+            try {
+                canvasRotation.resetRotation(true);
+                log(`✅ Canvas rotation reset`, 'success');
+            } catch (error) {
+                log(`❌ Reset failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testReferenceCanvas() {
+            try {
+                log('🔄 Testing reference canvas...', 'info');
+                referenceCanvas.show();
+                referenceCanvas.setReferenceFromCanvas(canvas);
+                log(`✅ Reference canvas opened with test pattern`, 'success');
+            } catch (error) {
+                log(`❌ Reference canvas failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function toggleReference() {
+            try {
+                referenceCanvas.toggle();
+                log(`🔄 Reference window toggled`, 'info');
+            } catch (error) {
+                log(`❌ Toggle failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
