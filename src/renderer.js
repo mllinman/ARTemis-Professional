@@ -4054,6 +4054,11 @@ function setupColorMixer() {
     const useColorBtn = document.getElementById('use-mixed-color-btn');
     const mixerCanvas = document.getElementById('mixer-canvas');
     
+    // Return early if required elements don't exist
+    if (!color1Input || !color2Input || !ratioSlider || !ratioValue || !preview) {
+        return;
+    }
+    
     function updateMixedColor() {
         const ratio = parseInt(ratioSlider.value) / 100;
         const color1 = hexToRgbObj(color1Input.value);
@@ -4093,18 +4098,20 @@ function setupColorMixer() {
         });
     }
     
-    useColorBtn.addEventListener('click', () => {
-        const mixedColor = preview.style.background;
-        // Convert rgb() to hex if needed
-        if (mixedColor.startsWith('rgb')) {
-            const rgb = mixedColor.match(/\d+/g);
-            state.color = rgbToHex(parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2]));
-        } else {
-            state.color = mixedColor;
-        }
-        document.getElementById('color-picker').value = state.color;
-        updateColorHarmony();
-    });
+    if (useColorBtn) {
+        useColorBtn.addEventListener('click', () => {
+            const mixedColor = preview.style.background;
+            // Convert rgb() to hex if needed
+            if (mixedColor.startsWith('rgb')) {
+                const rgb = mixedColor.match(/\d+/g);
+                state.color = rgbToHex(parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2]));
+            } else {
+                state.color = mixedColor;
+            }
+            document.getElementById('color-picker').value = state.color;
+            updateColorHarmony();
+        });
+    }
     
     updateMixedColor();
     
@@ -4207,6 +4214,11 @@ function drawMixerCanvas() {
 function setupColorHarmonies() {
     const harmonySelect = document.getElementById('harmony-type');
     const harmonyColors = document.getElementById('harmony-colors');
+    
+    // Return early if required elements don't exist
+    if (!harmonySelect || !harmonyColors) {
+        return;
+    }
     
     harmonySelect.addEventListener('change', updateColorHarmony);
     
@@ -4348,7 +4360,7 @@ function setupColorPalettes() {
     const paletteSelect = document.getElementById('color-palette');
     const canvas = document.getElementById('palette-gradient-bar');
     
-    if (!canvas) return;
+    if (!canvas || !paletteSelect) return;
     
     const ctx = canvas.getContext('2d');
     
@@ -4524,6 +4536,11 @@ function setupColorSets() {
     const clearSetBtn = document.getElementById('clear-color-set-btn');
     const addHarmonyBtn = document.getElementById('add-harmony-to-set-btn');
     
+    // Return early if required elements don't exist
+    if (!setSelector || !setColors) {
+        return;
+    }
+    
     // Load color sets from storage
     loadColorSets();
     
@@ -4538,11 +4555,11 @@ function setupColorSets() {
         saveColorSets();
     });
     
-    newSetBtn.addEventListener('click', createNewColorSet);
-    deleteSetBtn.addEventListener('click', deleteCurrentColorSet);
-    addCurrentColorBtn.addEventListener('click', addCurrentColorToSet);
-    clearSetBtn.addEventListener('click', clearCurrentColorSet);
-    addHarmonyBtn.addEventListener('click', addHarmonyColorsToSet);
+    if (newSetBtn) newSetBtn.addEventListener('click', createNewColorSet);
+    if (deleteSetBtn) deleteSetBtn.addEventListener('click', deleteCurrentColorSet);
+    if (addCurrentColorBtn) addCurrentColorBtn.addEventListener('click', addCurrentColorToSet);
+    if (clearSetBtn) clearSetBtn.addEventListener('click', clearCurrentColorSet);
+    if (addHarmonyBtn) addHarmonyBtn.addEventListener('click', addHarmonyColorsToSet);
     
     function createNewColorSet() {
         const setName = prompt('Enter name for new color set:', `Set ${Object.keys(state.colorSets.sets).length + 1}`);
@@ -12921,6 +12938,10 @@ function resizeRulers() {
 function drawRulers() {
     if (!state.rulers.horizontalCanvas || !state.rulers.verticalCanvas) return;
     
+    // Get actual display canvas position (the paintable area)
+    const displayCanvas = document.getElementById('display-canvas');
+    if (!displayCanvas) return;
+    
     const hCtx = state.rulers.horizontalCanvas.getContext('2d');
     const vCtx = state.rulers.verticalCanvas.getContext('2d');
     
@@ -12937,8 +12958,6 @@ function drawRulers() {
     hCtx.textAlign = 'center';
     hCtx.textBaseline = 'top';
     
-    // Get actual display canvas position (the paintable area)
-    const displayCanvas = document.getElementById('display-canvas');
     const displayRect = displayCanvas.getBoundingClientRect();
     const canvasContainer = document.getElementById('canvas-container');
     const containerRect = canvasContainer.getBoundingClientRect();
@@ -17013,9 +17032,11 @@ function setupExpandableSections() {
     sections.forEach(section => {
         const header = section.querySelector('.setting-section-header');
         
-        header.addEventListener('click', () => {
-            section.classList.toggle('collapsed');
-        });
+        if (header) {
+            header.addEventListener('click', () => {
+                section.classList.toggle('collapsed');
+            });
+        }
     });
 }
 
