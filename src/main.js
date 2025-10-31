@@ -597,6 +597,154 @@ function createWindow() {
       ]
     },
     {
+      label: 'Photo Editing',
+      submenu: [
+        {
+          label: 'Professional Retouching',
+          submenu: [
+            {
+              label: 'Frequency Separation...',
+              click: () => { mainWindow.webContents.send('photo-frequency-separation'); }
+            },
+            {
+              label: 'Patch Tool',
+              click: () => { mainWindow.webContents.send('photo-patch-tool'); }
+            },
+            {
+              label: 'Healing Brush Pro',
+              click: () => { mainWindow.webContents.send('photo-healing-brush'); }
+            },
+            {
+              label: 'Red Eye / Pet Eye Removal',
+              click: () => { mainWindow.webContents.send('photo-red-eye-removal'); }
+            },
+            {
+              label: 'Teeth Whitening',
+              click: () => { mainWindow.webContents.send('photo-teeth-whitening'); }
+            },
+            {
+              label: 'Skin Tone Enhancement...',
+              click: () => { mainWindow.webContents.send('photo-skin-tone'); }
+            }
+          ]
+        },
+        {
+          label: 'Lens Corrections',
+          submenu: [
+            {
+              label: 'Lens Profile Corrections...',
+              click: () => { mainWindow.webContents.send('photo-lens-profile'); }
+            },
+            {
+              label: 'Fix Chromatic Aberration',
+              click: () => { mainWindow.webContents.send('photo-chromatic-aberration'); }
+            },
+            {
+              label: 'Perspective Correction...',
+              click: () => { mainWindow.webContents.send('photo-perspective'); }
+            },
+            {
+              label: 'Adaptive Wide Angle...',
+              click: () => { mainWindow.webContents.send('photo-wide-angle'); }
+            }
+          ]
+        },
+        {
+          label: 'RAW Processing',
+          submenu: [
+            {
+              label: 'RAW Development Controls...',
+              click: () => { mainWindow.webContents.send('photo-raw-development'); }
+            },
+            {
+              label: 'HDR Merge...',
+              click: () => { mainWindow.webContents.send('photo-hdr-merge'); }
+            },
+            {
+              label: 'Panorama Stitching...',
+              click: () => { mainWindow.webContents.send('photo-panorama-stitch'); }
+            },
+            {
+              label: 'Batch RAW Processing...',
+              click: () => { mainWindow.webContents.send('photo-batch-raw'); }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      label: 'Automation',
+      submenu: [
+        {
+          label: 'Actions & Macros',
+          submenu: [
+            {
+              label: 'Record Action...',
+              accelerator: 'CmdOrCtrl+Shift+R',
+              click: () => { mainWindow.webContents.send('auto-action-record'); }
+            },
+            {
+              label: 'Stop Recording',
+              accelerator: 'CmdOrCtrl+Shift+T',
+              click: () => { mainWindow.webContents.send('auto-action-stop'); }
+            },
+            {
+              label: 'Play Action...',
+              accelerator: 'CmdOrCtrl+Shift+P',
+              click: () => { mainWindow.webContents.send('auto-action-play'); }
+            },
+            {
+              label: 'Edit Action...',
+              click: () => { mainWindow.webContents.send('auto-action-edit'); }
+            },
+            {
+              label: 'Batch Processing...',
+              click: () => { mainWindow.webContents.send('auto-batch-process'); }
+            },
+            {
+              label: 'Create Droplet...',
+              click: () => { mainWindow.webContents.send('auto-create-droplet'); }
+            }
+          ]
+        },
+        {
+          label: 'Scripts & Extensions',
+          submenu: [
+            {
+              label: 'Run Script...',
+              click: () => { mainWindow.webContents.send('auto-run-script'); }
+            },
+            {
+              label: 'Manage Plugins...',
+              click: () => { mainWindow.webContents.send('auto-manage-plugins'); }
+            },
+            {
+              label: 'Event Hooks...',
+              click: () => { mainWindow.webContents.send('auto-event-hooks'); }
+            }
+          ]
+        },
+        {
+          label: 'Templates',
+          submenu: [
+            {
+              label: 'New from Template...',
+              accelerator: 'CmdOrCtrl+Alt+N',
+              click: () => { mainWindow.webContents.send('auto-new-from-template'); }
+            },
+            {
+              label: 'Save as Template...',
+              click: () => { mainWindow.webContents.send('auto-save-template'); }
+            },
+            {
+              label: 'Asset Library...',
+              click: () => { mainWindow.webContents.send('auto-asset-library'); }
+            }
+          ]
+        }
+      ]
+    },
+    {
       label: 'Help',
       submenu: [
         {

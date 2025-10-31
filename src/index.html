@@ -132,6 +132,52 @@
                 </div>
             </div>
             <div class="menu-item">
+                <span class="menu-label">Photo Editing</span>
+                <div class="menu-dropdown">
+                    <div class="menu-section-label">Professional Retouching</div>
+                    <button class="menu-btn" data-action="photo-frequency-separation">Frequency Separation...</button>
+                    <button class="menu-btn" data-action="photo-patch-tool">Patch Tool</button>
+                    <button class="menu-btn" data-action="photo-healing-brush">Healing Brush Pro</button>
+                    <button class="menu-btn" data-action="photo-red-eye-removal">Red Eye / Pet Eye Removal</button>
+                    <button class="menu-btn" data-action="photo-teeth-whitening">Teeth Whitening</button>
+                    <button class="menu-btn" data-action="photo-skin-tone">Skin Tone Enhancement...</button>
+                    
+                    <div class="menu-section-label">Lens Corrections</div>
+                    <button class="menu-btn" data-action="photo-lens-profile">Lens Profile Corrections...</button>
+                    <button class="menu-btn" data-action="photo-chromatic-aberration">Fix Chromatic Aberration</button>
+                    <button class="menu-btn" data-action="photo-perspective">Perspective Correction...</button>
+                    <button class="menu-btn" data-action="photo-wide-angle">Adaptive Wide Angle...</button>
+                    
+                    <div class="menu-section-label">RAW Processing</div>
+                    <button class="menu-btn" data-action="photo-raw-development">RAW Development Controls...</button>
+                    <button class="menu-btn" data-action="photo-hdr-merge">HDR Merge...</button>
+                    <button class="menu-btn" data-action="photo-panorama-stitch">Panorama Stitching...</button>
+                    <button class="menu-btn" data-action="photo-batch-raw">Batch RAW Processing...</button>
+                </div>
+            </div>
+            <div class="menu-item">
+                <span class="menu-label">Automation</span>
+                <div class="menu-dropdown">
+                    <div class="menu-section-label">Actions & Macros</div>
+                    <button class="menu-btn" data-action="auto-action-record">Record Action...</button>
+                    <button class="menu-btn" data-action="auto-action-stop">Stop Recording</button>
+                    <button class="menu-btn" data-action="auto-action-play">Play Action...</button>
+                    <button class="menu-btn" data-action="auto-action-edit">Edit Action...</button>
+                    <button class="menu-btn" data-action="auto-batch-process">Batch Processing...</button>
+                    <button class="menu-btn" data-action="auto-create-droplet">Create Droplet...</button>
+                    
+                    <div class="menu-section-label">Scripts & Extensions</div>
+                    <button class="menu-btn" data-action="auto-run-script">Run Script...</button>
+                    <button class="menu-btn" data-action="auto-manage-plugins">Manage Plugins...</button>
+                    <button class="menu-btn" data-action="auto-event-hooks">Event Hooks...</button>
+                    
+                    <div class="menu-section-label">Templates</div>
+                    <button class="menu-btn" data-action="auto-new-from-template">New from Template...</button>
+                    <button class="menu-btn" data-action="auto-save-template">Save as Template...</button>
+                    <button class="menu-btn" data-action="auto-asset-library">Asset Library...</button>
+                </div>
+            </div>
+            <div class="menu-item">
                 <span class="menu-label">Windows</span>
                 <div class="menu-dropdown">
                     <button class="menu-btn" data-action="window-show-left">Show Tools Panel</button>
@@ -2524,6 +2570,12 @@
     
     <!-- Color Management & Grading (Category 6) -->
     <script src="color-management.js"></script>
+    
+    <!-- Photo Editing & Retouching (Category 10) -->
+    <script src="photo-editing-tools.js"></script>
+    
+    <!-- Workflow & Automation (Category 11) -->
+    <script src="workflow-automation.js"></script>
     
     <script src="renderer.js"></script>
 </body>
