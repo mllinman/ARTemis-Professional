@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Editor Test - ARTemis Professional</title>
+    <link rel="stylesheet" href="src/node-editor.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0066cc;
+        }
+        
+        .test-info {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .test-info h2 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        
+        .test-info ul {
+            list-style-position: inside;
+            line-height: 1.8;
+        }
+        
+        .test-info li {
+            color: #aaa;
+        }
+        
+        .test-info .feature {
+            color: #51cf66;
+            font-weight: 600;
+        }
+        
+        .open-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 15px 40px;
+            font-size: 16px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+        }
+        
+        .open-btn:hover {
+            background: #0077dd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.6);
+        }
+        
+        .open-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 ARTemis Node Editor Test</h1>
+        
+        <div class="test-info">
+            <h2>✨ New Features to Test</h2>
+            <ul>
+                <li><span class="feature">Fixed Node Dragging:</span> Nodes should stay in place when you grab them (no more snapping to center)</li>
+                <li><span class="feature">Delete Connections:</span> Click on any connection line to delete it (it will turn red on hover)</li>
+                <li><span class="feature">Drag & Drop Nodes:</span> Drag node buttons from the palette and drop them onto the canvas</li>
+                <li><span class="feature">10 New Painting Nodes:</span> Smudge, Blend Mode, Bristle, Canvas Texture, Paint Buildup, Drip, Splatter, Watercolor Edge, Impasto, Glazing</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h2>🧪 How to Test</h2>
+            <ul>
+                <li>Click the button below to open the Node Editor</li>
+                <li>Try dragging existing nodes around - they should move smoothly without jumping</li>
+                <li>Create some connections between nodes</li>
+                <li>Hover over connections to see them turn red, then click to delete</li>
+                <li>Drag node buttons from the palette and drop them onto the canvas</li>
+                <li>Explore the new "Painting Effects" category with 10 new nodes</li>
+                <li>Try all the keyboard shortcuts: Delete, Ctrl+C, Ctrl+V, Ctrl+D, Escape</li>
+            </ul>
+        </div>
+        
+        <button class="open-btn" id="openEditor">Open Node Editor</button>
+    </div>
+    
+    <script src="src/node-editor.js"></script>
+    <script>
+        // Create a simple mock state object for testing
+        window.state = {
+            customBrushes: []
+        };
+        
+        // Initialize the node editor
+        const nodeEditor = new NodeEditor();
+        
+        // Button to open editor
+        document.getElementById('openEditor').addEventListener('click', () => {
+            nodeEditor.show();
+        });
+        
+        // Auto-open for convenience
+        setTimeout(() => {
+            nodeEditor.show();
+        }, 500);
+        
+        console.log('✅ Node Editor Test initialized');
+        console.log('📋 Features to test:');
+        console.log('  1. Fixed node dragging (no snap to center)');
+        console.log('  2. Click connections to delete them');
+        console.log('  3. Drag & drop nodes from palette');
+        console.log('  4. 10 new painting effect nodes');
+    </script>
+</body>
+</html>

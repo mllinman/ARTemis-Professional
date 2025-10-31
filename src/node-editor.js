@@ -485,9 +485,10 @@ class NodeEditor {
             });
         });
         
-        // Add drop zone to canvas container
+        // Canvas container - used for drop zone, mouse wheel zoom, and panning
         const container = document.getElementById('node-canvas-container');
         
+        // Add drop zone for drag and drop
         container.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
@@ -506,7 +507,6 @@ class NodeEditor {
         });
         
         // Mouse wheel zoom
-        const container = document.getElementById('node-canvas-container');
         container.addEventListener('wheel', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
