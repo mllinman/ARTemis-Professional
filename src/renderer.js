@@ -6271,7 +6271,7 @@ function setupCanvasEvents() {
             } else if (state.tool === 'selection') {
                 startSelection(pos.x, pos.y);
             } else if (state.tool === 'magic-wand') {
-                magicWandSelect(pos.x, pos.y);
+                magicWandSelect(pos.x, pos.y, e.shiftKey, e.altKey);
             } else if (state.tool === 'lasso') {
                 startLassoSelection(pos.x, pos.y);
             } else if (state.tool === 'polygonal-lasso') {
@@ -6366,6 +6366,11 @@ function setupCanvasEvents() {
         // NEW: Track pen twist/rotation if supported
         if (e.twist !== undefined) {
             state.twist = e.twist;
+        }
+        
+        // Show eraser preview when hovering with eraser tool (not drawing)
+        if (state.tool === 'eraser' && !state.isDrawing && state.activeLayer) {
+            showEraserPreview(pos.x, pos.y);
         }
         
         if (state.isPanning) {
@@ -6510,7 +6515,14 @@ function setupCanvasEvents() {
         e.preventDefault();
         
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        zoom(delta);
+        
+        // Get mouse position relative to canvas wrapper (for zoom-to-pointer)
+        const wrapper = document.getElementById('canvas-wrapper');
+        const rect = wrapper.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        zoom(delta, mouseX, mouseY);
     });
 }
 
@@ -8155,6 +8167,45 @@ function calculateBrushOpacity(pressure) {
     
     return Math.max(0, Math.min(1, opacity));
 }
+// Show eraser preview - displays a semi-transparent overlay showing what will be erased
+function showEraserPreview(x, y) {
+    if (!state.activeLayer) return;
+    
+    // Clear previous preview
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    
+    // Draw the current layer content
+    drawCtx.save();
+    drawCtx.globalAlpha = 1;
+    drawCtx.drawImage(state.activeLayer.canvas, 0, 0);
+    
+    // Draw a semi-transparent circle showing the eraser area
+    const size = state.brush.size;
+    const hardness = state.brush.hardness / 100;
+    
+    drawCtx.globalCompositeOperation = 'destination-out';
+    drawCtx.globalAlpha = 0.3; // Semi-transparent preview
+    
+    // Create gradient for soft edges
+    const gradient = drawCtx.createRadialGradient(x, y, 0, x, y, size / 2);
+    gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
+    gradient.addColorStop(hardness, `rgba(255, 255, 255, 1)`);
+    gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+    
+    drawCtx.fillStyle = gradient;
+    drawCtx.beginPath();
+    drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+    drawCtx.fill();
+    
+    // Draw eraser outline
+    drawCtx.restore();
+    drawCtx.globalCompositeOperation = 'source-over';
+    drawCtx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Red outline to show eraser
+    drawCtx.lineWidth = 2;
+    drawCtx.beginPath();
+    drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+    drawCtx.stroke();
+}
 
 function commitDrawing() {
     // Quick Mask Mode: Draw to mask canvas instead
@@ -8561,11 +8612,17 @@ function clearSelection() {
 }
 
 // Magic Wand Selection Tool
-function magicWandSelect(x, y) {
+function magicWandSelect(x, y, shiftKey = false, altKey = false) {
     if (!state.activeLayer) return;
     
-    // Clear any existing selection first
-    if (state.selection.active) {
+    // Store existing selection mask if we're adding or subtracting
+    let existingMask = null;
+    if ((shiftKey || altKey) && state.selection.active && state.selection.mask) {
+        existingMask = new Uint8Array(state.selection.mask);
+    }
+    
+    // Clear any existing selection first (unless adding/subtracting)
+    if (state.selection.active && !shiftKey && !altKey) {
         clearSelection();
     }
     
@@ -8674,13 +8731,32 @@ function magicWandSelect(x, y) {
         }
     }
     
+    // Apply add/subtract operations if modifiers were pressed
+    if (existingMask) {
+        for (let i = 0; i < selectionMask.length; i++) {
+            if (shiftKey) {
+                // Add to selection (union)
+                selectionMask[i] = existingMask[i] || selectionMask[i];
+            } else if (altKey) {
+                // Subtract from selection
+                selectionMask[i] = existingMask[i] && !selectionMask[i] ? 1 : 0;
+            }
+        }
+    }
+    
     // Check if any pixels were selected
     let pixelCount = 0;
     for (let i = 0; i < selectionMask.length; i++) {
         if (selectionMask[i]) pixelCount++;
     }
     
-    if (pixelCount === 0) return;
+    if (pixelCount === 0) {
+        // If no pixels selected after operation, clear selection
+        if (state.selection.active) {
+            clearSelection();
+        }
+        return;
+    }
     
     // Find bounding box
     let minX = canvas.width, minY = canvas.height;
@@ -13644,7 +13720,28 @@ function updateCanvasInfo() {
     document.getElementById('canvas-size').textContent = `${state.canvas.width} x ${state.canvas.height}`;
 }
 
-function zoom(factor) {
+function zoom(factor, mouseX, mouseY) {
+    const wrapper = document.getElementById('canvas-wrapper');
+    
+    // Store old zoom and scroll position
+    const oldZoom = state.canvas.zoom;
+    
+    // If no mouse coordinates provided, zoom from center
+    if (mouseX === undefined || mouseY === undefined) {
+        const rect = wrapper.getBoundingClientRect();
+        mouseX = rect.width / 2;
+        mouseY = rect.height / 2;
+    }
+    
+    // Get scroll position before zoom
+    const oldScrollLeft = wrapper.scrollLeft;
+    const oldScrollTop = wrapper.scrollTop;
+    
+    // Calculate mouse position relative to canvas before zoom
+    const canvasMouseX = (oldScrollLeft + mouseX) / oldZoom;
+    const canvasMouseY = (oldScrollTop + mouseY) / oldZoom;
+    
+    // Apply zoom
     state.canvas.zoom *= factor;
     state.canvas.zoom = Math.max(0.1, Math.min(10, state.canvas.zoom));
     
@@ -13655,6 +13752,14 @@ function zoom(factor) {
     mainCanvas.style.height = newHeight + 'px';
     drawCanvas.style.width = newWidth + 'px';
     drawCanvas.style.height = newHeight + 'px';
+    
+    // Calculate new scroll position to keep mouse position stable
+    const newScrollLeft = canvasMouseX * state.canvas.zoom - mouseX;
+    const newScrollTop = canvasMouseY * state.canvas.zoom - mouseY;
+    
+    // Set new scroll position
+    wrapper.scrollLeft = newScrollLeft;
+    wrapper.scrollTop = newScrollTop;
     
     updateCanvasInfo();
     updateCursor();
