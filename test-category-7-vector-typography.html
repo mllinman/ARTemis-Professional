@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTemis - Category 7: Vector & Typography Tools Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4A90E2;
+        }
+        
+        h2 {
+            margin: 20px 0 10px 0;
+            color: #61dafb;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .test-section h3 {
+            color: #4A90E2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 4px;
+            display: block;
+        }
+        
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #357ABD;
+        }
+        
+        button:active {
+            background: #2868A8;
+        }
+        
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="range"] {
+            width: 100px;
+        }
+        
+        input[type="number"] {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            background: #333;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .success {
+            color: #4CAF50;
+        }
+        
+        .info {
+            color: #2196F3;
+        }
+        
+        .description {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 ARTemis - Category 7: Vector & Typography Tools Test Suite</h1>
+    <p style="text-align: center; color: #999; margin-bottom: 30px;">
+        Comprehensive testing of all FUTURE_ENHANCEMENTS_2 Category 7 features
+    </p>
+
+    <h2>🔷 Advanced Vector Tools</h2>
+    
+    <div class="test-grid">
+        <!-- Compound Paths -->
+        <div class="test-section">
+            <h3>1. Compound Paths - Holes in Shapes</h3>
+            <p class="description">Create shapes with holes using positive and negative paths</p>
+            <canvas id="compoundPathCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testCompoundPath()">Test Compound Path</button>
+                <button onclick="testCompoundHoles()">Add Multiple Holes</button>
+            </div>
+            <div class="status" id="compoundStatus"></div>
+        </div>
+
+        <!-- Path Simplification -->
+        <div class="test-section">
+            <h3>2. Path Simplification - Reduce Points</h3>
+            <p class="description">Optimize path complexity while preserving shape accuracy</p>
+            <canvas id="simplifyCanvas"></canvas>
+            <div class="controls">
+                <label>Tolerance: <input type="range" id="simplifyTolerance" min="1" max="50" value="10"> <span id="toleranceValue">10</span></label>
+                <button onclick="testSimplify()">Simplify Path</button>
+            </div>
+            <div class="status" id="simplifyStatus"></div>
+        </div>
+
+        <!-- Path Offset -->
+        <div class="test-section">
+            <h3>3. Path Offset - Parallel Paths</h3>
+            <p class="description">Create inset/outset paths with rounded corners</p>
+            <canvas id="offsetCanvas"></canvas>
+            <div class="controls">
+                <label>Distance: <input type="range" id="offsetDistance" min="-50" max="50" value="15"> <span id="offsetValue">15</span></label>
+                <button onclick="testOffset()">Apply Offset</button>
+                <button onclick="testMultipleOffset()">Multiple Offsets</button>
+            </div>
+            <div class="status" id="offsetStatus"></div>
+        </div>
+
+        <!-- Path Blend/Morph -->
+        <div class="test-section">
+            <h3>4. Path Blend/Morph - Shape Interpolation</h3>
+            <p class="description">Create smooth transitions between shapes for animation</p>
+            <canvas id="morphCanvas"></canvas>
+            <div class="controls">
+                <label>Blend: <input type="range" id="morphBlend" min="0" max="100" value="50"> <span id="morphValue">50%</span></label>
+                <button onclick="testMorph()">Morph Shapes</button>
+                <button onclick="animateMorph()">Animate</button>
+            </div>
+            <div class="status" id="morphStatus"></div>
+        </div>
+
+        <!-- Live Corners -->
+        <div class="test-section">
+            <h3>5. Live Corners - Dynamic Corner Editing</h3>
+            <p class="description">Round, inverse, or chamfer corners with per-corner control</p>
+            <canvas id="cornersCanvas"></canvas>
+            <div class="controls">
+                <label>Radius: <input type="range" id="cornerRadius" min="0" max="50" value="20"> <span id="radiusValue">20</span></label>
+                <button onclick="testRoundCorners()">Round</button>
+                <button onclick="testInverseCorners()">Inverse</button>
+                <button onclick="testChamferCorners()">Chamfer</button>
+            </div>
+            <div class="status" id="cornersStatus"></div>
+        </div>
+    </div>
+
+    <h2>✒️ Typography Enhancements</h2>
+    
+    <div class="test-grid">
+        <!-- OpenType Features -->
+        <div class="test-section">
+            <h3>6. OpenType Features</h3>
+            <p class="description">Ligatures, swashes, alternates, small caps, fractions</p>
+            <canvas id="opentypeCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testLigatures()">Ligatures</button>
+                <button onclick="testSmallCaps()">Small Caps</button>
+                <button onclick="testFractions()">Fractions</button>
+            </div>
+            <div class="status" id="opentypeStatus"></div>
+        </div>
+
+        <!-- Variable Fonts -->
+        <div class="test-section">
+            <h3>7. Variable Fonts</h3>
+            <p class="description">Dynamic weight, width, and slant axes</p>
+            <canvas id="variableFontCanvas"></canvas>
+            <div class="controls">
+                <label>Weight: <input type="range" id="fontWeight" min="100" max="900" value="400" step="100"> <span id="weightValue">400</span></label>
+                <label>Width: <input type="range" id="fontWidth" min="75" max="125" value="100"> <span id="widthValue">100</span></label>
+                <button onclick="testVariableFont()">Apply</button>
+            </div>
+            <div class="status" id="variableFontStatus"></div>
+        </div>
+
+        <!-- Text Styles -->
+        <div class="test-section">
+            <h3>8. Text Styles - Consistent Formatting</h3>
+            <p class="description">Paragraph and character styles with export/import</p>
+            <canvas id="textStylesCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testTextStyles()">Apply Styles</button>
+                <button onclick="testExportStyles()">Export</button>
+                <button onclick="testImportStyles()">Import</button>
+            </div>
+            <div class="status" id="textStylesStatus"></div>
+        </div>
+
+        <!-- Advanced Text Layout -->
+        <div class="test-section">
+            <h3>9. Advanced Text Layout</h3>
+            <p class="description">Leading, kerning, tracking, baseline shift</p>
+            <canvas id="layoutCanvas"></canvas>
+            <div class="controls">
+                <label>Leading: <input type="range" id="leading" min="0.8" max="2.5" value="1.2" step="0.1"> <span id="leadingValue">1.2</span></label>
+                <label>Tracking: <input type="range" id="tracking" min="-5" max="10" value="0"> <span id="trackingValue">0</span></label>
+                <button onclick="testLayout()">Apply Layout</button>
+            </div>
+            <div class="status" id="layoutStatus"></div>
+        </div>
+
+        <!-- Text Effects -->
+        <div class="test-section">
+            <h3>10. Text Effects - Non-Destructive Styling</h3>
+            <p class="description">Outline, shadow, glow, 3D extrusion, gradient</p>
+            <canvas id="effectsCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testOutline()">Outline</button>
+                <button onclick="testShadow()">Shadow</button>
+                <button onclick="testGlow()">Glow</button>
+                <button onclick="test3D()">3D</button>
+                <button onclick="testGradient()">Gradient</button>
+            </div>
+            <div class="status" id="effectsStatus"></div>
+        </div>
+
+        <!-- Text Warping -->
+        <div class="test-section">
+            <h3>11. Text Warping - Shape Distortion</h3>
+            <p class="description">Arc, arch, wave, flag, fisheye, inflate, squeeze</p>
+            <canvas id="warpCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testArcWarp()">Arc</button>
+                <button onclick="testWaveWarp()">Wave</button>
+                <button onclick="testFlagWarp()">Flag</button>
+                <button onclick="testFisheyeWarp()">Fisheye</button>
+            </div>
+            <div class="status" id="warpStatus"></div>
+        </div>
+
+        <!-- Glyphs Panel -->
+        <div class="test-section">
+            <h3>12. Glyphs Panel - Character Browser</h3>
+            <p class="description">Browse all font characters and symbols</p>
+            <canvas id="glyphsCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testGlyphsPanel()">Show Glyphs</button>
+                <button onclick="testSymbols()">Symbols</button>
+                <button onclick="testRecent()">Recent</button>
+            </div>
+            <div class="status" id="glyphsStatus"></div>
+        </div>
+
+        <!-- Baseline Grid -->
+        <div class="test-section">
+            <h3>13. Baseline Grid - Text Alignment</h3>
+            <p class="description">Align text to grid with custom spacing and snap</p>
+            <canvas id="gridCanvas"></canvas>
+            <div class="controls">
+                <label>Spacing: <input type="number" id="gridSpacing" min="10" max="50" value="20"> px</label>
+                <button onclick="testBaselineGrid()">Show Grid</button>
+                <button onclick="testSnapToGrid()">Snap Text</button>
+            </div>
+            <div class="status" id="gridStatus"></div>
+        </div>
+
+        <!-- Hyphenation -->
+        <div class="test-section">
+            <h3>14. Hyphenation & Justification</h3>
+            <p class="description">Auto-hyphenation and widow/orphan control</p>
+            <canvas id="hyphenationCanvas"></canvas>
+            <div class="controls">
+                <button onclick="testHyphenation()">Enable Hyphenation</button>
+                <button onclick="testJustification()">Justify Text</button>
+                <button onclick="testWidowControl()">Widow/Orphan</button>
+            </div>
+            <div class="status" id="hyphenationStatus"></div>
+        </div>
+    </div>
+
+    <script src="src/vector-tools.js"></script>
+    <script>
+        // Utility function to get canvas context
+        function getCtx(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return { canvas, ctx };
+        }
+
+        // Update status message
+        function updateStatus(statusId, message, type = 'info') {
+            const statusEl = document.getElementById(statusId);
+            statusEl.innerHTML = `<span class="${type}">${message}</span>`;
+        }
+
+        // ========== ADVANCED VECTOR TOOLS TESTS ==========
+
+        // 1. Compound Paths
+        function testCompoundPath() {
+            const { canvas, ctx } = getCtx('compoundPathCanvas');
+            
+            // Create outer shape
+            const outer = new VectorPath();
+            outer.addPoint(50, 50, 'corner');
+            outer.addPoint(canvas.width - 50, 50, 'corner');
+            outer.addPoint(canvas.width - 50, 250, 'corner');
+            outer.addPoint(50, 250, 'corner');
+            outer.closed = true;
+
+            // Create hole
+            const hole = new VectorPath();
+            hole.addPoint(100, 100, 'corner');
+            hole.addPoint(200, 100, 'corner');
+            hole.addPoint(200, 200, 'corner');
+            hole.addPoint(100, 200, 'corner');
+            hole.closed = true;
+
+            // Create compound path
+            const compound = new CompoundPath();
+            compound.addPath(outer, 'positive');
+            compound.createHole(hole);
+            compound.draw(ctx, '#4A90E2', '#2868A8', 3);
+
+            updateStatus('compoundStatus', '✓ Compound path created with hole (evenodd fill rule)', 'success');
+        }
+
+        function testCompoundHoles() {
+            const { canvas, ctx } = getCtx('compoundPathCanvas');
+            
+            const outer = new VectorPath();
+            outer.addPoint(30, 30, 'corner');
+            outer.addPoint(canvas.width - 30, 30, 'corner');
+            outer.addPoint(canvas.width - 30, 270, 'corner');
+            outer.addPoint(30, 270, 'corner');
+            outer.closed = true;
+
+            const compound = new CompoundPath();
+            compound.addPath(outer, 'positive');
+
+            // Multiple holes
+            for (let i = 0; i < 3; i++) {
+                const hole = new VectorPath();
+                const x = 80 + i * 120;
+                hole.addPoint(x, 80, 'corner');
+                hole.addPoint(x + 80, 80, 'corner');
+                hole.addPoint(x + 80, 220, 'corner');
+                hole.addPoint(x, 220, 'corner');
+                hole.closed = true;
+                compound.createHole(hole);
+            }
+
+            compound.draw(ctx, '#61dafb', '#4A90E2', 3);
+            updateStatus('compoundStatus', '✓ Multiple holes created in compound path', 'success');
+        }
+
+        // 2. Path Simplification
+        let complexPath = null;
+        function createComplexPath(canvas) {
+            const path = new VectorPath();
+            const points = 20;
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                const radius = 80 + Math.random() * 20;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = 150 + Math.sin(angle) * radius;
+                path.addPoint(x, y, Math.random() > 0.5 ? 'corner' : 'smooth');
+            }
+            path.closed = true;
+            return path;
+        }
+
+        function testSimplify() {
+            const { canvas, ctx } = getCtx('simplifyCanvas');
+            
+            if (!complexPath) {
+                complexPath = createComplexPath(canvas);
+            }
+
+            const tolerance = parseInt(document.getElementById('simplifyTolerance').value);
+            document.getElementById('toleranceValue').textContent = tolerance;
+
+            // Draw original in light color
+            complexPath.draw(ctx, null, 'rgba(200, 200, 200, 0.5)', 1);
+            
+            // Draw simplified
+            const simplified = PathSimplifier.simplify(complexPath, tolerance);
+            simplified.draw(ctx, null, '#4A90E2', 3);
+
+            updateStatus('simplifyStatus', 
+                `✓ Simplified from ${complexPath.points.length} to ${simplified.points.length} points (tolerance: ${tolerance})`, 
+                'success');
+        }
+
+        // 3. Path Offset
+        function testOffset() {
+            const { canvas, ctx } = getCtx('offsetCanvas');
+            
+            // Create original path
+            const path = new VectorPath();
+            path.addPoint(canvas.width / 2, 50, 'smooth');
+            path.addPoint(canvas.width - 50, 150, 'smooth');
+            path.addPoint(canvas.width / 2, 250, 'smooth');
+            path.addPoint(50, 150, 'smooth');
+            path.closed = true;
+
+            const distance = parseInt(document.getElementById('offsetDistance').value);
+            document.getElementById('offsetValue').textContent = distance;
+
+            // Draw original
+            path.draw(ctx, null, 'rgba(200, 200, 200, 0.5)', 1);
+            
+            // Draw offset
+            const offset = PathOffset.offset(path, distance, true);
+            offset.draw(ctx, null, '#4A90E2', 3);
+
+            updateStatus('offsetStatus', `✓ Path offset by ${distance}px with rounded corners`, 'success');
+        }
+
+        function testMultipleOffset() {
+            const { canvas, ctx } = getCtx('offsetCanvas');
+            
+            const path = new VectorPath();
+            path.addPoint(canvas.width / 2, 50, 'smooth');
+            path.addPoint(canvas.width - 50, 150, 'smooth');
+            path.addPoint(canvas.width / 2, 250, 'smooth');
+            path.addPoint(50, 150, 'smooth');
+            path.closed = true;
+
+            path.draw(ctx, null, '#999', 2);
+            
+            const offsets = PathOffset.multipleOffset(path, 15, 3);
+            const colors = ['#4A90E2', '#61dafb', '#90CAF9'];
+            offsets.forEach((offset, i) => {
+                offset.draw(ctx, null, colors[i], 2);
+            });
+
+            updateStatus('offsetStatus', '✓ Multiple offset paths created', 'success');
+        }
+
+        // 4. Path Morph
+        let morphPath1 = null;
+        let morphPath2 = null;
+
+        function testMorph() {
+            const { canvas, ctx } = getCtx('morphCanvas');
+            
+            // Create two different shapes
+            if (!morphPath1) {
+                morphPath1 = new VectorPath();
+                morphPath1.addPoint(100, 100, 'corner');
+                morphPath1.addPoint(200, 100, 'corner');
+                morphPath1.addPoint(200, 200, 'corner');
+                morphPath1.addPoint(100, 200, 'corner');
+                morphPath1.closed = true;
+            }
+
+            if (!morphPath2) {
+                morphPath2 = new VectorPath();
+                const cx = canvas.width - 150;
+                const cy = 150;
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i / 4) * Math.PI * 2 - Math.PI / 2;
+                    morphPath2.addPoint(
+                        cx + Math.cos(angle) * 50,
+                        cy + Math.sin(angle) * 50,
+                        'smooth'
+                    );
+                }
+                morphPath2.closed = true;
+            }
+
+            const blend = parseInt(document.getElementById('morphBlend').value) / 100;
+            document.getElementById('morphValue').textContent = Math.round(blend * 100) + '%';
+
+            // Draw start and end shapes in light color
+            morphPath1.draw(ctx, 'rgba(200, 200, 200, 0.3)', 'rgba(150, 150, 150, 0.5)', 1);
+            morphPath2.draw(ctx, 'rgba(200, 200, 200, 0.3)', 'rgba(150, 150, 150, 0.5)', 1);
+
+            // Draw morphed shape
+            const morphed = PathMorph.blend(morphPath1, morphPath2, blend);
+            morphed.draw(ctx, 'rgba(74, 144, 226, 0.3)', '#4A90E2', 3);
+
+            updateStatus('morphStatus', `✓ Shapes morphed at ${Math.round(blend * 100)}% blend`, 'success');
+        }
+
+        let morphAnimationId = null;
+        function animateMorph() {
+            if (morphAnimationId) {
+                cancelAnimationFrame(morphAnimationId);
+                morphAnimationId = null;
+                updateStatus('morphStatus', '✓ Animation stopped', 'info');
+                return;
+            }
+
+            let t = 0;
+            let direction = 1;
+            
+            function animate() {
+                const { canvas, ctx } = getCtx('morphCanvas');
+                
+                t += 0.02 * direction;
+                if (t >= 1 || t <= 0) direction *= -1;
+                t = Math.max(0, Math.min(1, t));
+
+                if (!morphPath1 || !morphPath2) {
+                    testMorph();
+                }
+
+                morphPath1.draw(ctx, 'rgba(200, 200, 200, 0.2)', null, 1);
+                morphPath2.draw(ctx, 'rgba(200, 200, 200, 0.2)', null, 1);
+
+                const morphed = PathMorph.blend(morphPath1, morphPath2, t);
+                morphed.draw(ctx, 'rgba(74, 144, 226, 0.3)', '#4A90E2', 3);
+
+                document.getElementById('morphBlend').value = Math.round(t * 100);
+                document.getElementById('morphValue').textContent = Math.round(t * 100) + '%';
+
+                morphAnimationId = requestAnimationFrame(animate);
+            }
+
+            animate();
+            updateStatus('morphStatus', '✓ Animation running... (click Animate again to stop)', 'info');
+        }
+
+        // 5. Live Corners
+        let cornerPath = null;
+        function createCornerPath(canvas) {
+            const path = new VectorPath();
+            path.addPoint(canvas.width / 2, 50, 'corner');
+            path.addPoint(canvas.width - 50, 150, 'corner');
+            path.addPoint(canvas.width / 2, 250, 'corner');
+            path.addPoint(50, 150, 'corner');
+            path.closed = true;
+            return path;
+        }
+
+        function testRoundCorners() {
+            const { canvas, ctx } = getCtx('cornersCanvas');
+            
+            if (!cornerPath) cornerPath = createCornerPath(canvas);
+            
+            const radius = parseInt(document.getElementById('cornerRadius').value);
+            document.getElementById('radiusValue').textContent = radius;
+
+            cornerPath.draw(ctx, null, 'rgba(200, 200, 200, 0.5)', 1);
+
+            const rounded = LiveCorners.applyCorners(cornerPath, radius, 'round');
+            rounded.draw(ctx, 'rgba(74, 144, 226, 0.2)', '#4A90E2', 3);
+
+            updateStatus('cornersStatus', `✓ Corners rounded with radius ${radius}px`, 'success');
+        }
+
+        function testInverseCorners() {
+            const { canvas, ctx } = getCtx('cornersCanvas');
+            
+            if (!cornerPath) cornerPath = createCornerPath(canvas);
+            
+            const radius = parseInt(document.getElementById('cornerRadius').value);
+
+            cornerPath.draw(ctx, null, 'rgba(200, 200, 200, 0.5)', 1);
+
+            const inverse = LiveCorners.applyCorners(cornerPath, radius, 'inverse');
+            inverse.draw(ctx, 'rgba(97, 218, 251, 0.2)', '#61dafb', 3);
+
+            updateStatus('cornersStatus', `✓ Inverse corners applied with radius ${radius}px`, 'success');
+        }
+
+        function testChamferCorners() {
+            const { canvas, ctx } = getCtx('cornersCanvas');
+            
+            if (!cornerPath) cornerPath = createCornerPath(canvas);
+            
+            const radius = parseInt(document.getElementById('cornerRadius').value);
+
+            cornerPath.draw(ctx, null, 'rgba(200, 200, 200, 0.5)', 1);
+
+            const chamfer = LiveCorners.applyCorners(cornerPath, radius, 'chamfer');
+            chamfer.draw(ctx, 'rgba(144, 202, 249, 0.2)', '#90CAF9', 3);
+
+            updateStatus('cornersStatus', `✓ Corners chamfered with radius ${radius}px`, 'success');
+        }
+
+        // ========== TYPOGRAPHY ENHANCEMENTS TESTS ==========
+
+        // 6. OpenType Features
+        function testLigatures() {
+            const { canvas, ctx } = getCtx('opentypeCanvas');
+            
+            const opentype = new OpenTypeFeatures();
+            opentype.enable('ligatures');
+
+            ctx.font = '32px Georgia';
+            ctx.fillStyle = '#333';
+            ctx.fillText('ff fi fl ffi ffl', 50, 100);
+            
+            ctx.font = '20px Arial';
+            ctx.fillText('Ligatures: ff, fi, fl, ffi, ffl', 50, 150);
+            ctx.fillText('CSS: ' + opentype.getCSSFeatures(), 50, 180);
+
+            updateStatus('opentypeStatus', '✓ Ligatures enabled: ' + opentype.getCSSFeatures(), 'success');
+        }
+
+        function testSmallCaps() {
+            const { canvas, ctx } = getCtx('opentypeCanvas');
+            
+            const opentype = new OpenTypeFeatures();
+            opentype.enable('smallCaps');
+
+            ctx.font = '28px Georgia';
+            ctx.fillStyle = '#333';
+            ctx.fillText('Normal Text', 50, 80);
+            
+            ctx.font = 'small-caps 28px Georgia';
+            ctx.fillText('Small Caps Text', 50, 130);
+
+            ctx.font = '18px Arial';
+            ctx.fillText('CSS Feature: ' + opentype.getCSSFeatures(), 50, 180);
+
+            updateStatus('opentypeStatus', '✓ Small caps enabled', 'success');
+        }
+
+        function testFractions() {
+            const { canvas, ctx } = getCtx('opentypeCanvas');
+            
+            const opentype = new OpenTypeFeatures();
+            opentype.enable('fractions');
+
+            ctx.font = '32px Georgia';
+            ctx.fillStyle = '#333';
+            ctx.fillText('1/2  1/4  3/4  1/8', 50, 100);
+            
+            ctx.font = '20px Arial';
+            ctx.fillText('Fractions rendered with OpenType', 50, 150);
+
+            updateStatus('opentypeStatus', '✓ Fractions enabled: ' + opentype.getCSSFeatures(), 'success');
+        }
+
+        // 7. Variable Fonts
+        function testVariableFont() {
+            const { canvas, ctx } = getCtx('variableFontCanvas');
+            
+            const weight = parseInt(document.getElementById('fontWeight').value);
+            const width = parseInt(document.getElementById('fontWidth').value);
+            
+            document.getElementById('weightValue').textContent = weight;
+            document.getElementById('widthValue').textContent = width;
+
+            const varFont = new VariableFontController('Arial');
+            varFont.setWeight(weight);
+            varFont.setWidth(width);
+
+            // Draw samples at different weights
+            ctx.textBaseline = 'top';
+            const weights = [100, 300, 400, 700, 900];
+            weights.forEach((w, i) => {
+                const tempFont = new VariableFontController('Arial');
+                tempFont.setWeight(w);
+                ctx.font = `${w} 24px Arial`;
+                ctx.fillStyle = '#333';
+                ctx.fillText(`Weight ${w}: Variable Font`, 30, 30 + i * 40);
+            });
+
+            ctx.font = '16px Arial';
+            ctx.fillText(`Current: weight=${weight}, width=${width}%`, 30, 250);
+            ctx.fillText('CSS: ' + varFont.getCSSVariationSettings(), 30, 270);
+
+            updateStatus('variableFontStatus', 
+                `✓ Variable font configured: weight=${weight}, width=${width}%`, 'success');
+        }
+
+        // 8. Text Styles
+        const styleManager = new TextStyleManager();
+
+        function testTextStyles() {
+            const { canvas, ctx } = getCtx('textStylesCanvas');
+            
+            const heading1 = styleManager.getStyle('Heading 1');
+            const heading2 = styleManager.getStyle('Heading 2');
+            const body = styleManager.getStyle('Body');
+
+            ctx.textBaseline = 'top';
+
+            heading1.apply(ctx);
+            ctx.fillText('Heading 1 Style', 30, 30);
+
+            heading2.apply(ctx);
+            ctx.fillText('Heading 2 Style', 30, 90);
+
+            body.apply(ctx);
+            ctx.fillText('Body text style with leading and spacing', 30, 140);
+            ctx.fillText('Multiple paragraphs can use the same style', 30, 170);
+
+            updateStatus('textStylesStatus', 
+                `✓ Applied 3 text styles (${styleManager.styles.size} total styles available)`, 'success');
+        }
+
+        function testExportStyles() {
+            const exported = styleManager.exportStyles();
+            console.log('Exported styles:', exported);
+            updateStatus('textStylesStatus', 
+                '✓ Styles exported to console (check browser console)', 'success');
+        }
+
+        function testImportStyles() {
+            // Create a custom style and import it
+            const customStyle = new TextStyle('Custom', 'paragraph');
+            customStyle.fontSize = 24;
+            customStyle.color = '#4A90E2';
+            customStyle.fontWeight = 'bold';
+            
+            const jsonStr = JSON.stringify([customStyle]);
+            styleManager.importStyles(jsonStr);
+            
+            updateStatus('textStylesStatus', 
+                `✓ Imported custom style. Total styles: ${styleManager.styles.size}`, 'success');
+        }
+
+        // 9. Advanced Text Layout
+        function testLayout() {
+            const { canvas, ctx } = getCtx('layoutCanvas');
+            
+            const leading = parseFloat(document.getElementById('leading').value);
+            const tracking = parseInt(document.getElementById('tracking').value);
+            
+            document.getElementById('leadingValue').textContent = leading.toFixed(1);
+            document.getElementById('trackingValue').textContent = tracking;
+
+            const style = new TextStyle('Custom', 'paragraph');
+            style.fontSize = 20;
+            style.leading = leading;
+            style.tracking = tracking;
+            style.color = '#333';
+
+            const layout = new AdvancedTextLayout(
+                'This is advanced text layout with custom leading and tracking.',
+                style
+            );
+
+            layout.draw(ctx, 30, 50, canvas.width - 60);
+
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#666';
+            ctx.fillText(`Leading: ${leading} (line spacing)`, 30, 180);
+            ctx.fillText(`Tracking: ${tracking}px (letter spacing)`, 30, 200);
+
+            updateStatus('layoutStatus', 
+                `✓ Text laid out with leading=${leading}, tracking=${tracking}`, 'success');
+        }
+
+        // 10. Text Effects
+        function testOutline() {
+            const { canvas, ctx } = getCtx('effectsCanvas');
+            
+            const style = new TextStyle('Effect', 'paragraph');
+            style.fontSize = 48;
+            style.fontWeight = 'bold';
+            style.color = '#4A90E2';
+
+            const effects = new TextEffects();
+            effects.addOutline('#2868A8', 4);
+
+            effects.apply(ctx, 'OUTLINE', canvas.width / 2 - 80, 150, style);
+
+            updateStatus('effectsStatus', '✓ Outline effect applied (4px, blue)', 'success');
+        }
+
+        function testShadow() {
+            const { canvas, ctx } = getCtx('effectsCanvas');
+            
+            const style = new TextStyle('Effect', 'paragraph');
+            style.fontSize = 48;
+            style.fontWeight = 'bold';
+            style.color = '#4A90E2';
+
+            const effects = new TextEffects();
+            effects.addShadow(5, 5, 10, 'rgba(0, 0, 0, 0.5)');
+
+            effects.apply(ctx, 'SHADOW', canvas.width / 2 - 100, 150, style);
+
+            updateStatus('effectsStatus', '✓ Drop shadow effect applied', 'success');
+        }
+
+        function testGlow() {
+            const { canvas, ctx } = getCtx('effectsCanvas');
+            
+            const style = new TextStyle('Effect', 'paragraph');
+            style.fontSize = 48;
+            style.fontWeight = 'bold';
+            style.color = '#61dafb';
+
+            const effects = new TextEffects();
+            effects.addGlow('#4A90E2', 20);
+
+            effects.apply(ctx, 'GLOW', canvas.width / 2 - 70, 150, style);
+
+            updateStatus('effectsStatus', '✓ Glow effect applied (20px blur)', 'success');
+        }
+
+        function test3D() {
+            const { canvas, ctx } = getCtx('effectsCanvas');
+            
+            const style = new TextStyle('Effect', 'paragraph');
+            style.fontSize = 48;
+            style.fontWeight = 'bold';
+            style.color = '#4A90E2';
+
+            const effects = new TextEffects();
+            effects.add3DExtrusion(10, Math.PI / 4, 'rgba(0, 0, 0, 0.3)');
+
+            effects.apply(ctx, '3D TEXT', canvas.width / 2 - 90, 150, style);
+
+            updateStatus('effectsStatus', '✓ 3D extrusion effect applied (10px depth)', 'success');
+        }
+
+        function testGradient() {
+            const { canvas, ctx } = getCtx('effectsCanvas');
+            
+            const style = new TextStyle('Effect', 'paragraph');
+            style.fontSize = 48;
+            style.fontWeight = 'bold';
+
+            const gradient = ctx.createLinearGradient(0, 100, canvas.width, 150);
+            gradient.addColorStop(0, '#4A90E2');
+            gradient.addColorStop(0.5, '#61dafb');
+            gradient.addColorStop(1, '#90CAF9');
+
+            const effects = new TextEffects();
+            effects.addGradient(gradient);
+
+            effects.apply(ctx, 'GRADIENT', canvas.width / 2 - 120, 150, style);
+
+            updateStatus('effectsStatus', '✓ Gradient fill effect applied', 'success');
+        }
+
+        // 11. Text Warping
+        function testArcWarp() {
+            const { canvas, ctx } = getCtx('warpCanvas');
+            
+            const style = new TextStyle('Warp', 'paragraph');
+            style.fontSize = 32;
+            style.fontWeight = 'bold';
+            style.color = '#4A90E2';
+
+            TextWarping.drawWarped(ctx, 'ARC WARP', canvas.width / 2 - 100, 150, 'arc', 0.5, style);
+
+            updateStatus('warpStatus', '✓ Arc warp applied (0.5 strength)', 'success');
+        }
+
+        function testWaveWarp() {
+            const { canvas, ctx } = getCtx('warpCanvas');
+            
+            const style = new TextStyle('Warp', 'paragraph');
+            style.fontSize = 32;
+            style.fontWeight = 'bold';
+            style.color = '#61dafb';
+
+            TextWarping.drawWarped(ctx, 'WAVE WARP', canvas.width / 2 - 130, 150, 'wave', 0.6, style);
+
+            updateStatus('warpStatus', '✓ Wave warp applied (0.6 strength)', 'success');
+        }
+
+        function testFlagWarp() {
+            const { canvas, ctx } = getCtx('warpCanvas');
+            
+            const style = new TextStyle('Warp', 'paragraph');
+            style.fontSize = 32;
+            style.fontWeight = 'bold';
+            style.color = '#90CAF9';
+
+            TextWarping.drawWarped(ctx, 'FLAG WARP', canvas.width / 2 - 120, 150, 'flag', 0.5, style);
+
+            updateStatus('warpStatus', '✓ Flag warp applied (0.5 strength)', 'success');
+        }
+
+        function testFisheyeWarp() {
+            const { canvas, ctx } = getCtx('warpCanvas');
+            
+            const style = new TextStyle('Warp', 'paragraph');
+            style.fontSize = 32;
+            style.fontWeight = 'bold';
+            style.color = '#4A90E2';
+
+            TextWarping.drawWarped(ctx, 'FISHEYE', canvas.width / 2 - 100, 150, 'fisheye', 0.7, style);
+
+            updateStatus('warpStatus', '✓ Fisheye warp applied (0.7 strength)', 'success');
+        }
+
+        // 12. Glyphs Panel
+        const glyphsPanel = new GlyphsPanel('Arial');
+
+        function testGlyphsPanel() {
+            const { canvas, ctx } = getCtx('glyphsCanvas');
+            
+            glyphsPanel.renderPanel(ctx, 20, 20, canvas.width - 40, 260);
+
+            updateStatus('glyphsStatus', 
+                `✓ Glyphs panel rendered (${glyphsPanel.getAllGlyphs().length} glyphs)`, 'success');
+        }
+
+        function testSymbols() {
+            const { canvas, ctx } = getCtx('glyphsCanvas');
+            
+            const symbols = glyphsPanel.browseCategory('symbols').slice(0, 50);
+            
+            ctx.font = '24px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            
+            symbols.forEach((glyph, i) => {
+                const x = 40 + (i % 10) * 35;
+                const y = 40 + Math.floor(i / 10) * 50;
+                ctx.fillText(glyph, x, y);
+            });
+
+            updateStatus('glyphsStatus', `✓ Showing ${symbols.length} symbols`, 'success');
+        }
+
+        function testRecent() {
+            const { canvas, ctx } = getCtx('glyphsCanvas');
+            
+            // Add some glyphs to recent
+            ['★', '♥', '♦', '♣', '♠', '☺', '☻', '◆'].forEach(g => {
+                glyphsPanel.addToRecent(g);
+            });
+
+            const recent = glyphsPanel.getRecentGlyphs();
+            
+            ctx.font = '32px Arial';
+            ctx.fillStyle = '#4A90E2';
+            ctx.textAlign = 'center';
+            
+            recent.forEach((glyph, i) => {
+                const x = 50 + (i % 8) * 50;
+                const y = 100 + Math.floor(i / 8) * 60;
+                ctx.fillText(glyph, x, y);
+            });
+
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'left';
+            ctx.fillText('Recently used glyphs:', 30, 40);
+
+            updateStatus('glyphsStatus', `✓ Showing ${recent.length} recent glyphs`, 'success');
+        }
+
+        // 13. Baseline Grid
+        const baselineGrid = new BaselineGrid(20);
+
+        function testBaselineGrid() {
+            const { canvas, ctx } = getCtx('gridCanvas');
+            
+            const spacing = parseInt(document.getElementById('gridSpacing').value);
+            baselineGrid.setSpacing(spacing);
+            baselineGrid.show();
+
+            baselineGrid.draw(ctx, canvas.width, canvas.height);
+
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('Baseline grid visible with ' + spacing + 'px spacing', 30, 30);
+            ctx.fillText('Use for aligning text to a consistent rhythm', 30, 60);
+
+            updateStatus('gridStatus', `✓ Baseline grid shown (spacing: ${spacing}px)`, 'success');
+        }
+
+        function testSnapToGrid() {
+            const { canvas, ctx } = getCtx('gridCanvas');
+            
+            const spacing = parseInt(document.getElementById('gridSpacing').value);
+            baselineGrid.setSpacing(spacing);
+            baselineGrid.show();
+            baselineGrid.enableSnap();
+
+            baselineGrid.draw(ctx, canvas.width, canvas.height);
+
+            // Draw text snapped to grid
+            const yPositions = [45, 77, 123, 158, 201];
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#4A90E2';
+            
+            yPositions.forEach(y => {
+                const snappedY = baselineGrid.snapToGrid(y);
+                ctx.fillText(`Snapped: ${y} → ${snappedY}`, 30, snappedY);
+                
+                // Draw indicator
+                ctx.beginPath();
+                ctx.arc(15, snappedY, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            updateStatus('gridStatus', 
+                `✓ Text snapped to grid (snap enabled, spacing: ${spacing}px)`, 'success');
+        }
+
+        // 14. Hyphenation & Justification
+        const hyphenEngine = new HyphenationEngine('en');
+
+        function testHyphenation() {
+            const { canvas, ctx } = getCtx('hyphenationCanvas');
+            
+            hyphenEngine.enable();
+
+            const text = 'Professional typography implementation with advanced hyphenation and justification features for optimal text flow.';
+            
+            ctx.font = '18px Georgia';
+            ctx.fillStyle = '#333';
+
+            const style = new TextStyle('Body', 'paragraph');
+            style.fontSize = 18;
+            style.leading = 1.5;
+
+            const lines = hyphenEngine.layoutText(text, canvas.width - 60, ctx, style);
+            hyphenEngine.drawJustifiedText(ctx, lines, 30, 50, style);
+
+            updateStatus('hyphenationStatus', 
+                `✓ Hyphenation enabled, text laid out in ${lines.length} lines`, 'success');
+        }
+
+        function testJustification() {
+            const { canvas, ctx } = getCtx('hyphenationCanvas');
+            
+            hyphenEngine.enable();
+
+            const text = 'This text is fully justified with proper word spacing and hyphenation to create clean aligned edges on both sides.';
+            
+            ctx.font = '18px Georgia';
+            ctx.fillStyle = '#333';
+
+            const style = new TextStyle('Body', 'paragraph');
+            style.fontSize = 18;
+            style.leading = 1.5;
+            style.alignment = 'justify';
+
+            const lines = hyphenEngine.layoutText(text, canvas.width - 60, ctx, style);
+            hyphenEngine.drawJustifiedText(ctx, lines, 30, 50, style);
+
+            // Draw edges to show justification
+            ctx.strokeStyle = '#4A90E2';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(30, 30);
+            ctx.lineTo(30, 250);
+            ctx.moveTo(canvas.width - 30, 30);
+            ctx.lineTo(canvas.width - 30, 250);
+            ctx.stroke();
+
+            updateStatus('hyphenationStatus', 
+                `✓ Text justified with hyphenation (${lines.length} lines)`, 'success');
+        }
+
+        function testWidowControl() {
+            const { canvas, ctx } = getCtx('hyphenationCanvas');
+            
+            hyphenEngine.enable();
+            hyphenEngine.preventWidows = true;
+            hyphenEngine.preventOrphans = true;
+
+            const text = 'Widow and orphan control prevents single words or short lines at the beginning or end of paragraphs, improving readability and professional appearance.';
+            
+            ctx.font = '16px Georgia';
+            ctx.fillStyle = '#333';
+
+            const style = new TextStyle('Body', 'paragraph');
+            style.fontSize = 16;
+            style.leading = 1.6;
+
+            const lines = hyphenEngine.layoutText(text, canvas.width - 60, ctx, style);
+            hyphenEngine.drawJustifiedText(ctx, lines, 30, 50, style);
+
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#4A90E2';
+            ctx.fillText('✓ Widow/orphan control active', 30, 240);
+
+            updateStatus('hyphenationStatus', 
+                `✓ Widow/orphan control enabled (${lines.length} lines)`, 'success');
+        }
+
+        // Initialize some tests on load
+        window.addEventListener('load', () => {
+            // Run initial tests to show examples
+            testCompoundPath();
+            testSimplify();
+            testOffset();
+            testMorph();
+            testRoundCorners();
+            testLigatures();
+            testVariableFont();
+            testTextStyles();
+            testLayout();
+            testOutline();
+            testArcWarp();
+            testGlyphsPanel();
+            testBaselineGrid();
+            testHyphenation();
+
+            // Update slider displays
+            document.getElementById('simplifyTolerance').addEventListener('input', (e) => {
+                document.getElementById('toleranceValue').textContent = e.target.value;
+            });
+            document.getElementById('offsetDistance').addEventListener('input', (e) => {
+                document.getElementById('offsetValue').textContent = e.target.value;
+            });
+            document.getElementById('morphBlend').addEventListener('input', (e) => {
+                document.getElementById('morphValue').textContent = e.target.value + '%';
+            });
+            document.getElementById('cornerRadius').addEventListener('input', (e) => {
+                document.getElementById('radiusValue').textContent = e.target.value;
+            });
+            document.getElementById('fontWeight').addEventListener('input', (e) => {
+                document.getElementById('weightValue').textContent = e.target.value;
+            });
+            document.getElementById('fontWidth').addEventListener('input', (e) => {
+                document.getElementById('widthValue').textContent = e.target.value;
+            });
+            document.getElementById('leading').addEventListener('input', (e) => {
+                document.getElementById('leadingValue').textContent = parseFloat(e.target.value).toFixed(1);
+            });
+            document.getElementById('tracking').addEventListener('input', (e) => {
+                document.getElementById('trackingValue').textContent = e.target.value;
+            });
+        });
+    </script>
+</body>
+</html>
