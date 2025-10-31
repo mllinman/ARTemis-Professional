@@ -380,19 +380,26 @@
 /* Connection lines */
 .node-connection {
     position: absolute;
-    pointer-events: none;
+    pointer-events: visibleStroke;
     z-index: 1;
 }
 
 .node-connection path {
     fill: none;
     stroke: #0066cc;
-    stroke-width: 2;
+    stroke-width: 3;
     stroke-linecap: round;
+    transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+.node-connection path:hover {
+    stroke: #ff4444;
+    stroke-width: 4;
 }
 
 .node-connection.temp {
     z-index: 2;
+    pointer-events: none;
 }
 
 .node-connection.temp path {
