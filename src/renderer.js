@@ -14856,6 +14856,52 @@ function handleMenuAction(action) {
         case 'window-node-editor':
             showNodeEditor();
             break;
+        case 'window-layout-manager':
+            if (typeof uiCustomization !== 'undefined') {
+                uiCustomization.showLayoutManager();
+            }
+            break;
+        case 'window-compact-mode':
+            if (typeof uiCustomization !== 'undefined') {
+                uiCustomization.toggleCompactMode();
+                showNotification('Compact mode ' + (uiCustomization.compactMode ? 'enabled' : 'disabled'));
+            }
+            break;
+        case 'window-touch-mode':
+            if (typeof uiCustomization !== 'undefined') {
+                uiCustomization.toggleTouchMode();
+                showNotification('Touch mode ' + (uiCustomization.touchMode ? 'enabled' : 'disabled'));
+            }
+            break;
+        
+        // Help menu
+        case 'help-tutorials':
+            if (typeof learningHelp !== 'undefined') {
+                learningHelp.showTutorialList();
+            }
+            break;
+        case 'help-getting-started':
+            if (typeof learningHelp !== 'undefined') {
+                learningHelp.startTutorial('getting-started');
+            }
+            break;
+        case 'help-keyboard-shortcuts':
+            if (typeof accessibility !== 'undefined') {
+                accessibility.showKeyboardShortcutsHelp();
+            }
+            break;
+        case 'help-accessibility':
+            if (typeof accessibility !== 'undefined') {
+                accessibility.showAccessibilitySettings();
+            }
+            break;
+        case 'help-onboarding':
+            if (typeof learningHelp !== 'undefined') {
+                learningHelp.onboardingCompleted = false;
+                learningHelp.saveProgress();
+                learningHelp.startOnboarding();
+            }
+            break;
         
         // Workspace menu
         case 'workspace-customize-shortcuts':
