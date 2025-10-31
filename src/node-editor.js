@@ -1434,6 +1434,7 @@ class NodeEditor {
                 const inMax = node.parameters.inMax || 100;
                 const outMin = node.parameters.outMin || 0;
                 const outMax = node.parameters.outMax || 100;
+                if (inMax === inMin) return outMin; // Safety check for division by zero
                 return outMin + (remapInput - inMin) * (outMax - outMin) / (inMax - inMin);
             
             case 'smoothstep':
