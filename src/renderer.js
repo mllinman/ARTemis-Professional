@@ -180,6 +180,9 @@ const browserMenuSystem = {
     }
 };
 
+// Constants
+const ERASER_PREVIEW_OPACITY = 0.3; // Opacity for eraser preview overlay
+
 // Application State
 const state = {
     canvas: {
@@ -8184,7 +8187,7 @@ function showEraserPreview(x, y) {
     const hardness = state.brush.hardness / 100;
     
     drawCtx.globalCompositeOperation = 'destination-out';
-    drawCtx.globalAlpha = 0.3; // Semi-transparent preview
+    drawCtx.globalAlpha = ERASER_PREVIEW_OPACITY; // Semi-transparent preview
     
     // Create gradient for soft edges
     const gradient = drawCtx.createRadialGradient(x, y, 0, x, y, size / 2);
@@ -8738,8 +8741,8 @@ function magicWandSelect(x, y, shiftKey = false, altKey = false) {
                 // Add to selection (union)
                 selectionMask[i] = existingMask[i] || selectionMask[i];
             } else if (altKey) {
-                // Subtract from selection
-                selectionMask[i] = existingMask[i] && !selectionMask[i] ? 1 : 0;
+                // Subtract from selection - keep existing pixels that are NOT in new selection
+                selectionMask[i] = existingMask[i] && !selectionMask[i] ? existingMask[i] : 0;
             }
         }
     }
