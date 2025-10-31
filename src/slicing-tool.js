@@ -210,7 +210,7 @@ class SlicingTool {
                     if (blob) {
                         resolve(blob);
                     } else {
-                        reject(new Error('Failed to create blob'));
+                        reject(new Error(`Failed to create ${slice.format.toUpperCase()} blob for slice '${slice.name}'`));
                     }
                 },
                 mimeType,

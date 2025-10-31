@@ -12,19 +12,30 @@ async function initJsPDF() {
     
     try {
         // Try to load from node_modules or global
-        if (typeof window !== 'undefined' && window.jspdf) {
+        if (typeof window !== 'undefined' && window.jspdf && window.jspdf.jsPDF) {
             jsPDF = window.jspdf.jsPDF;
         } else if (typeof require !== 'undefined') {
-            jsPDF = require('jspdf').jsPDF;
+            const jspdfModule = require('jspdf');
+            jsPDF = jspdfModule.jsPDF || jspdfModule;
         } else {
             // Load from CDN
             await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-            jsPDF = window.jspdf.jsPDF;
+            if (window.jspdf && window.jspdf.jsPDF) {
+                jsPDF = window.jspdf.jsPDF;
+            } else {
+                throw new Error('jsPDF not found after loading');
+            }
         }
+        
+        // Validate jsPDF is a constructor
+        if (typeof jsPDF !== 'function') {
+            throw new Error('jsPDF is not a valid constructor');
+        }
+        
         return jsPDF;
     } catch (error) {
         console.error('Failed to load jsPDF library:', error);
-        throw new Error('jsPDF library not available. Cannot export to PDF format.');
+        throw new Error(`jsPDF library not available: ${error.message}. Cannot export to PDF format.`);
     }
 }
 

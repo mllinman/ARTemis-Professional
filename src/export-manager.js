@@ -114,6 +114,9 @@ class ExportManager {
     async exportPSD(canvas, options) {
         // Use existing PSD exporter if available
         if (typeof exportToPSD !== 'undefined') {
+            if (!options.state) {
+                throw new Error('PSD export requires state object with layers');
+            }
             return await exportToPSD(options.state, canvas);
         }
         throw new Error('PSD exporter not loaded');

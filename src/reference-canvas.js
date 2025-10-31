@@ -222,11 +222,15 @@ class ReferenceCanvas {
             this.render();
         });
         
-        // Window resize observer
+        // Window resize observer with debouncing
+        let resizeTimeout;
         const resizeObserver = new ResizeObserver(() => {
-            this.canvas.width = this.window.clientWidth;
-            this.canvas.height = this.window.clientHeight - 40;
-            this.render();
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.canvas.width = this.window.clientWidth;
+                this.canvas.height = this.window.clientHeight - 40;
+                this.render();
+            }, 100); // Debounce resize events by 100ms
         });
         resizeObserver.observe(this.window);
     }
