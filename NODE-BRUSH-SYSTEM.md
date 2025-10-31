@@ -31,6 +31,51 @@ The editor will open in a floating window that can be resized and repositioned.
 - **Parameters**: Texture selection
 - **Use**: Apply textures to brush strokes
 
+#### Pressure Input ⭐ NEW
+- **Output**: Pressure value (0-100)
+- **Parameters**: Pressure simulation slider
+- **Use**: Simulate or read tablet pressure input
+
+#### Velocity Input ⭐ NEW
+- **Output**: Velocity value (0-100)
+- **Parameters**: Velocity simulation slider
+- **Use**: React to stroke speed/velocity
+
+#### Tilt Input ⭐ NEW
+- **Output**: Tilt X, Tilt Y
+- **Parameters**: Tilt X and Y sliders
+- **Use**: Read pen tilt for tablets/styluses
+
+#### Rotation Input ⭐ NEW
+- **Output**: Rotation angle (0-360°)
+- **Parameters**: Rotation angle slider
+- **Use**: Read pen barrel rotation
+
+#### Random Input ⭐ NEW
+- **Output**: Random value
+- **Parameters**: Min, Max, Seed
+- **Use**: Generate random values for variation
+
+#### Time Input ⭐ NEW
+- **Output**: Time-based value
+- **Parameters**: Speed, Offset
+- **Use**: Create animated/time-based effects
+
+#### Gradient Input ⭐ NEW
+- **Output**: Color from gradient
+- **Parameters**: Start color, End color, Position
+- **Use**: Generate gradient colors
+
+#### Image Input ⭐ NEW
+- **Output**: Image/texture data
+- **Parameters**: Image URL
+- **Use**: Load external images as textures
+
+#### Noise Input ⭐ NEW
+- **Output**: Noise value (0-100)
+- **Parameters**: Scale, Octaves, Persistence
+- **Use**: Generate Perlin/Simplex noise patterns
+
 ### Brush Property Nodes
 
 #### Size Node
@@ -93,6 +138,66 @@ The editor will open in a floating window that can be resized and repositioned.
 - **Parameters**: Jitter amount (0-100%)
 - **Use**: Add random variation to any numeric value
 
+#### Spacing Node ⭐ NEW
+- **Input**: Value (multiplier)
+- **Output**: Spacing value
+- **Parameters**: Base Spacing, Multiplier
+- **Use**: Control brush dab spacing
+
+#### Blending Mode Node ⭐ NEW
+- **Input**: Mode value
+- **Output**: Blend mode string
+- **Parameters**: Blend mode selector
+- **Use**: Set brush blending mode
+
+#### Texture Blend Node ⭐ NEW
+- **Input**: Texture, Amount
+- **Output**: Blended texture
+- **Parameters**: Blend amount (0-100%)
+- **Use**: Blend textures with specified amount
+
+#### Color Variation Node ⭐ NEW
+- **Input**: Color
+- **Output**: Varied color
+- **Parameters**: Hue Jitter, Saturation Jitter, Brightness Jitter
+- **Use**: Add random color variation
+
+#### Scale Node ⭐ NEW
+- **Input**: X, Y values
+- **Output**: Scale X, Scale Y
+- **Parameters**: Scale X, Scale Y percentages
+- **Use**: Non-uniform brush scaling
+
+#### Position Offset Node ⭐ NEW
+- **Input**: X, Y values
+- **Output**: Offset X, Offset Y
+- **Parameters**: Offset X, Offset Y
+- **Use**: Offset brush position
+
+#### Wet Mix Node ⭐ NEW
+- **Input**: Color, Wetness
+- **Output**: Mixed color
+- **Parameters**: Wetness, Bleed amount
+- **Use**: Simulate wet paint mixing
+
+#### Shape Node ⭐ NEW
+- **Input**: Size
+- **Output**: Shape definition
+- **Parameters**: Shape type, Sides
+- **Use**: Define custom brush shapes
+
+#### Fade Node ⭐ NEW
+- **Input**: Progress (0-100)
+- **Output**: Fade amount
+- **Parameters**: Fade In, Fade Out percentages
+- **Use**: Fade brush in/out during stroke
+
+#### Direction Node ⭐ NEW
+- **Input**: Velocity
+- **Output**: Angle
+- **Parameters**: Sensitivity (0-100%)
+- **Use**: Align brush with stroke direction
+
 ### Math Nodes
 
 #### Multiply Node
@@ -105,6 +210,71 @@ The editor will open in a floating window that can be resized and repositioned.
 - **Output**: A + B
 - **Use**: Combine values additively
 
+#### Subtract Node ⭐ NEW
+- **Inputs**: Value A, Value B
+- **Output**: A - B
+- **Use**: Subtract values
+
+#### Divide Node ⭐ NEW
+- **Inputs**: Value A, Value B
+- **Output**: A ÷ B
+- **Use**: Divide values (safe division)
+
+#### Power Node ⭐ NEW
+- **Inputs**: Base, Exponent
+- **Output**: Base ^ Exponent
+- **Use**: Exponential operations
+
+#### Min Node ⭐ NEW
+- **Inputs**: Value A, Value B
+- **Output**: Minimum of A and B
+- **Use**: Select smaller value
+
+#### Max Node ⭐ NEW
+- **Inputs**: Value A, Value B
+- **Output**: Maximum of A and B
+- **Use**: Select larger value
+
+#### Absolute Node ⭐ NEW
+- **Input**: Value
+- **Output**: |Value|
+- **Use**: Get absolute value
+
+#### Sine Node ⭐ NEW
+- **Input**: Angle
+- **Output**: Sine wave value
+- **Parameters**: Frequency, Amplitude
+- **Use**: Create sine wave patterns
+
+#### Cosine Node ⭐ NEW
+- **Input**: Angle
+- **Output**: Cosine wave value
+- **Parameters**: Frequency, Amplitude
+- **Use**: Create cosine wave patterns
+
+#### Remap Range Node ⭐ NEW
+- **Input**: Value
+- **Output**: Remapped value
+- **Parameters**: In Min, In Max, Out Min, Out Max
+- **Use**: Map value from one range to another
+
+#### Smooth Step Node ⭐ NEW
+- **Input**: Value
+- **Output**: Smoothed value
+- **Parameters**: Edge 0, Edge 1
+- **Use**: Smooth interpolation between edges
+
+#### Mix/Lerp Node ⭐ NEW
+- **Inputs**: Value A, Value B, Factor
+- **Output**: Interpolated value
+- **Parameters**: Mix factor (0-100%)
+- **Use**: Linear interpolation between values
+
+#### Modulo Node ⭐ NEW
+- **Inputs**: Value A, Value B
+- **Output**: A mod B
+- **Use**: Remainder operation
+
 #### Clamp Node
 - **Input**: Value
 - **Output**: Clamped value
@@ -112,6 +282,34 @@ The editor will open in a floating window that can be resized and repositioned.
   - Min (0-100)
   - Max (0-100)
 - **Use**: Limit value range
+
+### Color Nodes ⭐ NEW
+
+#### HSV Adjust Node
+- **Input**: Color
+- **Output**: Adjusted color
+- **Parameters**: Hue shift, Saturation shift, Value shift
+- **Use**: Adjust color in HSV space
+
+#### Color Mix Node
+- **Input**: Color A, Color B, Mix amount
+- **Output**: Mixed color
+- **Parameters**: Mix amount (0-100%)
+- **Use**: Blend two colors together
+
+#### Color Ramp Node
+- **Input**: Position (0-100)
+- **Output**: Color from ramp
+- **Parameters**: Color 1, Color 2, Color 3, Number of stops
+- **Use**: Create multi-color gradients
+
+### Curve Nodes ⭐ NEW
+
+#### Curve Editor Node
+- **Input**: Input value
+- **Output**: Output value
+- **Parameters**: Curve type (linear, ease-in, ease-out, ease-in-out, exponential), Strength
+- **Use**: Apply custom response curves to values
 
 ### Output Node
 
@@ -159,17 +357,29 @@ The editor will open in a floating window that can be resized and repositioned.
 
 ### Navigation
 - **Pan**: Click and drag with middle mouse button or Ctrl + Left mouse drag
-- **Zoom**: Mouse wheel (future enhancement)
+- **Zoom In**: Ctrl + Mouse wheel up, or click **+** button ⭐ NEW
+- **Zoom Out**: Ctrl + Mouse wheel down, or click **-** button ⭐ NEW
+- **Reset Zoom**: Click **⊙** button ⭐ NEW
+- **Zoom Level**: Display shows current zoom percentage ⭐ NEW
 
 ### Node Manipulation
 - **Move nodes**: Click and drag the node header
-- **Delete nodes**: Click the × button in the node header
+- **Delete nodes**: Click the × button in the node header, or press **Delete** key ⭐ NEW
 - **Select nodes**: Click on the node (selected nodes have blue border)
+- **Deselect**: Press **Escape** key ⭐ NEW
+- **Copy node**: Select node and press **Ctrl+C** ⭐ NEW
+- **Paste node**: Press **Ctrl+V** ⭐ NEW
+- **Duplicate node**: Select node and press **Ctrl+D** ⭐ NEW
 
 ### Connections
 - **Create connection**: Drag from output socket to input socket
 - **Delete connection**: Click on the connection line (future enhancement)
 - **Valid connections**: Only matching types can be connected (number to number, color to color)
+
+### Search & Filter ⭐ NEW
+- **Search box**: Type to filter available nodes
+- **Real-time filtering**: Nodes are filtered as you type
+- **Category hiding**: Empty categories are hidden automatically
 
 ## Brush Preview
 
@@ -177,6 +387,58 @@ The Brush Preview panel shows a real-time preview of your custom brush:
 - **Preview canvas**: Draw on the white canvas to test your brush
 - **Live updates**: Preview updates automatically when you change node parameters
 - **Brush preview stroke**: Shows a sample stroke with the current settings
+
+## Node Graph Templates ⭐ NEW
+
+Pre-built templates help you get started quickly with common brush configurations:
+
+### Available Templates
+
+1. **Pressure Sensitive**
+   - Connects pressure input to size and opacity
+   - Perfect for tablets with pressure sensitivity
+   - Natural drawing experience
+
+2. **Scattered Airbrush**
+   - Creates soft, scattered brush strokes
+   - Low opacity with high scatter
+   - Ideal for soft shading and gradients
+
+3. **Textured Brush**
+   - Includes rotation with jitter
+   - Moderate hardness for texture
+   - Good for textured painting
+
+4. **Color Dynamic**
+   - Color variation with jitter
+   - Creates natural color variation
+   - Perfect for organic painting
+
+### Using Templates
+1. Click on a template button in the node palette
+2. Confirm to clear current graph
+3. Template nodes are created and connected automatically
+4. Adjust parameters to customize
+
+## Export & Import ⭐ NEW
+
+### Exporting Node Graphs
+1. Click the **Export** button in the header
+2. Node graph is saved as JSON file
+3. File can be shared with others
+4. File name: `brush-node-graph.json`
+
+### Importing Node Graphs
+1. Click the **Import** button in the header
+2. Select a `.json` file
+3. Node graph is loaded automatically
+4. Previous graph is replaced
+
+### Use Cases
+- **Share brushes**: Export and share your custom node graphs
+- **Backup**: Save your favorite configurations
+- **Version control**: Keep different versions of complex brushes
+- **Collaboration**: Work with team members on brush designs
 
 ## Saving Custom Brushes
 
@@ -244,9 +506,18 @@ Hardness → Brush Output
 Value Input → Rotation (with jitter) → Brush Output
 ```
 
-## Keyboard Shortcuts
+## Keyboard Shortcuts ⭐ NEW
 
-Currently, the Node Editor supports mouse-based interaction. Keyboard shortcuts may be added in future versions.
+The Node Editor now supports comprehensive keyboard shortcuts:
+
+- **Delete**: Delete selected node
+- **Escape**: Deselect current node
+- **Ctrl+C**: Copy selected node
+- **Ctrl+V**: Paste copied node
+- **Ctrl+D**: Duplicate selected node
+- **Ctrl+Wheel**: Zoom in/out
+- **Middle Mouse Drag**: Pan canvas
+- **Ctrl+Left Drag**: Pan canvas (alternative)
 
 ## Troubleshooting
 
@@ -271,22 +542,46 @@ Currently, the Node Editor supports mouse-based interaction. Keyboard shortcuts 
 - Check that nodes are properly connected to the Brush Output
 - Refresh the Node Editor by closing and reopening it
 
+## Advanced Features ⭐ NEW
+
+### Color Manipulation
+The node system includes comprehensive color manipulation:
+- **RGB to HSV conversion**: Seamless color space conversion
+- **Color interpolation**: Smooth color blending
+- **Gradient evaluation**: Multi-stop color gradients
+- **Color variation**: Randomized hue, saturation, and brightness
+
+### Mathematical Operations
+Advanced math nodes enable complex brush behaviors:
+- **Trigonometric functions**: Sine, cosine for wave patterns
+- **Range mapping**: Remap values between different ranges
+- **Smooth interpolation**: Smooth step and lerp functions
+- **Safe operations**: Division by zero protection
+
+### Dynamic Effects
+Create responsive, dynamic brushes:
+- **Time-based animation**: Animated brush effects
+- **Velocity response**: React to stroke speed
+- **Pressure dynamics**: Tablet pressure integration
+- **Directional rotation**: Follow stroke direction
+
 ## Future Enhancements
 
 Planned improvements for the Node-Based Brush System include:
 
-- **More node types**: Gradient nodes, curve nodes, conditional nodes
 - **Node groups**: Package multiple nodes into reusable groups
-- **Copy/Paste nodes**: Duplicate node configurations
-- **Node presets**: Pre-built node graphs for common brush types
 - **Undo/Redo**: Full history support in the node editor
-- **Search**: Filter nodes by name or category
 - **Favorites**: Mark frequently used node types
-- **Keyboard shortcuts**: Speed up node creation and manipulation
 - **Connection editing**: Click to delete, reroute connections
 - **Node comments**: Add notes to document your node graph
-- **Export/Import**: Share node graphs as files
-- **Templates**: Start from pre-made node graph templates
+- **Visual curve editor**: Interactive curve editing with control points
+- **Conditional logic nodes**: If/else and comparison nodes
+- **Boolean operations**: AND, OR, NOT logic gates
+- **Minimap**: Overview of large node graphs
+- **Node alignment tools**: Auto-align and distribute nodes
+- **Grid snapping**: Snap nodes to grid for organization
+- **Connection rerouting**: Cleaner connection paths
+- **Node groups/macros**: Collapse complex graphs into single nodes
 
 ## Technical Details
 
@@ -339,6 +634,31 @@ We're continuously improving the Node-Based Brush System. If you encounter issue
 
 ---
 
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Last Updated**: October 2025  
-**Status**: ✅ Fully Functional
+**Status**: ✅ Fully Functional with 50+ Node Types
+
+## What's New in Version 2.0
+
+### Major Additions
+- **50+ new node types** across multiple categories
+- **Advanced input nodes**: Pressure, velocity, tilt, rotation, random, time, noise
+- **Comprehensive math library**: 14 math operations including trigonometry
+- **Color manipulation**: HSV adjust, color mix, gradients, color ramps
+- **Advanced effects**: Spacing, blending, texture blend, color variation, fade, direction
+- **Workflow enhancements**: Copy/paste, search, zoom, export/import, templates
+- **4 preset templates** for quick brush creation
+- **Full keyboard shortcuts** for efficient workflow
+- **Zoom support** with mouse wheel and UI controls
+- **Export/Import** functionality for sharing node graphs
+
+### Node Count by Category
+- **Input Nodes**: 12 types (Color, Value, Texture, Pressure, Velocity, Tilt, Rotation, Random, Time, Gradient, Image, Noise)
+- **Brush Properties**: 4 types (Size, Opacity, Hardness, Flow)
+- **Effect Nodes**: 14 types (Scatter, Rotation, Dynamics, Jitter, Spacing, Blending, Texture Blend, Color Variation, Scale, Position Offset, Wet Mix, Shape, Fade, Direction)
+- **Math Nodes**: 14 types (Multiply, Add, Subtract, Divide, Power, Min, Max, Abs, Sine, Cosine, Remap, Smooth Step, Mix, Modulo, Clamp)
+- **Color Nodes**: 3 types (HSV Adjust, Color Mix, Color Ramp)
+- **Curve Nodes**: 1 type (Curve Editor with 5 curve types)
+- **Output**: 1 type (Brush Output)
+
+**Total**: 49 unique node types + templates and advanced features

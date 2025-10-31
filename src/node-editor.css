@@ -37,6 +37,13 @@
     font-weight: 600;
 }
 
+.node-stats {
+    color: #888;
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: 8px;
+}
+
 .node-editor-controls {
     display: flex;
     gap: 8px;

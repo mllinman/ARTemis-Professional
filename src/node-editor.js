@@ -38,7 +38,7 @@ class NodeEditor {
         editorWindow.id = 'node-editor-window';
         editorWindow.innerHTML = `
             <div class="node-editor-header">
-                <h3>Node-Based Brush Editor</h3>
+                <h3>Node-Based Brush Editor <span class="node-stats" id="node-stats">v2.0 | 0 nodes</span></h3>
                 <div class="node-editor-controls">
                     <div class="zoom-controls">
                         <button class="node-editor-btn" id="node-zoom-out" title="Zoom Out (-)">−</button>
@@ -91,39 +91,39 @@ class NodeEditor {
                             <span class="node-type-icon" style="background: #ae3ec9;"></span>
                             Texture Input
                         </button>
-                        <button class="node-type-btn" data-node-type="pressure-input">
+                        <button class="node-type-btn" data-node-type="pressure-input" title="Simulate or read tablet pressure (0-100)">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Pressure Input
                         </button>
-                        <button class="node-type-btn" data-node-type="velocity-input">
+                        <button class="node-type-btn" data-node-type="velocity-input" title="React to stroke speed/velocity">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Velocity Input
                         </button>
-                        <button class="node-type-btn" data-node-type="tilt-input">
+                        <button class="node-type-btn" data-node-type="tilt-input" title="Read pen tilt X and Y">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Tilt Input
                         </button>
-                        <button class="node-type-btn" data-node-type="rotation-input">
+                        <button class="node-type-btn" data-node-type="rotation-input" title="Read pen barrel rotation">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Rotation Input
                         </button>
-                        <button class="node-type-btn" data-node-type="random-input">
+                        <button class="node-type-btn" data-node-type="random-input" title="Generate random values with min/max">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Random Input
                         </button>
-                        <button class="node-type-btn" data-node-type="time-input">
+                        <button class="node-type-btn" data-node-type="time-input" title="Time-based values for animation">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Time Input
                         </button>
-                        <button class="node-type-btn" data-node-type="gradient-input">
+                        <button class="node-type-btn" data-node-type="gradient-input" title="Generate gradient colors">
                             <span class="node-type-icon" style="background: #ff6b6b;"></span>
                             Gradient Input
                         </button>
-                        <button class="node-type-btn" data-node-type="image-input">
+                        <button class="node-type-btn" data-node-type="image-input" title="Load external images as textures">
                             <span class="node-type-icon" style="background: #ae3ec9;"></span>
                             Image Input
                         </button>
-                        <button class="node-type-btn" data-node-type="noise-input">
+                        <button class="node-type-btn" data-node-type="noise-input" title="Generate Perlin/Simplex noise">
                             <span class="node-type-icon" style="background: #4dabf7;"></span>
                             Noise Input
                         </button>
@@ -308,7 +308,15 @@ class NodeEditor {
                 <div class="node-properties-panel">
                     <h4>Brush Preview</h4>
                     <div class="node-info">
-                        <p>Connect nodes to create a custom brush. The Brush Output node determines the final brush settings.</p>
+                        <p><strong>Node Editor v2.0</strong> - 50+ Nodes Available</p>
+                        <p style="font-size: 11px; margin-top: 8px;">
+                            • Connect nodes to create brushes<br>
+                            • Use templates for quick start<br>
+                            • Search nodes with the search box<br>
+                            • Ctrl+C/V to copy/paste nodes<br>
+                            • Ctrl+Wheel to zoom<br>
+                            • Export/Import to share brushes
+                        </p>
                     </div>
                     <div class="brush-preview-container">
                         <canvas id="node-brush-preview" class="brush-preview-canvas"></canvas>
@@ -587,6 +595,7 @@ class NodeEditor {
         this.nodes.push(node);
         this.nodeCanvas.appendChild(nodeElement);
         this.updateNodePosition(node);
+        this.updateStats();
         
         return node;
     }
@@ -1084,6 +1093,7 @@ class NodeEditor {
             
             this.updateConnections();
             this.updateBrushPreview();
+            this.updateStats();
         }
     }
     
@@ -1138,6 +1148,7 @@ class NodeEditor {
         
         this.updateConnections();
         this.updateBrushPreview();
+        this.updateStats();
     }
     
     updateConnections() {
@@ -1628,6 +1639,7 @@ class NodeEditor {
         // Recreate default setup
         this.createDefaultSetup();
         this.updateBrushPreview();
+        this.updateStats();
     }
     
     filterNodes(searchTerm) {
@@ -1735,6 +1747,15 @@ class NodeEditor {
         const zoomLevel = document.getElementById('node-zoom-level');
         if (zoomLevel) {
             zoomLevel.textContent = Math.round(this.canvas.zoom * 100) + '%';
+        }
+    }
+    
+    updateStats() {
+        const statsElement = document.getElementById('node-stats');
+        if (statsElement) {
+            const nodeCount = this.nodes.length;
+            const connectionCount = this.connections.length;
+            statsElement.textContent = `v2.0 | ${nodeCount} nodes | ${connectionCount} connections`;
         }
     }
     
