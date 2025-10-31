@@ -38,8 +38,16 @@ class NodeEditor {
         editorWindow.id = 'node-editor-window';
         editorWindow.innerHTML = `
             <div class="node-editor-header">
-                <h3>Node-Based Brush Editor</h3>
+                <h3>Node-Based Brush Editor <span class="node-stats" id="node-stats">v2.0 | 0 nodes</span></h3>
                 <div class="node-editor-controls">
+                    <div class="zoom-controls">
+                        <button class="node-editor-btn" id="node-zoom-out" title="Zoom Out (-)">−</button>
+                        <span class="zoom-level" id="node-zoom-level">100%</span>
+                        <button class="node-editor-btn" id="node-zoom-in" title="Zoom In (+)">+</button>
+                        <button class="node-editor-btn" id="node-zoom-reset" title="Reset Zoom (0)">⊙</button>
+                    </div>
+                    <button class="node-editor-btn" id="node-export-graph" title="Export Node Graph">Export</button>
+                    <button class="node-editor-btn" id="node-import-graph" title="Import Node Graph">Import</button>
                     <button class="node-editor-btn" id="node-clear-all">Clear All</button>
                     <button class="node-editor-btn primary" id="node-save-brush">Save to Brushes</button>
                     <button class="node-editor-btn node-editor-close" id="node-editor-close">✕</button>
@@ -47,6 +55,28 @@ class NodeEditor {
             </div>
             <div class="node-editor-body">
                 <div class="node-palette">
+                    <div class="node-search-container">
+                        <input type="text" id="node-search" placeholder="Search nodes..." class="node-search-input">
+                    </div>
+                    <div class="node-category">
+                        <h4>Templates</h4>
+                        <button class="node-type-btn template-btn" data-template="pressure-sensitive">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Pressure Sensitive
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="scattered-airbrush">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Scattered Airbrush
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="textured-brush">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Textured Brush
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="color-dynamic">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Color Dynamic
+                        </button>
+                    </div>
                     <div class="node-category">
                         <h4>Input Nodes</h4>
                         <button class="node-type-btn" data-node-type="color-input">
@@ -60,6 +90,42 @@ class NodeEditor {
                         <button class="node-type-btn" data-node-type="texture-input">
                             <span class="node-type-icon" style="background: #ae3ec9;"></span>
                             Texture Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="pressure-input" title="Simulate or read tablet pressure (0-100)">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Pressure Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="velocity-input" title="React to stroke speed/velocity">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Velocity Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="tilt-input" title="Read pen tilt X and Y">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Tilt Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="rotation-input" title="Read pen barrel rotation">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Rotation Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="random-input" title="Generate random values with min/max">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Random Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="time-input" title="Time-based values for animation">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Time Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="gradient-input" title="Generate gradient colors">
+                            <span class="node-type-icon" style="background: #ff6b6b;"></span>
+                            Gradient Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="image-input" title="Load external images as textures">
+                            <span class="node-type-icon" style="background: #ae3ec9;"></span>
+                            Image Input
+                        </button>
+                        <button class="node-type-btn" data-node-type="noise-input" title="Generate Perlin/Simplex noise">
+                            <span class="node-type-icon" style="background: #4dabf7;"></span>
+                            Noise Input
                         </button>
                     </div>
                     <div class="node-category">
@@ -99,6 +165,68 @@ class NodeEditor {
                             <span class="node-type-icon" style="background: #ffd43b;"></span>
                             Jitter
                         </button>
+                        <button class="node-type-btn" data-node-type="spacing">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Spacing
+                        </button>
+                        <button class="node-type-btn" data-node-type="blending-mode">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Blending Mode
+                        </button>
+                        <button class="node-type-btn" data-node-type="texture-blend">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Texture Blend
+                        </button>
+                        <button class="node-type-btn" data-node-type="color-variation">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Color Variation
+                        </button>
+                        <button class="node-type-btn" data-node-type="scale">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Scale (X/Y)
+                        </button>
+                        <button class="node-type-btn" data-node-type="position-offset">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Position Offset
+                        </button>
+                        <button class="node-type-btn" data-node-type="wet-mix">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Wet Mix
+                        </button>
+                        <button class="node-type-btn" data-node-type="shape">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Shape
+                        </button>
+                        <button class="node-type-btn" data-node-type="fade">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Fade
+                        </button>
+                        <button class="node-type-btn" data-node-type="direction">
+                            <span class="node-type-icon" style="background: #ffd43b;"></span>
+                            Direction
+                        </button>
+                    </div>
+                    <div class="node-category">
+                        <h4>Color Nodes</h4>
+                        <button class="node-type-btn" data-node-type="hsv-adjust">
+                            <span class="node-type-icon" style="background: #ff6b6b;"></span>
+                            HSV Adjust
+                        </button>
+                        <button class="node-type-btn" data-node-type="color-mix">
+                            <span class="node-type-icon" style="background: #ff6b6b;"></span>
+                            Color Mix
+                        </button>
+                        <button class="node-type-btn" data-node-type="color-ramp">
+                            <span class="node-type-icon" style="background: #ff6b6b;"></span>
+                            Color Ramp
+                        </button>
+                    </div>
+                    <div class="node-category">
+                        <h4>Curve Nodes</h4>
+                        <button class="node-type-btn" data-node-type="curve">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Curve Editor
+                        </button>
                     </div>
                     <div class="node-category">
                         <h4>Math Nodes</h4>
@@ -109,6 +237,54 @@ class NodeEditor {
                         <button class="node-type-btn" data-node-type="add">
                             <span class="node-type-icon" style="background: #748ffc;"></span>
                             Add
+                        </button>
+                        <button class="node-type-btn" data-node-type="subtract">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Subtract
+                        </button>
+                        <button class="node-type-btn" data-node-type="divide">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Divide
+                        </button>
+                        <button class="node-type-btn" data-node-type="power">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Power
+                        </button>
+                        <button class="node-type-btn" data-node-type="min">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Min
+                        </button>
+                        <button class="node-type-btn" data-node-type="max">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Max
+                        </button>
+                        <button class="node-type-btn" data-node-type="abs">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Absolute
+                        </button>
+                        <button class="node-type-btn" data-node-type="sine">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Sine
+                        </button>
+                        <button class="node-type-btn" data-node-type="cosine">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Cosine
+                        </button>
+                        <button class="node-type-btn" data-node-type="remap">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Remap Range
+                        </button>
+                        <button class="node-type-btn" data-node-type="smoothstep">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Smooth Step
+                        </button>
+                        <button class="node-type-btn" data-node-type="mix">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Mix/Lerp
+                        </button>
+                        <button class="node-type-btn" data-node-type="modulo">
+                            <span class="node-type-icon" style="background: #748ffc;"></span>
+                            Modulo
                         </button>
                         <button class="node-type-btn" data-node-type="clamp">
                             <span class="node-type-icon" style="background: #748ffc;"></span>
@@ -132,7 +308,15 @@ class NodeEditor {
                 <div class="node-properties-panel">
                     <h4>Brush Preview</h4>
                     <div class="node-info">
-                        <p>Connect nodes to create a custom brush. The Brush Output node determines the final brush settings.</p>
+                        <p><strong>Node Editor v2.0</strong> - 50+ Nodes Available</p>
+                        <p style="font-size: 11px; margin-top: 8px;">
+                            • Connect nodes to create brushes<br>
+                            • Use templates for quick start<br>
+                            • Search nodes with the search box<br>
+                            • Ctrl+C/V to copy/paste nodes<br>
+                            • Ctrl+Wheel to zoom<br>
+                            • Export/Import to share brushes
+                        </p>
                     </div>
                     <div class="brush-preview-container">
                         <canvas id="node-brush-preview" class="brush-preview-canvas"></canvas>
@@ -198,6 +382,37 @@ class NodeEditor {
             this.saveBrush();
         });
         
+        // Zoom controls
+        document.getElementById('node-zoom-in').addEventListener('click', () => {
+            this.zoomIn();
+        });
+        
+        document.getElementById('node-zoom-out').addEventListener('click', () => {
+            this.zoomOut();
+        });
+        
+        document.getElementById('node-zoom-reset').addEventListener('click', () => {
+            this.resetZoom();
+        });
+        
+        // Export/Import
+        document.getElementById('node-export-graph').addEventListener('click', () => {
+            this.exportGraph();
+        });
+        
+        document.getElementById('node-import-graph').addEventListener('click', () => {
+            this.importGraph();
+        });
+        
+        // Template buttons
+        const templateButtons = document.querySelectorAll('.template-btn');
+        templateButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const template = e.currentTarget.getAttribute('data-template');
+                this.loadTemplate(template);
+            });
+        });
+        
         // Node type buttons
         const nodeTypeButtons = document.querySelectorAll('.node-type-btn');
         nodeTypeButtons.forEach(btn => {
@@ -210,8 +425,20 @@ class NodeEditor {
             });
         });
         
-        // Canvas panning
+        // Mouse wheel zoom
         const container = document.getElementById('node-canvas-container');
+        container.addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    this.zoomIn();
+                } else {
+                    this.zoomOut();
+                }
+            }
+        }, { passive: false });
+        
+        // Canvas panning
         container.addEventListener('mousedown', (e) => {
             if (e.button === 1 || (e.button === 0 && e.target === container)) {
                 // Middle mouse or clicking on background
@@ -274,6 +501,58 @@ class NodeEditor {
         this.previewCanvas.addEventListener('mouseleave', () => {
             this.isDrawingPreview = false;
         });
+        
+        // Search functionality
+        const searchInput = document.getElementById('node-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterNodes(e.target.value);
+            });
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!this.window.classList.contains('visible')) return;
+            
+            // Delete selected node with Delete key
+            if (e.key === 'Delete' && this.selectedNode) {
+                this.deleteNode(this.selectedNode.id);
+                e.preventDefault();
+            }
+            
+            // Ctrl+A - Select all
+            if (e.ctrlKey && e.key === 'a') {
+                // Future: Select all nodes
+                e.preventDefault();
+            }
+            
+            // Ctrl+C - Copy
+            if (e.ctrlKey && e.key === 'c' && this.selectedNode) {
+                this.copyNode(this.selectedNode);
+                e.preventDefault();
+            }
+            
+            // Ctrl+V - Paste
+            if (e.ctrlKey && e.key === 'v' && this.copiedNode) {
+                this.pasteNode();
+                e.preventDefault();
+            }
+            
+            // Ctrl+D - Duplicate
+            if (e.ctrlKey && e.key === 'd' && this.selectedNode) {
+                this.duplicateNode(this.selectedNode);
+                e.preventDefault();
+            }
+            
+            // Escape - Deselect
+            if (e.key === 'Escape') {
+                if (this.selectedNode) {
+                    this.selectedNode.element.classList.remove('selected');
+                    this.selectedNode = null;
+                }
+                e.preventDefault();
+            }
+        });
     }
     
     drawPreviewStroke(e) {
@@ -291,7 +570,7 @@ class NodeEditor {
     }
     
     updateCanvasTransform() {
-        this.nodeCanvas.style.transform = `translate(${this.canvas.offsetX}px, ${this.canvas.offsetY}px)`;
+        this.nodeCanvas.style.transform = `translate(${this.canvas.offsetX}px, ${this.canvas.offsetY}px) scale(${this.canvas.zoom})`;
         this.updateConnections();
     }
     
@@ -316,6 +595,7 @@ class NodeEditor {
         this.nodes.push(node);
         this.nodeCanvas.appendChild(nodeElement);
         this.updateNodePosition(node);
+        this.updateStats();
         
         return node;
     }
@@ -333,6 +613,42 @@ class NodeEditor {
             'texture-input': {
                 outputs: [{ name: 'Texture', type: 'texture' }],
                 parameters: { texture: null }
+            },
+            'pressure-input': {
+                outputs: [{ name: 'Pressure', type: 'number' }],
+                parameters: { pressure: 100 }
+            },
+            'velocity-input': {
+                outputs: [{ name: 'Velocity', type: 'number' }],
+                parameters: { velocity: 50 }
+            },
+            'tilt-input': {
+                outputs: [{ name: 'Tilt X', type: 'number' }, { name: 'Tilt Y', type: 'number' }],
+                parameters: { tiltX: 0, tiltY: 0 }
+            },
+            'rotation-input': {
+                outputs: [{ name: 'Rotation', type: 'number' }],
+                parameters: { rotation: 0 }
+            },
+            'random-input': {
+                outputs: [{ name: 'Random', type: 'number' }],
+                parameters: { min: 0, max: 100, seed: 0 }
+            },
+            'time-input': {
+                outputs: [{ name: 'Time', type: 'number' }],
+                parameters: { speed: 1, offset: 0 }
+            },
+            'gradient-input': {
+                outputs: [{ name: 'Color', type: 'color' }],
+                parameters: { colorStart: '#000000', colorEnd: '#ffffff', position: 50 }
+            },
+            'image-input': {
+                outputs: [{ name: 'Image', type: 'texture' }],
+                parameters: { imageUrl: '' }
+            },
+            'noise-input': {
+                outputs: [{ name: 'Noise', type: 'number' }],
+                parameters: { scale: 10, octaves: 3, persistence: 0.5 }
             },
             'size': {
                 inputs: [{ name: 'Value', type: 'number' }],
@@ -374,12 +690,142 @@ class NodeEditor {
                 outputs: [{ name: 'Jittered', type: 'number' }],
                 parameters: { amount: 20 }
             },
+            'spacing': {
+                inputs: [{ name: 'Value', type: 'number' }],
+                outputs: [{ name: 'Spacing', type: 'number' }],
+                parameters: { baseSpacing: 10, multiplier: 1 }
+            },
+            'blending-mode': {
+                inputs: [{ name: 'Mode', type: 'number' }],
+                outputs: [{ name: 'Blend', type: 'string' }],
+                parameters: { mode: 'normal' }
+            },
+            'texture-blend': {
+                inputs: [{ name: 'Texture', type: 'texture' }, { name: 'Amount', type: 'number' }],
+                outputs: [{ name: 'Blended', type: 'texture' }],
+                parameters: { blendAmount: 50 }
+            },
+            'color-variation': {
+                inputs: [{ name: 'Color', type: 'color' }],
+                outputs: [{ name: 'Color', type: 'color' }],
+                parameters: { hueJitter: 0, satJitter: 0, brightJitter: 0 }
+            },
+            'scale': {
+                inputs: [{ name: 'X', type: 'number' }, { name: 'Y', type: 'number' }],
+                outputs: [{ name: 'Scale X', type: 'number' }, { name: 'Scale Y', type: 'number' }],
+                parameters: { scaleX: 100, scaleY: 100 }
+            },
+            'position-offset': {
+                inputs: [{ name: 'X', type: 'number' }, { name: 'Y', type: 'number' }],
+                outputs: [{ name: 'Offset X', type: 'number' }, { name: 'Offset Y', type: 'number' }],
+                parameters: { offsetX: 0, offsetY: 0 }
+            },
+            'wet-mix': {
+                inputs: [{ name: 'Color', type: 'color' }, { name: 'Wetness', type: 'number' }],
+                outputs: [{ name: 'Mixed Color', type: 'color' }],
+                parameters: { wetness: 50, bleed: 30 }
+            },
+            'shape': {
+                inputs: [{ name: 'Size', type: 'number' }],
+                outputs: [{ name: 'Shape', type: 'string' }],
+                parameters: { shape: 'circle', sides: 4 }
+            },
+            'fade': {
+                inputs: [{ name: 'Progress', type: 'number' }],
+                outputs: [{ name: 'Fade', type: 'number' }],
+                parameters: { fadeIn: 10, fadeOut: 10 }
+            },
+            'direction': {
+                inputs: [{ name: 'Velocity', type: 'number' }],
+                outputs: [{ name: 'Angle', type: 'number' }],
+                parameters: { sensitivity: 100 }
+            },
+            'hsv-adjust': {
+                inputs: [{ name: 'Color', type: 'color' }],
+                outputs: [{ name: 'Adjusted', type: 'color' }],
+                parameters: { hue: 0, saturation: 0, value: 0 }
+            },
+            'color-mix': {
+                inputs: [{ name: 'Color A', type: 'color' }, { name: 'Color B', type: 'color' }, { name: 'Mix', type: 'number' }],
+                outputs: [{ name: 'Mixed', type: 'color' }],
+                parameters: { mixAmount: 50 }
+            },
+            'color-ramp': {
+                inputs: [{ name: 'Position', type: 'number' }],
+                outputs: [{ name: 'Color', type: 'color' }],
+                parameters: { color1: '#000000', color2: '#ffffff', color3: '#ff0000', stops: 3 }
+            },
+            'curve': {
+                inputs: [{ name: 'Input', type: 'number' }],
+                outputs: [{ name: 'Output', type: 'number' }],
+                parameters: { curve: 'linear', strength: 50 }
+            },
             'multiply': {
                 inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
                 outputs: [{ name: 'Result', type: 'number' }],
                 parameters: {}
             },
             'add': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'subtract': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'divide': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'power': {
+                inputs: [{ name: 'Base', type: 'number' }, { name: 'Exponent', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'min': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'max': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'abs': {
+                inputs: [{ name: 'Value', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: {}
+            },
+            'sine': {
+                inputs: [{ name: 'Angle', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: { frequency: 1, amplitude: 50 }
+            },
+            'cosine': {
+                inputs: [{ name: 'Angle', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: { frequency: 1, amplitude: 50 }
+            },
+            'remap': {
+                inputs: [{ name: 'Value', type: 'number' }],
+                outputs: [{ name: 'Remapped', type: 'number' }],
+                parameters: { inMin: 0, inMax: 100, outMin: 0, outMax: 100 }
+            },
+            'smoothstep': {
+                inputs: [{ name: 'Value', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: { edge0: 0, edge1: 100 }
+            },
+            'mix': {
+                inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }, { name: 'Factor', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'number' }],
+                parameters: { factor: 50 }
+            },
+            'modulo': {
                 inputs: [{ name: 'A', type: 'number' }, { name: 'B', type: 'number' }],
                 outputs: [{ name: 'Result', type: 'number' }],
                 parameters: {}
@@ -558,6 +1004,15 @@ class NodeEditor {
             'color-input': 'Color Input',
             'value-input': 'Value Input',
             'texture-input': 'Texture Input',
+            'pressure-input': 'Pressure Input',
+            'velocity-input': 'Velocity Input',
+            'tilt-input': 'Tilt Input',
+            'rotation-input': 'Rotation Input',
+            'random-input': 'Random Input',
+            'time-input': 'Time Input',
+            'gradient-input': 'Gradient Input',
+            'image-input': 'Image Input',
+            'noise-input': 'Noise Input',
             'size': 'Size',
             'opacity': 'Opacity',
             'hardness': 'Hardness',
@@ -566,9 +1021,35 @@ class NodeEditor {
             'rotation': 'Rotation',
             'dynamics': 'Dynamics',
             'jitter': 'Jitter',
+            'spacing': 'Spacing',
+            'blending-mode': 'Blending Mode',
+            'texture-blend': 'Texture Blend',
+            'color-variation': 'Color Variation',
+            'scale': 'Scale',
+            'position-offset': 'Position Offset',
+            'wet-mix': 'Wet Mix',
+            'shape': 'Shape',
+            'fade': 'Fade',
+            'direction': 'Direction',
             'multiply': 'Multiply',
             'add': 'Add',
+            'subtract': 'Subtract',
+            'divide': 'Divide',
+            'power': 'Power',
+            'min': 'Min',
+            'max': 'Max',
+            'abs': 'Absolute',
+            'sine': 'Sine',
+            'cosine': 'Cosine',
+            'remap': 'Remap Range',
+            'smoothstep': 'Smooth Step',
+            'mix': 'Mix/Lerp',
+            'modulo': 'Modulo',
             'clamp': 'Clamp',
+            'hsv-adjust': 'HSV Adjust',
+            'color-mix': 'Color Mix',
+            'color-ramp': 'Color Ramp',
+            'curve': 'Curve',
             'brush-output': 'Brush Output'
         };
         return names[type] || type;
@@ -612,6 +1093,7 @@ class NodeEditor {
             
             this.updateConnections();
             this.updateBrushPreview();
+            this.updateStats();
         }
     }
     
@@ -666,6 +1148,7 @@ class NodeEditor {
         
         this.updateConnections();
         this.updateBrushPreview();
+        this.updateStats();
     }
     
     updateConnections() {
@@ -787,12 +1270,47 @@ class NodeEditor {
         
         // Handle different node types
         switch (node.type) {
+            // Input Nodes
             case 'value-input':
                 return node.parameters.value || 0;
             
             case 'color-input':
                 return node.parameters.color || '#000000';
             
+            case 'pressure-input':
+                return node.parameters.pressure || 100;
+            
+            case 'velocity-input':
+                return node.parameters.velocity || 50;
+            
+            case 'tilt-input':
+                if (outputIndex === 0) return node.parameters.tiltX || 0;
+                if (outputIndex === 1) return node.parameters.tiltY || 0;
+                return 0;
+            
+            case 'rotation-input':
+                return node.parameters.rotation || 0;
+            
+            case 'random-input':
+                const min = node.parameters.min || 0;
+                const max = node.parameters.max || 100;
+                return min + Math.random() * (max - min);
+            
+            case 'time-input':
+                const time = Date.now() / 1000;
+                return ((time * (node.parameters.speed || 1)) + (node.parameters.offset || 0)) % 100;
+            
+            case 'gradient-input':
+                const pos = node.parameters.position || 50;
+                return this.interpolateColor(node.parameters.colorStart || '#000000', 
+                                             node.parameters.colorEnd || '#ffffff', pos / 100);
+            
+            case 'noise-input':
+                return this.perlinNoise(node.parameters.scale || 10, 
+                                       node.parameters.octaves || 3, 
+                                       node.parameters.persistence || 0.5) * 100;
+            
+            // Brush Property Nodes
             case 'size':
                 const sizeInput = this.getInputValue(node, 0);
                 return (node.parameters.baseSize || 20) * (sizeInput / 50 || 1) * (node.parameters.multiplier || 1);
@@ -807,6 +1325,7 @@ class NodeEditor {
             case 'flow':
                 return node.parameters.flow || 100;
             
+            // Effect Nodes
             case 'scatter':
                 if (outputIndex === 0) return node.parameters.scatterX || 0;
                 if (outputIndex === 1) return node.parameters.scatterY || 0;
@@ -815,11 +1334,49 @@ class NodeEditor {
             case 'rotation':
                 return (node.parameters.angle || 0) + (Math.random() * (node.parameters.jitter || 0));
             
+            case 'dynamics':
+                const pressure = this.getInputValue(node, 0) || 100;
+                if (outputIndex === 0) return pressure * (node.parameters.pressureSize || 100) / 100;
+                if (outputIndex === 1) return pressure * (node.parameters.pressureOpacity || 100) / 100;
+                return 0;
+            
             case 'jitter':
                 const jitterInput = this.getInputValue(node, 0);
                 const jitterAmount = node.parameters.amount || 20;
                 return jitterInput + (Math.random() - 0.5) * jitterAmount;
             
+            case 'spacing':
+                const spacingInput = this.getInputValue(node, 0) || 50;
+                return (node.parameters.baseSpacing || 10) * (spacingInput / 50) * (node.parameters.multiplier || 1);
+            
+            case 'color-variation':
+                const baseColor = this.getInputValue(node, 0) || '#000000';
+                return this.varyColor(baseColor, node.parameters.hueJitter || 0, 
+                                     node.parameters.satJitter || 0, node.parameters.brightJitter || 0);
+            
+            case 'scale':
+                if (outputIndex === 0) return node.parameters.scaleX || 100;
+                if (outputIndex === 1) return node.parameters.scaleY || 100;
+                return 100;
+            
+            case 'position-offset':
+                if (outputIndex === 0) return node.parameters.offsetX || 0;
+                if (outputIndex === 1) return node.parameters.offsetY || 0;
+                return 0;
+            
+            case 'fade':
+                const progress = this.getInputValue(node, 0) || 0;
+                const fadeIn = node.parameters.fadeIn || 10;
+                const fadeOut = node.parameters.fadeOut || 10;
+                if (progress < fadeIn) return progress / fadeIn * 100;
+                if (progress > 100 - fadeOut) return (100 - progress) / fadeOut * 100;
+                return 100;
+            
+            case 'direction':
+                const velocity = this.getInputValue(node, 0) || 0;
+                return velocity * (node.parameters.sensitivity || 100) / 100;
+            
+            // Math Nodes
             case 'multiply':
                 const multA = this.getInputValue(node, 0) || 1;
                 const multB = this.getInputValue(node, 1) || 1;
@@ -830,11 +1387,100 @@ class NodeEditor {
                 const addB = this.getInputValue(node, 1) || 0;
                 return addA + addB;
             
+            case 'subtract':
+                const subA = this.getInputValue(node, 0) || 0;
+                const subB = this.getInputValue(node, 1) || 0;
+                return subA - subB;
+            
+            case 'divide':
+                const divA = this.getInputValue(node, 0) || 1;
+                const divB = this.getInputValue(node, 1) || 1;
+                return divB !== 0 ? divA / divB : 0;
+            
+            case 'power':
+                const base = this.getInputValue(node, 0) || 1;
+                const exp = this.getInputValue(node, 1) || 1;
+                return Math.pow(base, exp);
+            
+            case 'min':
+                const minA = this.getInputValue(node, 0) || 0;
+                const minB = this.getInputValue(node, 1) || 0;
+                return Math.min(minA, minB);
+            
+            case 'max':
+                const maxA = this.getInputValue(node, 0) || 0;
+                const maxB = this.getInputValue(node, 1) || 0;
+                return Math.max(maxA, maxB);
+            
+            case 'abs':
+                const absInput = this.getInputValue(node, 0) || 0;
+                return Math.abs(absInput);
+            
+            case 'sine':
+                const sineAngle = this.getInputValue(node, 0) || 0;
+                const sineFreq = node.parameters.frequency || 1;
+                const sineAmp = node.parameters.amplitude || 50;
+                return Math.sin(sineAngle * sineFreq * Math.PI / 180) * sineAmp + 50;
+            
+            case 'cosine':
+                const cosAngle = this.getInputValue(node, 0) || 0;
+                const cosFreq = node.parameters.frequency || 1;
+                const cosAmp = node.parameters.amplitude || 50;
+                return Math.cos(cosAngle * cosFreq * Math.PI / 180) * cosAmp + 50;
+            
+            case 'remap':
+                const remapInput = this.getInputValue(node, 0) || 0;
+                const inMin = node.parameters.inMin || 0;
+                const inMax = node.parameters.inMax || 100;
+                const outMin = node.parameters.outMin || 0;
+                const outMax = node.parameters.outMax || 100;
+                if (inMax === inMin) return outMin; // Safety check for division by zero
+                return outMin + (remapInput - inMin) * (outMax - outMin) / (inMax - inMin);
+            
+            case 'smoothstep':
+                const smoothInput = this.getInputValue(node, 0) || 0;
+                const edge0 = node.parameters.edge0 || 0;
+                const edge1 = node.parameters.edge1 || 100;
+                const t = Math.max(0, Math.min(1, (smoothInput - edge0) / (edge1 - edge0)));
+                return t * t * (3 - 2 * t) * 100;
+            
+            case 'mix':
+                const mixA = this.getInputValue(node, 0) || 0;
+                const mixB = this.getInputValue(node, 1) || 0;
+                const mixFactor = (this.getInputValue(node, 2) || node.parameters.factor || 50) / 100;
+                return mixA * (1 - mixFactor) + mixB * mixFactor;
+            
+            case 'modulo':
+                const modA = this.getInputValue(node, 0) || 0;
+                const modB = this.getInputValue(node, 1) || 1;
+                return modB !== 0 ? modA % modB : 0;
+            
             case 'clamp':
                 const clampInput = this.getInputValue(node, 0) || 0;
-                const min = node.parameters.min || 0;
-                const max = node.parameters.max || 100;
-                return Math.max(min, Math.min(max, clampInput));
+                const clampMin = node.parameters.min || 0;
+                const clampMax = node.parameters.max || 100;
+                return Math.max(clampMin, Math.min(clampMax, clampInput));
+            
+            // Color Nodes
+            case 'hsv-adjust':
+                const hsvColor = this.getInputValue(node, 0) || '#000000';
+                return this.adjustHSV(hsvColor, node.parameters.hue || 0, 
+                                     node.parameters.saturation || 0, node.parameters.value || 0);
+            
+            case 'color-mix':
+                const colorA = this.getInputValue(node, 0) || '#000000';
+                const colorB = this.getInputValue(node, 1) || '#ffffff';
+                const mixAmount = (this.getInputValue(node, 2) || node.parameters.mixAmount || 50) / 100;
+                return this.mixColors(colorA, colorB, mixAmount);
+            
+            case 'color-ramp':
+                const rampPos = (this.getInputValue(node, 0) || 50) / 100;
+                return this.evaluateColorRamp(node.parameters, rampPos);
+            
+            case 'curve':
+                const curveInput = this.getInputValue(node, 0) || 0;
+                return this.applyCurve(curveInput, node.parameters.curve || 'linear', 
+                                      node.parameters.strength || 50);
             
             default:
                 return 0;
@@ -994,6 +1640,241 @@ class NodeEditor {
         // Recreate default setup
         this.createDefaultSetup();
         this.updateBrushPreview();
+        this.updateStats();
+    }
+    
+    filterNodes(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const categories = document.querySelectorAll('.node-category');
+        
+        categories.forEach(category => {
+            const buttons = category.querySelectorAll('.node-type-btn');
+            let categoryHasVisible = false;
+            
+            buttons.forEach(btn => {
+                const nodeType = btn.getAttribute('data-node-type');
+                const displayName = this.getNodeDisplayName(nodeType).toLowerCase();
+                
+                if (displayName.includes(term) || nodeType.includes(term)) {
+                    btn.style.display = 'flex';
+                    categoryHasVisible = true;
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+            
+            // Hide category header if no visible buttons
+            const header = category.querySelector('h4');
+            if (header) {
+                header.style.display = categoryHasVisible ? 'block' : 'none';
+            }
+        });
+    }
+    
+    copyNode(node) {
+        this.copiedNode = {
+            type: node.type,
+            parameters: { ...node.parameters }
+        };
+        console.log('Node copied:', this.copiedNode);
+    }
+    
+    pasteNode() {
+        if (!this.copiedNode) return;
+        
+        const x = -this.canvas.offsetX + 300 + Math.random() * 50;
+        const y = -this.canvas.offsetY + 200 + Math.random() * 50;
+        const newNode = this.createNode(this.copiedNode.type, x, y);
+        newNode.parameters = { ...this.copiedNode.parameters };
+        
+        // Update parameter controls
+        this.updateNodeParameterControls(newNode);
+        this.updateBrushPreview();
+    }
+    
+    duplicateNode(node) {
+        this.copyNode(node);
+        this.pasteNode();
+    }
+    
+    updateNodeParameterControls(node) {
+        const paramInputs = node.element.querySelectorAll('.node-parameter input');
+        paramInputs.forEach(input => {
+            const label = input.previousElementSibling;
+            if (!label) return;
+            
+            const key = label.textContent.toLowerCase().replace(/\s/g, '');
+            const paramKeys = Object.keys(node.parameters);
+            
+            for (let paramKey of paramKeys) {
+                if (paramKey.toLowerCase().includes(key) || key.includes(paramKey.toLowerCase())) {
+                    if (input.type === 'range' || input.type === 'number') {
+                        input.value = node.parameters[paramKey];
+                        const valueDisplay = input.nextElementSibling;
+                        if (valueDisplay && valueDisplay.classList.contains('node-parameter-value')) {
+                            valueDisplay.textContent = node.parameters[paramKey];
+                        }
+                    } else if (input.type === 'color') {
+                        input.value = node.parameters[paramKey];
+                    }
+                    break;
+                }
+            }
+        });
+    }
+    
+    zoomIn() {
+        this.canvas.zoom = Math.min(this.canvas.zoom * 1.2, 3);
+        this.updateZoom();
+    }
+    
+    zoomOut() {
+        this.canvas.zoom = Math.max(this.canvas.zoom / 1.2, 0.25);
+        this.updateZoom();
+    }
+    
+    resetZoom() {
+        this.canvas.zoom = 1;
+        this.canvas.offsetX = 0;
+        this.canvas.offsetY = 0;
+        this.updateZoom();
+    }
+    
+    updateZoom() {
+        this.nodeCanvas.style.transform = `translate(${this.canvas.offsetX}px, ${this.canvas.offsetY}px) scale(${this.canvas.zoom})`;
+        this.updateConnections();
+        
+        // Update zoom level display
+        const zoomLevel = document.getElementById('node-zoom-level');
+        if (zoomLevel) {
+            zoomLevel.textContent = Math.round(this.canvas.zoom * 100) + '%';
+        }
+    }
+    
+    updateStats() {
+        const statsElement = document.getElementById('node-stats');
+        if (statsElement) {
+            const nodeCount = this.nodes.length;
+            const connectionCount = this.connections.length;
+            statsElement.textContent = `v2.0 | ${nodeCount} nodes | ${connectionCount} connections`;
+        }
+    }
+    
+    exportGraph() {
+        const graphData = this.serializeGraph();
+        const json = JSON.stringify(graphData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'brush-node-graph.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    importGraph() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const graphData = JSON.parse(event.target.result);
+                        this.loadGraph(graphData);
+                        alert('Node graph imported successfully!');
+                    } catch (error) {
+                        alert('Error importing node graph: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+    
+    loadTemplate(templateName) {
+        if (!confirm('This will clear the current node graph. Continue?')) {
+            return;
+        }
+        
+        this.clearAll();
+        
+        switch (templateName) {
+            case 'pressure-sensitive':
+                this.createPressureSensitiveTemplate();
+                break;
+            case 'scattered-airbrush':
+                this.createScatteredAirbrushTemplate();
+                break;
+            case 'textured-brush':
+                this.createTexturedBrushTemplate();
+                break;
+            case 'color-dynamic':
+                this.createColorDynamicTemplate();
+                break;
+        }
+        
+        this.updateBrushPreview();
+    }
+    
+    createPressureSensitiveTemplate() {
+        const pressureNode = this.createNode('pressure-input', 200, 150);
+        const sizeNode = this.createNode('size', 400, 150);
+        const opacityNode = this.createNode('opacity', 400, 250);
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(pressureNode.id, 0, sizeNode.id, 0);
+        this.createConnection(pressureNode.id, 0, opacityNode.id, 0);
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+    }
+    
+    createScatteredAirbrushTemplate() {
+        const sizeNode = this.createNode('size', 200, 150);
+        sizeNode.parameters.baseSize = 30;
+        const opacityNode = this.createNode('opacity', 200, 250);
+        opacityNode.parameters.baseOpacity = 40;
+        const scatterNode = this.createNode('scatter', 400, 150);
+        scatterNode.parameters.scatterX = 30;
+        scatterNode.parameters.scatterY = 30;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        this.createConnection(scatterNode.id, 0, outputNode.id, 4);
+        this.createConnection(scatterNode.id, 1, outputNode.id, 5);
+    }
+    
+    createTexturedBrushTemplate() {
+        const sizeNode = this.createNode('size', 200, 150);
+        const hardnessNode = this.createNode('hardness', 200, 250);
+        hardnessNode.parameters.hardness = 60;
+        const rotationNode = this.createNode('rotation', 400, 150);
+        rotationNode.parameters.jitter = 45;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(hardnessNode.id, 0, outputNode.id, 2);
+        this.createConnection(rotationNode.id, 0, outputNode.id, 6);
+    }
+    
+    createColorDynamicTemplate() {
+        const colorNode = this.createNode('color-input', 200, 150);
+        const colorVarNode = this.createNode('color-variation', 400, 150);
+        colorVarNode.parameters.hueJitter = 15;
+        colorVarNode.parameters.satJitter = 10;
+        const sizeNode = this.createNode('size', 200, 300);
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(colorNode.id, 0, colorVarNode.id, 0);
+        this.createConnection(colorVarNode.id, 0, outputNode.id, 7);
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        
+        this.updateNodeParameterControls(colorVarNode);
+        this.updateNodeParameterControls(sizeNode);
     }
     
     show() {
@@ -1003,6 +1884,164 @@ class NodeEditor {
     
     hide() {
         this.window.classList.remove('visible');
+    }
+    
+    // Helper methods for advanced node operations
+    interpolateColor(color1, color2, factor) {
+        const c1 = this.hexToRgb(color1);
+        const c2 = this.hexToRgb(color2);
+        const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+        const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+        const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+        return this.rgbToHex(r, g, b);
+    }
+    
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+    }
+    
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    rgbToHsv(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const d = max - min;
+        const s = max === 0 ? 0 : d / max;
+        const v = max;
+        let h = 0;
+        
+        if (max !== min) {
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        
+        return { h: h * 360, s: s * 100, v: v * 100 };
+    }
+    
+    hsvToRgb(h, s, v) {
+        h /= 360; s /= 100; v /= 100;
+        const i = Math.floor(h * 6);
+        const f = h * 6 - i;
+        const p = v * (1 - s);
+        const q = v * (1 - f * s);
+        const t = v * (1 - (1 - f) * s);
+        let r, g, b;
+        
+        switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+        
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
+    }
+    
+    adjustHSV(color, hueShift, satShift, valShift) {
+        const rgb = this.hexToRgb(color);
+        const hsv = this.rgbToHsv(rgb.r, rgb.g, rgb.b);
+        hsv.h = (hsv.h + hueShift) % 360;
+        hsv.s = Math.max(0, Math.min(100, hsv.s + satShift));
+        hsv.v = Math.max(0, Math.min(100, hsv.v + valShift));
+        const newRgb = this.hsvToRgb(hsv.h, hsv.s, hsv.v);
+        return this.rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+    }
+    
+    varyColor(color, hueJitter, satJitter, brightJitter) {
+        const rgb = this.hexToRgb(color);
+        const hsv = this.rgbToHsv(rgb.r, rgb.g, rgb.b);
+        hsv.h = (hsv.h + (Math.random() - 0.5) * hueJitter) % 360;
+        hsv.s = Math.max(0, Math.min(100, hsv.s + (Math.random() - 0.5) * satJitter));
+        hsv.v = Math.max(0, Math.min(100, hsv.v + (Math.random() - 0.5) * brightJitter));
+        const newRgb = this.hsvToRgb(hsv.h, hsv.s, hsv.v);
+        return this.rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+    }
+    
+    mixColors(color1, color2, factor) {
+        const c1 = this.hexToRgb(color1);
+        const c2 = this.hexToRgb(color2);
+        const r = Math.round(c1.r * (1 - factor) + c2.r * factor);
+        const g = Math.round(c1.g * (1 - factor) + c2.g * factor);
+        const b = Math.round(c1.b * (1 - factor) + c2.b * factor);
+        return this.rgbToHex(r, g, b);
+    }
+    
+    evaluateColorRamp(params, position) {
+        const stops = params.stops || 3;
+        if (stops === 2) {
+            return this.interpolateColor(params.color1, params.color2, position);
+        } else if (stops === 3) {
+            if (position < 0.5) {
+                return this.interpolateColor(params.color1, params.color2, position * 2);
+            } else {
+                return this.interpolateColor(params.color2, params.color3, (position - 0.5) * 2);
+            }
+        }
+        return params.color1 || '#000000';
+    }
+    
+    applyCurve(input, curveType, strength) {
+        const normalized = input / 100;
+        let output = normalized;
+        
+        switch (curveType) {
+            case 'linear':
+                output = normalized;
+                break;
+            case 'ease-in':
+                output = normalized * normalized;
+                break;
+            case 'ease-out':
+                output = 1 - (1 - normalized) * (1 - normalized);
+                break;
+            case 'ease-in-out':
+                output = normalized < 0.5 
+                    ? 2 * normalized * normalized 
+                    : 1 - Math.pow(-2 * normalized + 2, 2) / 2;
+                break;
+            case 'exponential':
+                output = Math.pow(normalized, 2 + strength / 50);
+                break;
+        }
+        
+        return output * 100;
+    }
+    
+    perlinNoise(scale, octaves, persistence) {
+        // Simple pseudo-random noise generator
+        // In a real implementation, use a proper Perlin/Simplex noise library
+        let total = 0;
+        let frequency = scale;
+        let amplitude = 1;
+        let maxValue = 0;
+        
+        for (let i = 0; i < octaves; i++) {
+            const x = Date.now() / 1000 * frequency;
+            const y = Math.sin(x) * Math.cos(x * 1.3) + Math.sin(x * 0.7);
+            total += y * amplitude;
+            maxValue += amplitude;
+            amplitude *= persistence;
+            frequency *= 2;
+        }
+        
+        return (total / maxValue + 1) / 2; // Normalize to 0-1
     }
 }
 
