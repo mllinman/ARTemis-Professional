@@ -1000,10 +1000,18 @@ class NodeEditor {
         // Header
         const header = document.createElement('div');
         header.className = 'node-header';
-        header.innerHTML = `
-            <span class="node-title">${this.getNodeDisplayName(node.type)}</span>
-            <button class="node-delete" data-node-id="${node.id}">×</button>
-        `;
+        
+        const title = document.createElement('span');
+        title.className = 'node-title';
+        title.textContent = this.getNodeDisplayName(node.type);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'node-delete';
+        deleteBtn.dataset.nodeId = node.id;
+        deleteBtn.textContent = '×';
+        
+        header.appendChild(title);
+        header.appendChild(deleteBtn);
         el.appendChild(header);
         
         // Body

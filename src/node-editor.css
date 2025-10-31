@@ -380,7 +380,7 @@
 /* Connection lines */
 .node-connection {
     position: absolute;
-    pointer-events: stroke;
+    pointer-events: visibleStroke;
     z-index: 1;
 }
 
