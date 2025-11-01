@@ -4890,6 +4890,7 @@ function addLayer(name, type = 'paint') {
     compositeAllLayers();
     // FIXED: Auto-select tool when new layer is added
     autoSelectToolForLayer(layer);
+    return layer;
 }
 
 function duplicateLayer() {
