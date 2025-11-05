@@ -505,10 +505,13 @@ class AdvancedColorWheel {
             }
             
             case 'CMYK': {
+                // Note: CMYK mode uses 3 sliders (C, M, Y) with K fixed at 0 for UI simplicity
+                // This is a simplified CMYK representation suitable for digital painting
+                
                 // Cyan gradient
                 const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
                 for (let i = 0; i <= 100; i += 10) {
-                    const rgb = this.cmykToRgb(i, v2, v3, 0);
+                    const rgb = this.cmykToRgb(i, v2, v3, 0);  // K=0 (no black component)
                     gradient1.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
                 }
                 ctx1.fillStyle = gradient1;
@@ -517,7 +520,7 @@ class AdvancedColorWheel {
                 // Magenta gradient
                 const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
                 for (let i = 0; i <= 100; i += 10) {
-                    const rgb = this.cmykToRgb(v1, i, v3, 0);
+                    const rgb = this.cmykToRgb(v1, i, v3, 0);  // K=0 (no black component)
                     gradient2.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
                 }
                 ctx2.fillStyle = gradient2;
@@ -526,7 +529,7 @@ class AdvancedColorWheel {
                 // Yellow gradient
                 const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
                 for (let i = 0; i <= 100; i += 10) {
-                    const rgb = this.cmykToRgb(v1, v2, i, 0);
+                    const rgb = this.cmykToRgb(v1, v2, i, 0);  // K=0 (no black component)
                     gradient3.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
                 }
                 ctx3.fillStyle = gradient3;

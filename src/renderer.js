@@ -597,6 +597,7 @@ const state = {
         flow: 100,
         spacing: 10,
         smoothing: 0,
+        smoothingMode: 'basic',  // Eraser smoothing mode: 'basic', 'weighted', 'stabilizer'
         scatterX: 0,
         scatterY: 0
     },
@@ -6667,8 +6668,8 @@ function continueStroke(x, y, pressure) {
         const smoothLevel = Math.max(2, Math.floor(smoothing / 10) + 2);
         
         if (state.smoothPoints.length >= 2) {
-            // Apply selected smoothing algorithm (eraser uses basic smoothing mode)
-            const smoothingMode = state.tool === 'eraser' ? 'basic' : state.brush.smoothingMode;
+            // Apply selected smoothing algorithm
+            const smoothingMode = state.tool === 'eraser' ? state.eraser.smoothingMode : state.brush.smoothingMode;
             switch (smoothingMode) {
                 case 'basic':
                     // Simple averaging - smooths jitter but responsive
@@ -14724,7 +14725,7 @@ function selectTool(toolName) {
     }
     
     // DON'T clear selection when switching tools anymore - keep selection persistent
-    // Only clear when user explicitly deselects (Ctrl+D or clicking outside)
+    // Only clear when user explicitly deselects (Ctrl+D or Escape)
     
     state.tool = toolName;
     
@@ -14790,8 +14791,8 @@ function updateBrushUI() {
 
 // Helper function to update eraser UI sliders
 function updateEraserUI() {
-    // For now, eraser uses the same UI controls as brush
-    // But we update them to show eraser settings
+    // Eraser shares the same UI controls as brush (size, opacity, hardness, scatter)
+    // This is intentional for UI simplicity - they update to show eraser-specific values
     const sizeSlider = document.getElementById('brush-size');
     const sizeValue = document.getElementById('brush-size-value');
     const opacitySlider = document.getElementById('brush-opacity');
