@@ -1940,17 +1940,31 @@ function setupBrushSettings() {
     
     const scatterXSlider = document.getElementById('brush-scatter-x');
     const scatterXValue = document.getElementById('brush-scatter-x-value');
-    scatterXSlider.addEventListener('input', (e) => {
-        state.brush.scatterX = parseInt(e.target.value);
-        scatterXValue.textContent = state.brush.scatterX;
-    });
+    if (scatterXSlider) {
+        scatterXSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (state.tool === 'eraser') {
+                state.eraser.scatterX = value;
+            } else {
+                state.brush.scatterX = value;
+            }
+            scatterXValue.textContent = value;
+        });
+    }
     
     const scatterYSlider = document.getElementById('brush-scatter-y');
     const scatterYValue = document.getElementById('brush-scatter-y-value');
-    scatterYSlider.addEventListener('input', (e) => {
-        state.brush.scatterY = parseInt(e.target.value);
-        scatterYValue.textContent = state.brush.scatterY;
-    });
+    if (scatterYSlider) {
+        scatterYSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (state.tool === 'eraser') {
+                state.eraser.scatterY = value;
+            } else {
+                state.brush.scatterY = value;
+            }
+            scatterYValue.textContent = value;
+        });
+    }
     
     const pressureOpacity = document.getElementById('pressure-opacity');
     if (pressureOpacity) {
@@ -13775,7 +13789,7 @@ function getCanvasPos(e) {
 
 function updateCursor() {
     if (state.tool === 'brush' || state.tool === 'eraser') {
-        const size = Math.max(4, state.brush.size * state.canvas.zoom);
+        const size = Math.max(4, getCurrentToolSize() * state.canvas.zoom);
         // FIXED: Show cursor shape based on brush tip shape
         let cursorSvg = '';
         
@@ -14013,6 +14027,13 @@ function updateUndoRedoButtons() {
 // Keyboard Shortcuts
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
+        // Ctrl+D or Cmd+D to deselect (clear selection)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+            e.preventDefault();
+            clearSelection();
+            return;
+        }
+        
         // Escape to clear selection or finish polygonal lasso
         if (e.key === 'Escape') {
             if (state.tool === 'polygonal-lasso' && polygonalPoints.length > 0) {
@@ -14777,6 +14798,10 @@ function updateEraserUI() {
     const opacityValue = document.getElementById('brush-opacity-value');
     const hardnessSlider = document.getElementById('brush-hardness');
     const hardnessValue = document.getElementById('brush-hardness-value');
+    const scatterXSlider = document.getElementById('brush-scatter-x');
+    const scatterXValue = document.getElementById('brush-scatter-x-value');
+    const scatterYSlider = document.getElementById('brush-scatter-y');
+    const scatterYValue = document.getElementById('brush-scatter-y-value');
     
     if (sizeSlider) {
         sizeSlider.value = state.eraser.size;
@@ -14789,6 +14814,14 @@ function updateEraserUI() {
     if (hardnessSlider) {
         hardnessSlider.value = state.eraser.hardness;
         if (hardnessValue) hardnessValue.textContent = state.eraser.hardness;
+    }
+    if (scatterXSlider) {
+        scatterXSlider.value = state.eraser.scatterX;
+        if (scatterXValue) scatterXValue.textContent = state.eraser.scatterX;
+    }
+    if (scatterYSlider) {
+        scatterYSlider.value = state.eraser.scatterY;
+        if (scatterYValue) scatterYValue.textContent = state.eraser.scatterY;
     }
 }
 
