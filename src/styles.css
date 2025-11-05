@@ -865,6 +865,35 @@ input[type="checkbox"] {
     box-shadow: 0 0 12px rgba(14, 99, 156, 0.8), 0 0 24px rgba(14, 99, 156, 0.4), 0 2px 8px rgba(14, 99, 156, 0.4);
 }
 
+/* Preserve color label border on active layers */
+.layer-item.active[data-color-label="red"] {
+    border-left-color: #ff5555 !important;
+}
+
+.layer-item.active[data-color-label="orange"] {
+    border-left-color: #ffaa55 !important;
+}
+
+.layer-item.active[data-color-label="yellow"] {
+    border-left-color: #ffff55 !important;
+}
+
+.layer-item.active[data-color-label="green"] {
+    border-left-color: #55ff55 !important;
+}
+
+.layer-item.active[data-color-label="cyan"] {
+    border-left-color: #55ffff !important;
+}
+
+.layer-item.active[data-color-label="blue"] {
+    border-left-color: #5555ff !important;
+}
+
+.layer-item.active[data-color-label="purple"] {
+    border-left-color: #aa55ff !important;
+}
+
 .layer-thumbnail {
     width: 40px;
     height: 40px;

@@ -16604,6 +16604,21 @@ function setupPanelResize(panel) {
     let startX = 0;
     let startWidth = 0;
     
+    // Store original width if not already stored
+    if (!panel.dataset.originalWidth) {
+        panel.dataset.originalWidth = panel.offsetWidth;
+    }
+    
+    // Double-click to restore default width
+    handle.addEventListener('dblclick', (e) => {
+        panel.style.width = '';  // Remove inline width to use CSS default
+        // Re-store the new default width
+        setTimeout(() => {
+            panel.dataset.originalWidth = panel.offsetWidth;
+        }, 0);
+        e.preventDefault();
+    });
+    
     handle.addEventListener('mousedown', (e) => {
         isResizing = true;
         startX = e.clientX;
@@ -16876,8 +16891,19 @@ function dockPanel(panel, dockSide) {
     panel.style.left = '';
     panel.style.top = '';
     panel.style.order = '';
-    panel.style.width = '';
-    panel.style.height = '';
+    
+    // Only clear width/height for top/bottom docking
+    // For left/right, preserve the width if it was customized
+    if (dockSide === 'top' || dockSide === 'bottom') {
+        panel.style.width = '';
+        panel.style.height = '';
+    } else {
+        panel.style.height = '';
+        // Keep custom width if it exists, otherwise clear it
+        if (!panel.dataset.originalWidth || panel.style.width === '') {
+            panel.style.width = '';
+        }
+    }
     
     // Get appropriate container based on dock side
     let targetContainer;
@@ -16896,6 +16922,11 @@ function dockPanel(panel, dockSide) {
         default:
             console.error('Invalid dock side:', dockSide);
             return;
+    }
+    
+    if (!targetContainer) {
+        console.error('Target container not found for dock side:', dockSide);
+        return;
     }
     
     // Store original parent if not already stored
@@ -16929,6 +16960,12 @@ function dockPanel(panel, dockSide) {
             targetContainer.appendChild(panel);
             break;
     }
+    
+    // Ensure panel is visible after docking
+    panel.classList.remove('hidden');
+    panel.style.display = '';
+    
+    console.log(`Panel "${panel.id}" docked to ${dockSide}`);
 }
 
 // ============================================
