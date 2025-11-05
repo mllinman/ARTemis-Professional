@@ -11812,23 +11812,59 @@ function applyOilPaintStyle(imageData, options = {}) {
     const data = imageData.data;
     const tempData = new Uint8ClampedArray(data);
     
-    // First pass: Oil paint strokes with neighborhood averaging
+    // First pass: Calculate local variance for adaptive brush strokes
+    const variance = new Float32Array(width * height);
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            let sumSq = 0, sum = 0, count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const idx = ((y + dy) * width + (x + dx)) * 4;
+                    const intensity = (tempData[idx] + tempData[idx + 1] + tempData[idx + 2]) / 3;
+                    sum += intensity;
+                    sumSq += intensity * intensity;
+                    count++;
+                }
+            }
+            const mean = sum / count;
+            variance[y * width + x] = Math.sqrt(sumSq / count - mean * mean);
+        }
+    }
+    
+    // Second pass: Oil paint strokes with adaptive neighborhood based on local variance
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
-            let r = 0, g = 0, b = 0, count = 0;
-            let variance = 0;
+            const localVariance = variance[y * width + x] || 0;
+            // Smaller strokes in high-detail areas, larger in flat areas
+            const adaptiveBrushSize = Math.max(1, Math.ceil(brushSize * (1 - detail * localVariance / 255)));
             
-            // Sample neighborhood
-            for (let dy = -brushSize; dy <= brushSize; dy++) {
-                for (let dx = -brushSize; dx <= brushSize; dx++) {
+            let r = 0, g = 0, b = 0, count = 0;
+            let maxWeight = 0;
+            let dominantR = 0, dominantG = 0, dominantB = 0;
+            
+            // Sample neighborhood with weighted averaging
+            for (let dy = -adaptiveBrushSize; dy <= adaptiveBrushSize; dy++) {
+                for (let dx = -adaptiveBrushSize; dx <= adaptiveBrushSize; dx++) {
                     const nx = x + dx;
                     const ny = y + dy;
                     if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        const idx = (ny * width + nx) * 4;
-                        r += tempData[idx];
-                        g += tempData[idx + 1];
-                        b += tempData[idx + 2];
-                        count++;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= adaptiveBrushSize) {
+                            const weight = 1 - (dist / adaptiveBrushSize);
+                            const idx = (ny * width + nx) * 4;
+                            r += tempData[idx] * weight;
+                            g += tempData[idx + 1] * weight;
+                            b += tempData[idx + 2] * weight;
+                            count += weight;
+                            
+                            // Track dominant color for impasto highlights
+                            if (weight > maxWeight) {
+                                maxWeight = weight;
+                                dominantR = tempData[idx];
+                                dominantG = tempData[idx + 1];
+                                dominantB = tempData[idx + 2];
+                            }
+                        }
                     }
                 }
             }
@@ -11842,12 +11878,20 @@ function applyOilPaintStyle(imageData, options = {}) {
             g *= colorIntensity;
             b *= colorIntensity;
             
-            // Add impasto texture variation
+            // Add impasto texture with directional brush strokes
             if (impasto > 0) {
-                const noise = (Math.random() - 0.5) * impasto * 20;
-                r += noise;
-                g += noise;
-                b += noise;
+                // Create directional impasto based on local gradient
+                const angle = Math.atan2(y - height / 2, x - width / 2);
+                const strokeDirection = Math.sin(angle * 3 + x * 0.1) * Math.cos(angle * 2 + y * 0.1);
+                const impastoNoise = strokeDirection * impasto * 15 + (Math.random() - 0.5) * impasto * 10;
+                
+                // Add highlights on impasto ridges
+                const brightness = (r + g + b) / 3;
+                const highlight = brightness > 150 ? impastoNoise * 0.5 : impastoNoise * 0.2;
+                
+                r += impastoNoise + highlight;
+                g += impastoNoise + highlight;
+                b += impastoNoise + highlight;
             }
             
             const idx = (y * width + x) * 4;
@@ -11857,10 +11901,26 @@ function applyOilPaintStyle(imageData, options = {}) {
         }
     }
     
-    // Second pass: Edge enhancement for brush strokes
+    // Third pass: Selective edge enhancement for visible brush strokes
     if (detail > 0.3) {
-        const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
-        applyConvolution(imageData, kernel);
+        const edgeData = new Uint8ClampedArray(data);
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = (y * width + x) * 4;
+                const localVariance = variance[y * width + x] || 0;
+                
+                // Only enhance edges in areas with significant detail
+                if (localVariance > 20) {
+                    const edgeStrength = detail * 2;
+                    for (let c = 0; c < 3; c++) {
+                        const center = edgeData[idx + c];
+                        const sum = edgeData[idx + c - 4] + edgeData[idx + c + 4] +
+                                   edgeData[idx + c - width * 4] + edgeData[idx + c + width * 4];
+                        data[idx + c] = Math.min(255, Math.max(0, center * (1 + edgeStrength) - sum * edgeStrength / 4));
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -11873,8 +11933,31 @@ function applyAcrylicStyle(imageData, options = {}) {
     const width = imageData.width;
     const height = imageData.height;
     const data = imageData.data;
+    const tempData = new Uint8ClampedArray(data);
     
-    // Posterize colors for flat acrylic look
+    // First pass: Detect edges for preservation
+    const edges = new Uint8ClampedArray(width * height);
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            const idxLeft = (y * width + (x - 1)) * 4;
+            const idxRight = (y * width + (x + 1)) * 4;
+            const idxUp = ((y - 1) * width + x) * 4;
+            const idxDown = ((y + 1) * width + x) * 4;
+            
+            const gx = Math.abs(tempData[idxRight] - tempData[idxLeft]) +
+                      Math.abs(tempData[idxRight + 1] - tempData[idxLeft + 1]) +
+                      Math.abs(tempData[idxRight + 2] - tempData[idxLeft + 2]);
+            const gy = Math.abs(tempData[idxDown] - tempData[idxUp]) +
+                      Math.abs(tempData[idxDown + 1] - tempData[idxUp + 1]) +
+                      Math.abs(tempData[idxDown + 2] - tempData[idxUp + 2]);
+            
+            const magnitude = Math.sqrt(gx * gx + gy * gy) / 3;
+            edges[y * width + x] = magnitude > edgeThreshold ? 255 : 0;
+        }
+    }
+    
+    // Second pass: Posterize colors with saturation boost
     for (let i = 0; i < data.length; i += 4) {
         // Convert to HSL for saturation boost
         const r = data[i] / 255;
@@ -11921,14 +12004,43 @@ function applyAcrylicStyle(imageData, options = {}) {
             newB = hue2rgb(p, q, h - 1/3);
         }
         
-        // Posterize
-        newR = Math.round(newR * colorSteps) / colorSteps;
-        newG = Math.round(newG * colorSteps) / colorSteps;
-        newB = Math.round(newB * colorSteps) / colorSteps;
+        // Posterize with adaptive steps based on luminance
+        // More steps in mid-tones, fewer in highlights/shadows
+        const luminanceSteps = colorSteps + Math.floor((1 - Math.abs(l - 0.5) * 2) * 2);
+        newR = Math.round(newR * luminanceSteps) / luminanceSteps;
+        newG = Math.round(newG * luminanceSteps) / luminanceSteps;
+        newB = Math.round(newB * luminanceSteps) / luminanceSteps;
         
         data[i] = newR * 255;
         data[i + 1] = newG * 255;
         data[i + 2] = newB * 255;
+    }
+    
+    // Third pass: Apply bold outlines at edges
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            if (edges[y * width + x] > 0) {
+                // Darken edges for crisp acrylic look
+                const edgeDarken = 0.7;
+                data[idx] *= edgeDarken;
+                data[idx + 1] *= edgeDarken;
+                data[idx + 2] *= edgeDarken;
+            }
+        }
+    }
+    
+    // Fourth pass: Add slight canvas texture to non-edge areas
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            if (edges[y * width + x] === 0) {
+                const canvasTexture = (Math.sin(x * 0.3) + Math.cos(y * 0.3)) * 2;
+                data[i] = Math.min(255, Math.max(0, data[i] + canvasTexture));
+                data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + canvasTexture));
+                data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + canvasTexture));
+            }
+        }
     }
 }
 
@@ -11943,22 +12055,52 @@ function applyWatercolorStyle(imageData, options = {}) {
     const data = imageData.data;
     const tempData = new Uint8ClampedArray(data);
     
-    // First pass: Soft blur for wet-on-wet effect
-    const blurRadius = Math.ceil(3 * wetness);
+    // First pass: Detect edges to preserve detail
+    const edges = new Uint8ClampedArray(width * height);
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            const idxLeft = (y * width + (x - 1)) * 4;
+            const idxRight = (y * width + (x + 1)) * 4;
+            const idxUp = ((y - 1) * width + x) * 4;
+            const idxDown = ((y + 1) * width + x) * 4;
+            
+            // Calculate gradient magnitude
+            const gx = Math.abs(tempData[idxRight] - tempData[idxLeft]) +
+                      Math.abs(tempData[idxRight + 1] - tempData[idxLeft + 1]) +
+                      Math.abs(tempData[idxRight + 2] - tempData[idxLeft + 2]);
+            const gy = Math.abs(tempData[idxDown] - tempData[idxUp]) +
+                      Math.abs(tempData[idxDown + 1] - tempData[idxUp + 1]) +
+                      Math.abs(tempData[idxDown + 2] - tempData[idxUp + 2]);
+            
+            edges[y * width + x] = Math.sqrt(gx * gx + gy * gy) / 3;
+        }
+    }
+    
+    // Second pass: Adaptive blur based on edges (wet-on-wet effect)
+    const blurRadius = Math.ceil(4 * wetness);
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
+            const edgeStrength = edges[y * width + x] / 255;
+            // Reduce blur at edges to preserve detail
+            const adaptiveRadius = Math.ceil(blurRadius * (1 - edgeStrength * 0.7));
+            
             let r = 0, g = 0, b = 0, count = 0;
             
-            for (let dy = -blurRadius; dy <= blurRadius; dy++) {
-                for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+            for (let dy = -adaptiveRadius; dy <= adaptiveRadius; dy++) {
+                for (let dx = -adaptiveRadius; dx <= adaptiveRadius; dx++) {
                     const nx = x + dx;
                     const ny = y + dy;
                     if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        const idx = (ny * width + nx) * 4;
-                        r += tempData[idx];
-                        g += tempData[idx + 1];
-                        b += tempData[idx + 2];
-                        count++;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= adaptiveRadius) {
+                            const weight = 1 - (dist / adaptiveRadius);
+                            const idx = (ny * width + nx) * 4;
+                            r += tempData[idx] * weight;
+                            g += tempData[idx + 1] * weight;
+                            b += tempData[idx + 2] * weight;
+                            count += weight;
+                        }
                     }
                 }
             }
@@ -11970,18 +12112,65 @@ function applyWatercolorStyle(imageData, options = {}) {
         }
     }
     
-    // Second pass: Add paper texture and lighten for watercolor transparency
-    for (let i = 0; i < data.length; i += 4) {
-        // Lighten for watercolor effect
-        data[i] = Math.min(255, data[i] + 20);
-        data[i + 1] = Math.min(255, data[i + 1] + 20);
-        data[i + 2] = Math.min(255, data[i + 2] + 20);
-        
-        // Add paper texture noise
-        const noise = (Math.random() - 0.5) * paperTexture * 15;
-        data[i] = Math.min(255, Math.max(0, data[i] + noise));
-        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+    // Third pass: Color bleeding along edges
+    const bleedData = new Uint8ClampedArray(data);
+    const bleedAmount = bleed * 20;
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            const edgeStrength = edges[y * width + x] / 255;
+            
+            // Bleed colors along edges
+            if (edgeStrength > 0.3) {
+                const bleedFactor = edgeStrength * bleed;
+                for (let dy = -2; dy <= 2; dy++) {
+                    for (let dx = -2; dx <= 2; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const nidx = (ny * width + nx) * 4;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            const weight = (1 - dist / 3) * bleedFactor * 0.2;
+                            
+                            data[idx] += (bleedData[nidx] - data[idx]) * weight;
+                            data[idx + 1] += (bleedData[nidx + 1] - data[idx + 1]) * weight;
+                            data[idx + 2] += (bleedData[nidx + 2] - data[idx + 2]) * weight;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Fourth pass: Lighten, add paper texture and granulation
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            
+            // Lighten for watercolor transparency
+            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const lightenAmount = 15 + (1 - brightness / 255) * 10;
+            data[i] = Math.min(255, data[i] + lightenAmount);
+            data[i + 1] = Math.min(255, data[i + 1] + lightenAmount);
+            data[i + 2] = Math.min(255, data[i + 2] + lightenAmount);
+            
+            // Add paper texture with grain pattern
+            const grainX = Math.sin(x * 0.1) * Math.cos(y * 0.15);
+            const grainY = Math.cos(x * 0.15) * Math.sin(y * 0.1);
+            const grain = (grainX + grainY + (Math.random() - 0.5)) * paperTexture * 12;
+            
+            data[i] = Math.min(255, Math.max(0, data[i] + grain));
+            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain));
+            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain));
+            
+            // Add watercolor granulation in darker areas
+            if (brightness < 180) {
+                const granulation = (Math.random() - 0.5) * (1 - brightness / 255) * 8;
+                data[i] = Math.min(255, Math.max(0, data[i] + granulation));
+                data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + granulation));
+                data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + granulation));
+            }
+        }
     }
 }
 

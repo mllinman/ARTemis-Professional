@@ -60,44 +60,74 @@ const paperTextures = {
     'rough': { name: 'Generic Rough', roughness: 0.6, grain: 0.5 }
 };
 
-// Brush stroke definitions
-const brushStrokes = {
-    // Basic Brushes
-    'basic': { name: 'Basic', type: 'round', size: 20, opacity: 100 },
-    'soft': { name: 'Soft', type: 'soft', size: 30, opacity: 80 },
-    'hard': { name: 'Hard', type: 'hard', size: 20, opacity: 100 },
-    'medium': { name: 'Medium', type: 'round', size: 25, opacity: 90 },
-    'fine': { name: 'Fine', type: 'hard', size: 5, opacity: 100 },
-    
-    // Graphite Pencils
-    'rebelle-graphite-hb': { name: 'HB Graphite', type: 'graphite', size: 8, opacity: 78 },
-    'rebelle-graphite-2b': { name: '2B Graphite', type: 'graphite', size: 10, opacity: 82 },
-    'rebelle-graphite-4b': { name: '4B Graphite', type: 'graphite', size: 12, opacity: 86 },
-    'rebelle-graphite-6b': { name: '6B Graphite', type: 'graphite', size: 14, opacity: 90 },
-    'rebelle-graphite-8b': { name: '8B Graphite', type: 'graphite', size: 16, opacity: 94 },
-    'rebelle-graphite-h': { name: 'H Graphite', type: 'graphite', size: 6, opacity: 74 },
-    'rebelle-graphite-2h': { name: '2H Graphite', type: 'graphite', size: 5, opacity: 70 },
-    'rebelle-graphite-4h': { name: '4H Graphite', type: 'graphite', size: 4, opacity: 66 },
-    
-    // Watercolor
-    'watercolor': { name: 'Watercolor', type: 'watercolor', size: 50, opacity: 35 },
-    'watercolor-wet': { name: 'Watercolor Wet', type: 'watercolor', size: 60, opacity: 25 },
-    'watercolor-dry': { name: 'Watercolor Dry', type: 'watercolor', size: 40, opacity: 50 },
-    
-    // Oil Paint
-    'oil-paint': { name: 'Oil Paint', type: 'oil', size: 35, opacity: 90 },
-    'oil-flat': { name: 'Oil Flat', type: 'oil-flat', size: 40, opacity: 92 },
-    'palette-knife': { name: 'Palette Knife', type: 'palette-knife', size: 50, opacity: 95 },
-    
-    // Acrylic
-    'acrylic': { name: 'Acrylic', type: 'acrylic', size: 30, opacity: 90 },
-    'acrylic-flat': { name: 'Acrylic Flat', type: 'acrylic-flat', size: 38, opacity: 93 },
-    
-    // Ink
-    'ink': { name: 'Ink', type: 'ink', size: 15, opacity: 100 },
-    'ink-fine': { name: 'Ink Fine', type: 'ink', size: 8, opacity: 100 },
-    'marker': { name: 'Marker', type: 'marker', size: 30, opacity: 85 }
-};
+// Read brush presets from renderer.js to generate preview images for all brushes
+const rendererContent = fs.readFileSync('./src/renderer.js', 'utf8');
+
+// Extract brushPresets object
+const brushPresetsMatch = rendererContent.match(/const brushPresets = \{([\s\S]*?)\n\};/);
+if (!brushPresetsMatch) {
+    console.error('Could not find brushPresets in renderer.js');
+    process.exit(1);
+}
+
+// Parse brush definitions
+const brushStrokes = {};
+const brushPresetsText = brushPresetsMatch[1];
+const lines = brushPresetsText.split('\n');
+
+for (const line of lines) {
+    const match = line.match(/'([^']+)':\s*\{\s*size:\s*(\d+),\s*opacity:\s*(\d+),\s*hardness:\s*(\d+)/);
+    if (match) {
+        const [, brushKey, size, opacity, hardness] = match;
+        
+        // Determine brush type from key name and properties
+        let type = 'round';
+        let name = brushKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        
+        // Categorize brushes by type based on name patterns
+        if (brushKey.includes('watercolor') || brushKey.includes('wash') || brushKey.includes('wet-blend')) {
+            type = 'watercolor';
+        } else if (brushKey.includes('oil') || brushKey.includes('impasto')) {
+            type = 'oil';
+        } else if (brushKey.includes('acrylic')) {
+            type = 'acrylic';
+        } else if (brushKey.includes('graphite') || brushKey.includes('pencil') || brushKey.includes('charcoal') || brushKey.includes('sketch')) {
+            type = 'graphite';
+        } else if (brushKey.includes('ink') || brushKey.includes('pen') || brushKey.includes('calligraphy')) {
+            type = 'ink';
+        } else if (brushKey.includes('marker')) {
+            type = 'marker';
+        } else if (brushKey.includes('airbrush') || brushKey.includes('spray') || brushKey.includes('mist') || brushKey.includes('fog')) {
+            type = 'airbrush';
+        } else if (brushKey.includes('knife') || brushKey.includes('scraper')) {
+            type = 'palette-knife';
+        } else if (brushKey.includes('pastel') || brushKey.includes('crayon') || brushKey.includes('conte')) {
+            type = 'pastel';
+        } else if (brushKey.includes('texture') || brushKey.includes('sponge') || brushKey.includes('stipple')) {
+            type = 'texture';
+        } else if (brushKey.includes('glow') || brushKey.includes('sparkle') || brushKey.includes('star') || brushKey.includes('lightning') || brushKey.includes('fire')) {
+            type = 'effect';
+        } else if (brushKey.includes('soft')) {
+            type = 'soft';
+        } else if (brushKey.includes('hard')) {
+            type = 'hard';
+        } else if (parseInt(hardness) < 30) {
+            type = 'soft';
+        } else if (parseInt(hardness) > 80) {
+            type = 'hard';
+        }
+        
+        brushStrokes[brushKey] = {
+            name: name,
+            type: type,
+            size: parseInt(size),
+            opacity: parseInt(opacity),
+            hardness: parseInt(hardness)
+        };
+    }
+}
+
+console.log(`Loaded ${Object.keys(brushStrokes).length} brushes from renderer.js`);
 
 /**
  * Generate a paper texture preview image
@@ -214,8 +244,21 @@ function generateBrushStroke(brushKey, brushInfo) {
             ctx.globalAlpha = 1;
             break;
             
+        case 'pastel':
+            // Chalky pastel texture
+            ctx.strokeStyle = `rgba(150, 100, 180, ${brushInfo.opacity / 100})`;
+            ctx.lineWidth = brushInfo.size;
+            for (let x = startX; x < endX; x += 3) {
+                const y = startY + (Math.random() - 0.5) * 3;
+                const opacity = (brushInfo.opacity / 100) * (0.7 + Math.random() * 0.3);
+                ctx.globalAlpha = opacity;
+                ctx.fillRect(x, y - brushInfo.size / 2, 3, brushInfo.size);
+            }
+            ctx.globalAlpha = 1;
+            break;
+            
         case 'watercolor':
-            // Watercolor with soft edges
+            // Watercolor with soft edges and bleeding
             const gradient = ctx.createLinearGradient(startX, 0, endX, 0);
             gradient.addColorStop(0, `rgba(100, 150, 200, 0)`);
             gradient.addColorStop(0.5, `rgba(100, 150, 200, ${brushInfo.opacity / 100})`);
@@ -232,7 +275,6 @@ function generateBrushStroke(brushKey, brushInfo) {
             break;
             
         case 'oil':
-        case 'oil-flat':
             // Oil paint with texture
             ctx.strokeStyle = `rgba(150, 50, 50, ${brushInfo.opacity / 100})`;
             ctx.lineWidth = brushInfo.size;
@@ -262,7 +304,6 @@ function generateBrushStroke(brushKey, brushInfo) {
             break;
             
         case 'acrylic':
-        case 'acrylic-flat':
             // Acrylic with crisp edges
             ctx.strokeStyle = `rgba(200, 100, 50, ${brushInfo.opacity / 100})`;
             ctx.lineWidth = brushInfo.size;
@@ -283,14 +324,67 @@ function generateBrushStroke(brushKey, brushInfo) {
             ctx.stroke();
             break;
             
+        case 'airbrush':
+            // Diffuse airbrush spray
+            for (let i = 0; i < 100; i++) {
+                const x = startX + (endX - startX) * Math.random();
+                const y = startY + (Math.random() - 0.5) * brushInfo.size;
+                const alpha = (brushInfo.opacity / 100) * Math.random() * 0.3;
+                ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                ctx.fillRect(x, y, 1, 1);
+            }
+            break;
+            
+        case 'texture':
+            // Textured stamp-like stroke
+            for (let x = startX; x < endX; x += 5) {
+                for (let dy = -brushInfo.size / 2; dy < brushInfo.size / 2; dy += 5) {
+                    if (Math.random() > 0.5) {
+                        const opacity = (brushInfo.opacity / 100) * Math.random() * 0.8;
+                        ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+                        ctx.fillRect(x, startY + dy, 4, 4);
+                    }
+                }
+            }
+            break;
+            
+        case 'effect':
+            // Special effect with particles
+            for (let i = 0; i < 50; i++) {
+                const x = startX + (endX - startX) * Math.random();
+                const y = startY + (Math.random() - 0.5) * brushInfo.size * 1.5;
+                const size = Math.random() * 3 + 1;
+                const alpha = (brushInfo.opacity / 100) * Math.random();
+                ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            break;
+            
         default:
             // Default round brush
-            ctx.strokeStyle = `rgba(0, 0, 0, ${brushInfo.opacity / 100})`;
-            ctx.lineWidth = brushInfo.size;
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(endX, endY);
-            ctx.stroke();
+            const hardness = brushInfo.hardness || 50;
+            if (hardness < 30) {
+                // Soft brush
+                for (let i = 0; i < 5; i++) {
+                    const alpha = (brushInfo.opacity / 100) * (1 - i / 5) * 0.3;
+                    ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
+                    ctx.lineWidth = brushInfo.size + i * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                }
+            } else {
+                // Round brush
+                ctx.strokeStyle = `rgba(0, 0, 0, ${brushInfo.opacity / 100})`;
+                ctx.lineWidth = brushInfo.size;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
     }
     
     // Add brush name label at bottom
