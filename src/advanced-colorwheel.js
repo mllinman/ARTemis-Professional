@@ -380,36 +380,159 @@ class AdvancedColorWheel {
         ctx2.clearRect(0, 0, slider2Canvas.width, slider2Canvas.height);
         ctx3.clearRect(0, 0, slider3Canvas.width, slider3Canvas.height);
         
+        // Get current slider values
+        const v1 = parseFloat(document.getElementById('value-slider-1').value);
+        const v2 = parseFloat(document.getElementById('value-slider-2').value);
+        const v3 = parseFloat(document.getElementById('value-slider-3').value);
+        
         // Draw gradients based on color space
-        if (this.currentColorSpace === 'HSV') {
-            // Hue gradient (rainbow)
-            const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
-            for (let i = 0; i <= 360; i += 60) {
-                const rgb = this.hsvToRgb(i, 100, 100);
-                gradient1.addColorStop(i / 360, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+        switch (this.currentColorSpace) {
+            case 'HSV': {
+                // Hue gradient (rainbow)
+                const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
+                for (let i = 0; i <= 360; i += 30) {
+                    const rgb = this.hsvToRgb(i, 100, 100);
+                    gradient1.addColorStop(i / 360, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx1.fillStyle = gradient1;
+                ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
+                
+                // Saturation gradient (gray to current color)
+                const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.hsvToRgb(v1, i, 100);
+                    gradient2.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx2.fillStyle = gradient2;
+                ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
+                
+                // Value gradient (black to current color)
+                const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.hsvToRgb(v1, v2, i);
+                    gradient3.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx3.fillStyle = gradient3;
+                ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+                break;
             }
-            ctx1.fillStyle = gradient1;
-            ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
             
-            // Saturation gradient (gray to current color)
-            const currentHue = parseFloat(document.getElementById('value-slider-1').value);
-            const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
-            for (let i = 0; i <= 100; i += 20) {
-                const rgb = this.hsvToRgb(currentHue, i, 100);
-                gradient2.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+            case 'HSL': {
+                // Hue gradient (rainbow)
+                const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
+                for (let i = 0; i <= 360; i += 30) {
+                    const rgb = this.hslToRgb(i, 100, 50);
+                    gradient1.addColorStop(i / 360, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx1.fillStyle = gradient1;
+                ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
+                
+                // Saturation gradient
+                const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.hslToRgb(v1, i, v3);
+                    gradient2.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx2.fillStyle = gradient2;
+                ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
+                
+                // Lightness gradient (black to white)
+                const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.hslToRgb(v1, v2, i);
+                    gradient3.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx3.fillStyle = gradient3;
+                ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+                break;
             }
-            ctx2.fillStyle = gradient2;
-            ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
             
-            // Value gradient (black to current color)
-            const currentSat = parseFloat(document.getElementById('value-slider-2').value);
-            const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
-            for (let i = 0; i <= 100; i += 20) {
-                const rgb = this.hsvToRgb(currentHue, currentSat, i);
-                gradient3.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+            case 'RGB': {
+                // Red gradient
+                const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
+                for (let i = 0; i <= 255; i += 25) {
+                    gradient1.addColorStop(i / 255, `rgb(${i}, ${v2}, ${v3})`);
+                }
+                ctx1.fillStyle = gradient1;
+                ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
+                
+                // Green gradient
+                const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
+                for (let i = 0; i <= 255; i += 25) {
+                    gradient2.addColorStop(i / 255, `rgb(${v1}, ${i}, ${v3})`);
+                }
+                ctx2.fillStyle = gradient2;
+                ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
+                
+                // Blue gradient
+                const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
+                for (let i = 0; i <= 255; i += 25) {
+                    gradient3.addColorStop(i / 255, `rgb(${v1}, ${v2}, ${i})`);
+                }
+                ctx3.fillStyle = gradient3;
+                ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+                break;
             }
-            ctx3.fillStyle = gradient3;
-            ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+            
+            case 'LAB': {
+                // Lightness gradient (black to white)
+                const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.labToRgb(i, v2, v3);
+                    gradient1.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx1.fillStyle = gradient1;
+                ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
+                
+                // A gradient (green to red)
+                const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
+                for (let i = -128; i <= 127; i += 25) {
+                    const rgb = this.labToRgb(v1, i, v3);
+                    gradient2.addColorStop((i + 128) / 255, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx2.fillStyle = gradient2;
+                ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
+                
+                // B gradient (blue to yellow)
+                const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
+                for (let i = -128; i <= 127; i += 25) {
+                    const rgb = this.labToRgb(v1, v2, i);
+                    gradient3.addColorStop((i + 128) / 255, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx3.fillStyle = gradient3;
+                ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+                break;
+            }
+            
+            case 'CMYK': {
+                // Cyan gradient
+                const gradient1 = ctx1.createLinearGradient(0, 0, slider1Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.cmykToRgb(i, v2, v3, 0);
+                    gradient1.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx1.fillStyle = gradient1;
+                ctx1.fillRect(0, 0, slider1Canvas.width, slider1Canvas.height);
+                
+                // Magenta gradient
+                const gradient2 = ctx2.createLinearGradient(0, 0, slider2Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.cmykToRgb(v1, i, v3, 0);
+                    gradient2.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx2.fillStyle = gradient2;
+                ctx2.fillRect(0, 0, slider2Canvas.width, slider2Canvas.height);
+                
+                // Yellow gradient
+                const gradient3 = ctx3.createLinearGradient(0, 0, slider3Canvas.width, 0);
+                for (let i = 0; i <= 100; i += 10) {
+                    const rgb = this.cmykToRgb(v1, v2, i, 0);
+                    gradient3.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+                }
+                ctx3.fillStyle = gradient3;
+                ctx3.fillRect(0, 0, slider3Canvas.width, slider3Canvas.height);
+                break;
+            }
         }
     }
     
@@ -796,6 +919,97 @@ class AdvancedColorWheel {
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
         } : { r: 0, g: 0, b: 0 };
+    }
+    
+    // HSL to RGB conversion
+    hslToRgb(h, s, l) {
+        h = h % 360;
+        s = Math.max(0, Math.min(100, s)) / 100;
+        l = Math.max(0, Math.min(100, l)) / 100;
+        
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+        const m = l - c / 2;
+        
+        let r, g, b;
+        
+        if (h < 60) {
+            [r, g, b] = [c, x, 0];
+        } else if (h < 120) {
+            [r, g, b] = [x, c, 0];
+        } else if (h < 180) {
+            [r, g, b] = [0, c, x];
+        } else if (h < 240) {
+            [r, g, b] = [0, x, c];
+        } else if (h < 300) {
+            [r, g, b] = [x, 0, c];
+        } else {
+            [r, g, b] = [c, 0, x];
+        }
+        
+        return {
+            r: Math.round((r + m) * 255),
+            g: Math.round((g + m) * 255),
+            b: Math.round((b + m) * 255)
+        };
+    }
+    
+    // LAB to RGB conversion (simplified)
+    labToRgb(l, a, b) {
+        // Clamp LAB values
+        l = Math.max(0, Math.min(100, l));
+        a = Math.max(-128, Math.min(127, a));
+        b = Math.max(-128, Math.min(127, b));
+        
+        // LAB to XYZ
+        let y = (l + 16) / 116;
+        let x = a / 500 + y;
+        let z = y - b / 200;
+        
+        const fx = x > 0.206897 ? x * x * x : (x - 16 / 116) / 7.787;
+        const fy = y > 0.206897 ? y * y * y : (y - 16 / 116) / 7.787;
+        const fz = z > 0.206897 ? z * z * z : (z - 16 / 116) / 7.787;
+        
+        x = fx * 95.047;
+        y = fy * 100.000;
+        z = fz * 108.883;
+        
+        // XYZ to RGB
+        x /= 100;
+        y /= 100;
+        z /= 100;
+        
+        let r = x *  3.2406 + y * -1.5372 + z * -0.4986;
+        let g = x * -0.9689 + y *  1.8758 + z *  0.0415;
+        let bl = x *  0.0557 + y * -0.2040 + z *  1.0570;
+        
+        r = r > 0.0031308 ? 1.055 * Math.pow(r, 1 / 2.4) - 0.055 : 12.92 * r;
+        g = g > 0.0031308 ? 1.055 * Math.pow(g, 1 / 2.4) - 0.055 : 12.92 * g;
+        bl = bl > 0.0031308 ? 1.055 * Math.pow(bl, 1 / 2.4) - 0.055 : 12.92 * bl;
+        
+        return {
+            r: Math.max(0, Math.min(255, Math.round(r * 255))),
+            g: Math.max(0, Math.min(255, Math.round(g * 255))),
+            b: Math.max(0, Math.min(255, Math.round(bl * 255)))
+        };
+    }
+    
+    // CMYK to RGB conversion
+    cmykToRgb(c, m, y, k) {
+        c = Math.max(0, Math.min(100, c)) / 100;
+        m = Math.max(0, Math.min(100, m)) / 100;
+        y = Math.max(0, Math.min(100, y)) / 100;
+        k = Math.max(0, Math.min(100, k)) / 100;
+        
+        const r = 255 * (1 - c) * (1 - k);
+        const g = 255 * (1 - m) * (1 - k);
+        const b = 255 * (1 - y) * (1 - k);
+        
+        return {
+            r: Math.round(r),
+            g: Math.round(g),
+            b: Math.round(b)
+        };
     }
 }
 
