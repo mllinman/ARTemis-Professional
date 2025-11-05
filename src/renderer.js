@@ -587,6 +587,25 @@ const state = {
         technicalPenRapidDrying: true, // Rapid drying
         technicalPenNoBleed: true,   // No bleed guarantee
     },
+    // Eraser tool settings (separate from brush)
+    eraser: {
+        size: 20,
+        opacity: 100,
+        hardness: 100,  // Erasers typically have harder edges
+        pressureOpacity: true,
+        pressureSize: true,
+        flow: 100,
+        spacing: 10,
+        smoothing: 0,
+        scatterX: 0,
+        scatterY: 0
+    },
+    // Tool settings persistence - stores settings for each tool when switching
+    toolSettings: {
+        brush: null,  // Will store brush settings when switching away
+        eraser: null, // Will store eraser settings when switching away
+        lastTool: 'brush' // Track the last tool used before selection
+    },
     color: '#000000',
     layers: [],
     activeLayer: null,
@@ -1824,45 +1843,81 @@ function setupBrushSettings() {
     const sizeSlider = document.getElementById('brush-size');
     const sizeValue = document.getElementById('brush-size-value');
     sizeSlider.addEventListener('input', (e) => {
-        state.brush.size = parseInt(e.target.value);
-        sizeValue.textContent = state.brush.size;
+        const value = parseInt(e.target.value);
+        if (state.tool === 'eraser') {
+            state.eraser.size = value;
+        } else {
+            state.brush.size = value;
+        }
+        sizeValue.textContent = value;
         updateCursor();
     });
     
     const opacitySlider = document.getElementById('brush-opacity');
     const opacityValue = document.getElementById('brush-opacity-value');
     opacitySlider.addEventListener('input', (e) => {
-        state.brush.opacity = parseInt(e.target.value);
-        opacityValue.textContent = state.brush.opacity;
+        const value = parseInt(e.target.value);
+        if (state.tool === 'eraser') {
+            state.eraser.opacity = value;
+        } else {
+            state.brush.opacity = value;
+        }
+        opacityValue.textContent = value;
     });
     
     const hardnessSlider = document.getElementById('brush-hardness');
     const hardnessValue = document.getElementById('brush-hardness-value');
     hardnessSlider.addEventListener('input', (e) => {
-        state.brush.hardness = parseInt(e.target.value);
-        hardnessValue.textContent = state.brush.hardness;
+        const value = parseInt(e.target.value);
+        if (state.tool === 'eraser') {
+            state.eraser.hardness = value;
+        } else {
+            state.brush.hardness = value;
+        }
+        hardnessValue.textContent = value;
     });
     
     const flowSlider = document.getElementById('brush-flow');
     const flowValue = document.getElementById('brush-flow-value');
-    flowSlider.addEventListener('input', (e) => {
-        state.brush.flow = parseInt(e.target.value);
-        flowValue.textContent = state.brush.flow;
-    });
+    if (flowSlider) {
+        flowSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (state.tool === 'eraser') {
+                state.eraser.flow = value;
+            } else {
+                state.brush.flow = value;
+            }
+            flowValue.textContent = value;
+        });
+    }
     
     const spacingSlider = document.getElementById('brush-spacing');
     const spacingValue = document.getElementById('brush-spacing-value');
-    spacingSlider.addEventListener('input', (e) => {
-        state.brush.spacing = parseInt(e.target.value);
-        spacingValue.textContent = state.brush.spacing;
-    });
+    if (spacingSlider) {
+        spacingSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (state.tool === 'eraser') {
+                state.eraser.spacing = value;
+            } else {
+                state.brush.spacing = value;
+            }
+            spacingValue.textContent = value;
+        });
+    }
     
     const smoothingSlider = document.getElementById('brush-smoothing');
     const smoothingValue = document.getElementById('brush-smoothing-value');
-    smoothingSlider.addEventListener('input', (e) => {
-        state.brush.smoothing = parseInt(e.target.value);
-        smoothingValue.textContent = state.brush.smoothing;
-    });
+    if (smoothingSlider) {
+        smoothingSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (state.tool === 'eraser') {
+                state.eraser.smoothing = value;
+            } else {
+                state.brush.smoothing = value;
+            }
+            smoothingValue.textContent = value;
+        });
+    }
     
     const smoothingModeSelect = document.getElementById('smoothing-mode');
     smoothingModeSelect.addEventListener('change', (e) => {
@@ -6530,6 +6585,39 @@ function setupCanvasEvents() {
     });
 }
 
+// Helper functions to get current tool settings
+function getCurrentToolSettings() {
+    // Return the appropriate settings object based on current tool
+    if (state.tool === 'eraser') {
+        return state.eraser;
+    }
+    return state.brush;
+}
+
+function getCurrentToolSize() {
+    return state.tool === 'eraser' ? state.eraser.size : state.brush.size;
+}
+
+function getCurrentToolOpacity() {
+    return state.tool === 'eraser' ? state.eraser.opacity : state.brush.opacity;
+}
+
+function getCurrentToolHardness() {
+    return state.tool === 'eraser' ? state.eraser.hardness : state.brush.hardness;
+}
+
+function getCurrentToolSmoothing() {
+    return state.tool === 'eraser' ? state.eraser.smoothing : state.brush.smoothing;
+}
+
+function getCurrentToolSpacing() {
+    return state.tool === 'eraser' ? state.eraser.spacing : state.brush.spacing;
+}
+
+function getCurrentToolFlow() {
+    return state.tool === 'eraser' ? state.eraser.flow : state.brush.flow;
+}
+
 // Drawing Functions
 function startStroke(x, y, pressure) {
     // Ensure all layers are composited before starting new stroke
@@ -6556,14 +6644,18 @@ function continueStroke(x, y, pressure) {
     // Add point to smoothing buffer
     state.smoothPoints.push({x, y, pressure});
     
+    // Use current tool's smoothing setting
+    const smoothing = getCurrentToolSmoothing();
+    
     // Apply smoothing if enabled
-    if (state.brush.smoothing > 0) {
+    if (smoothing > 0) {
         // Improved smoothing calculation - more responsive at lower values
-        const smoothLevel = Math.max(2, Math.floor(state.brush.smoothing / 10) + 2);
+        const smoothLevel = Math.max(2, Math.floor(smoothing / 10) + 2);
         
         if (state.smoothPoints.length >= 2) {
-            // Apply selected smoothing algorithm
-            switch (state.brush.smoothingMode) {
+            // Apply selected smoothing algorithm (eraser uses basic smoothing mode)
+            const smoothingMode = state.tool === 'eraser' ? 'basic' : state.brush.smoothingMode;
+            switch (smoothingMode) {
                 case 'basic':
                     // Simple averaging - smooths jitter but responsive
                     let avgX = 0, avgY = 0, avgP = 0;
@@ -6600,7 +6692,7 @@ function continueStroke(x, y, pressure) {
                     // Pull-string stabilizer - creates lag but very smooth
                     const lastPt = state.smoothPoints[state.smoothPoints.length - 2];
                     if (lastPt) {
-                        const strength = Math.min(0.95, state.brush.smoothing / 100);
+                        const strength = Math.min(0.95, smoothing / 100);
                         // Interpolate between last point and current point with improved formula
                         const smoothness = strength * 0.9;
                         x = lastPt.x + (x - lastPt.x) * (1 - smoothness);
@@ -7568,7 +7660,7 @@ function getBrushCategory(presetName) {
 }
 
 function drawBrushTip(ctx, size) {
-    const hardness = state.brush.hardness / 100;
+    const hardness = getCurrentToolHardness() / 100;
     // FIXED: For eraser with destination-out, use white color (alpha channel determines erase strength)
     const fillColor = state.tool === 'eraser' ? '#ffffff' : state.color;
     
@@ -7698,8 +7790,8 @@ function drawLine(x1, y1, x2, y2, pressure) {
     const angle = Math.atan2(y2 - y1, x2 - x1);
     const size = calculateBrushSize(pressure);
     
-    // Calculate spacing based on brush size and spacing setting
-    const spacing = state.brush.spacing / 100;
+    // Calculate spacing based on current tool's spacing setting
+    const spacing = getCurrentToolSpacing() / 100;
     const step = Math.max(0.5, size * spacing);
     
     // Draw dabs along the line with proper spacing
@@ -8102,8 +8194,18 @@ function hsvToRgb(h, s, v) {
 }
 
 function calculateBrushSize(pressure) {
-    let size = state.brush.size;
+    const settings = getCurrentToolSettings();
+    let size = settings.size;
     
+    // For eraser, apply basic pressure and size changes only
+    if (state.tool === 'eraser') {
+        if (settings.pressureSize) {
+            size = size * pressure;
+        }
+        return Math.max(1, size);
+    }
+    
+    // For brush, apply all dynamics
     // Apply size jitter
     if (state.brush.sizeJitter > 0) {
         const jitter = 1 + (Math.random() - 0.5) * state.brush.sizeJitter / 50;
@@ -8140,8 +8242,18 @@ function calculateBrushSize(pressure) {
 }
 
 function calculateBrushOpacity(pressure) {
-    let opacity = state.brush.opacity / 100;
+    const settings = getCurrentToolSettings();
+    let opacity = settings.opacity / 100;
     
+    // For eraser, apply basic pressure and opacity changes only
+    if (state.tool === 'eraser') {
+        if (settings.pressureOpacity) {
+            opacity = opacity * pressure;
+        }
+        return Math.max(0, Math.min(1, opacity));
+    }
+    
+    // For brush, apply all dynamics
     // Apply opacity jitter
     if (state.brush.opacityJitter > 0) {
         const jitter = 1 + (Math.random() - 0.5) * state.brush.opacityJitter / 50;
@@ -8184,8 +8296,8 @@ function showEraserPreview(x, y) {
     drawCtx.drawImage(state.activeLayer.canvas, 0, 0);
     
     // Draw a semi-transparent circle showing the eraser area
-    const size = state.brush.size;
-    const hardness = state.brush.hardness / 100;
+    const size = state.eraser.size;
+    const hardness = state.eraser.hardness / 100;
     
     drawCtx.globalCompositeOperation = 'destination-out';
     drawCtx.globalAlpha = ERASER_PREVIEW_OPACITY; // Semi-transparent preview
@@ -14554,16 +14666,56 @@ function autoSelectToolForLayer(layer) {
 }
 
 function selectTool(toolName) {
-    // Clear selection when switching away from selection tools (unless switching between selection tools)
     const selectionTools = ['selection', 'magic-wand'];
     const wasSelectionTool = selectionTools.includes(state.tool);
     const isSelectionTool = selectionTools.includes(toolName);
     
-    if (wasSelectionTool && !isSelectionTool && state.selection.active) {
-        clearSelection();
+    // Save current tool settings before switching
+    if (state.tool === 'brush' && toolName !== 'brush') {
+        // Save brush settings
+        state.toolSettings.brush = {
+            size: state.brush.size,
+            opacity: state.brush.opacity,
+            hardness: state.brush.hardness,
+            flow: state.brush.flow,
+            spacing: state.brush.spacing,
+            smoothing: state.brush.smoothing,
+            scatterX: state.brush.scatterX,
+            scatterY: state.brush.scatterY
+        };
+    } else if (state.tool === 'eraser' && toolName !== 'eraser') {
+        // Save eraser settings
+        state.toolSettings.eraser = {
+            size: state.eraser.size,
+            opacity: state.eraser.opacity,
+            hardness: state.eraser.hardness,
+            flow: state.eraser.flow,
+            spacing: state.eraser.spacing,
+            smoothing: state.eraser.smoothing,
+            scatterX: state.eraser.scatterX,
+            scatterY: state.eraser.scatterY
+        };
     }
     
+    // Track last tool before entering selection mode
+    if (!wasSelectionTool && isSelectionTool) {
+        state.toolSettings.lastTool = state.tool;
+    }
+    
+    // DON'T clear selection when switching tools anymore - keep selection persistent
+    // Only clear when user explicitly deselects (Ctrl+D or clicking outside)
+    
     state.tool = toolName;
+    
+    // Restore tool settings when switching to brush or eraser
+    if (toolName === 'brush' && state.toolSettings.brush) {
+        Object.assign(state.brush, state.toolSettings.brush);
+        updateBrushUI();
+    } else if (toolName === 'eraser' && state.toolSettings.eraser) {
+        Object.assign(state.eraser, state.toolSettings.eraser);
+        updateEraserUI();
+    }
+    
     document.querySelectorAll('.tool-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.tool === toolName) {
@@ -14590,6 +14742,54 @@ function selectTool(toolName) {
     
     updateCursor();
     updateContextualTaskbar(toolName);
+}
+
+// Helper function to update brush UI sliders
+function updateBrushUI() {
+    const sizeSlider = document.getElementById('brush-size');
+    const sizeValue = document.getElementById('brush-size-value');
+    const opacitySlider = document.getElementById('brush-opacity');
+    const opacityValue = document.getElementById('brush-opacity-value');
+    const hardnessSlider = document.getElementById('brush-hardness');
+    const hardnessValue = document.getElementById('brush-hardness-value');
+    
+    if (sizeSlider) {
+        sizeSlider.value = state.brush.size;
+        if (sizeValue) sizeValue.textContent = state.brush.size;
+    }
+    if (opacitySlider) {
+        opacitySlider.value = state.brush.opacity;
+        if (opacityValue) opacityValue.textContent = state.brush.opacity;
+    }
+    if (hardnessSlider) {
+        hardnessSlider.value = state.brush.hardness;
+        if (hardnessValue) hardnessValue.textContent = state.brush.hardness;
+    }
+}
+
+// Helper function to update eraser UI sliders
+function updateEraserUI() {
+    // For now, eraser uses the same UI controls as brush
+    // But we update them to show eraser settings
+    const sizeSlider = document.getElementById('brush-size');
+    const sizeValue = document.getElementById('brush-size-value');
+    const opacitySlider = document.getElementById('brush-opacity');
+    const opacityValue = document.getElementById('brush-opacity-value');
+    const hardnessSlider = document.getElementById('brush-hardness');
+    const hardnessValue = document.getElementById('brush-hardness-value');
+    
+    if (sizeSlider) {
+        sizeSlider.value = state.eraser.size;
+        if (sizeValue) sizeValue.textContent = state.eraser.size;
+    }
+    if (opacitySlider) {
+        opacitySlider.value = state.eraser.opacity;
+        if (opacityValue) opacityValue.textContent = state.eraser.opacity;
+    }
+    if (hardnessSlider) {
+        hardnessSlider.value = state.eraser.hardness;
+        if (hardnessValue) hardnessValue.textContent = state.eraser.hardness;
+    }
 }
 
 // Menu Handlers
