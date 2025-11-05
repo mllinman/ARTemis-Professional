@@ -11943,22 +11943,52 @@ function applyWatercolorStyle(imageData, options = {}) {
     const data = imageData.data;
     const tempData = new Uint8ClampedArray(data);
     
-    // First pass: Soft blur for wet-on-wet effect
-    const blurRadius = Math.ceil(3 * wetness);
+    // First pass: Detect edges to preserve detail
+    const edges = new Uint8ClampedArray(width * height);
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            const idxLeft = (y * width + (x - 1)) * 4;
+            const idxRight = (y * width + (x + 1)) * 4;
+            const idxUp = ((y - 1) * width + x) * 4;
+            const idxDown = ((y + 1) * width + x) * 4;
+            
+            // Calculate gradient magnitude
+            const gx = Math.abs(tempData[idxRight] - tempData[idxLeft]) +
+                      Math.abs(tempData[idxRight + 1] - tempData[idxLeft + 1]) +
+                      Math.abs(tempData[idxRight + 2] - tempData[idxLeft + 2]);
+            const gy = Math.abs(tempData[idxDown] - tempData[idxUp]) +
+                      Math.abs(tempData[idxDown + 1] - tempData[idxUp + 1]) +
+                      Math.abs(tempData[idxDown + 2] - tempData[idxUp + 2]);
+            
+            edges[y * width + x] = Math.sqrt(gx * gx + gy * gy) / 3;
+        }
+    }
+    
+    // Second pass: Adaptive blur based on edges (wet-on-wet effect)
+    const blurRadius = Math.ceil(4 * wetness);
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
+            const edgeStrength = edges[y * width + x] / 255;
+            // Reduce blur at edges to preserve detail
+            const adaptiveRadius = Math.ceil(blurRadius * (1 - edgeStrength * 0.7));
+            
             let r = 0, g = 0, b = 0, count = 0;
             
-            for (let dy = -blurRadius; dy <= blurRadius; dy++) {
-                for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+            for (let dy = -adaptiveRadius; dy <= adaptiveRadius; dy++) {
+                for (let dx = -adaptiveRadius; dx <= adaptiveRadius; dx++) {
                     const nx = x + dx;
                     const ny = y + dy;
                     if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        const idx = (ny * width + nx) * 4;
-                        r += tempData[idx];
-                        g += tempData[idx + 1];
-                        b += tempData[idx + 2];
-                        count++;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= adaptiveRadius) {
+                            const weight = 1 - (dist / adaptiveRadius);
+                            const idx = (ny * width + nx) * 4;
+                            r += tempData[idx] * weight;
+                            g += tempData[idx + 1] * weight;
+                            b += tempData[idx + 2] * weight;
+                            count += weight;
+                        }
                     }
                 }
             }
@@ -11970,18 +12000,65 @@ function applyWatercolorStyle(imageData, options = {}) {
         }
     }
     
-    // Second pass: Add paper texture and lighten for watercolor transparency
-    for (let i = 0; i < data.length; i += 4) {
-        // Lighten for watercolor effect
-        data[i] = Math.min(255, data[i] + 20);
-        data[i + 1] = Math.min(255, data[i + 1] + 20);
-        data[i + 2] = Math.min(255, data[i + 2] + 20);
-        
-        // Add paper texture noise
-        const noise = (Math.random() - 0.5) * paperTexture * 15;
-        data[i] = Math.min(255, Math.max(0, data[i] + noise));
-        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+    // Third pass: Color bleeding along edges
+    const bleedData = new Uint8ClampedArray(data);
+    const bleedAmount = bleed * 20;
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            const idx = (y * width + x) * 4;
+            const edgeStrength = edges[y * width + x] / 255;
+            
+            // Bleed colors along edges
+            if (edgeStrength > 0.3) {
+                const bleedFactor = edgeStrength * bleed;
+                for (let dy = -2; dy <= 2; dy++) {
+                    for (let dx = -2; dx <= 2; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const nidx = (ny * width + nx) * 4;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            const weight = (1 - dist / 3) * bleedFactor * 0.2;
+                            
+                            data[idx] += (bleedData[nidx] - data[idx]) * weight;
+                            data[idx + 1] += (bleedData[nidx + 1] - data[idx + 1]) * weight;
+                            data[idx + 2] += (bleedData[nidx + 2] - data[idx + 2]) * weight;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Fourth pass: Lighten, add paper texture and granulation
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            
+            // Lighten for watercolor transparency
+            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const lightenAmount = 15 + (1 - brightness / 255) * 10;
+            data[i] = Math.min(255, data[i] + lightenAmount);
+            data[i + 1] = Math.min(255, data[i + 1] + lightenAmount);
+            data[i + 2] = Math.min(255, data[i + 2] + lightenAmount);
+            
+            // Add paper texture with grain pattern
+            const grainX = Math.sin(x * 0.1) * Math.cos(y * 0.15);
+            const grainY = Math.cos(x * 0.15) * Math.sin(y * 0.1);
+            const grain = (grainX + grainY + (Math.random() - 0.5)) * paperTexture * 12;
+            
+            data[i] = Math.min(255, Math.max(0, data[i] + grain));
+            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain));
+            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain));
+            
+            // Add watercolor granulation in darker areas
+            if (brightness < 180) {
+                const granulation = (Math.random() - 0.5) * (1 - brightness / 255) * 8;
+                data[i] = Math.min(255, Math.max(0, data[i] + granulation));
+                data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + granulation));
+                data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + granulation));
+            }
+        }
     }
 }
 
