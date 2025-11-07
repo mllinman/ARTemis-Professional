@@ -1,6 +1,6 @@
 {
   "name": "artemis",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha",
   "description": "ARTemis - Professional digital painting application with advanced tools - works standalone in browser or as Electron app",
   "main": "src/main.js",
   "scripts": {
