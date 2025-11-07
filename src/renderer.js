@@ -3632,7 +3632,8 @@ function setupAdvancedFeatures() {
         canvasTextureIntensitySlider.addEventListener('input', (e) => {
             state.canvasTexture.intensity = parseInt(e.target.value);
             canvasTextureIntensityValue.textContent = state.canvasTexture.intensity + '%';
-            compositeAllLayers();
+            // Use debounced version for smooth slider interaction
+            debouncedCompositeAllLayers();
         });
     }
     
@@ -3642,7 +3643,8 @@ function setupAdvancedFeatures() {
         canvasTextureGrainSlider.addEventListener('input', (e) => {
             state.canvasTexture.grain = parseInt(e.target.value);
             canvasTextureGrainValue.textContent = state.canvasTexture.grain + '%';
-            compositeAllLayers();
+            // Use debounced version for smooth slider interaction
+            debouncedCompositeAllLayers();
         });
     }
     
@@ -5177,6 +5179,45 @@ function updateLayersList() {
         layersList.appendChild(layerItem);
     });
 }
+
+// ============================================
+// Performance Optimization Utilities
+// ============================================
+
+/**
+ * Debounce function to limit how often a function can be called
+ * Improves performance by reducing redundant operations
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Throttle function to ensure a function is called at most once per interval
+ */
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Debounced version of compositeAllLayers for non-critical updates
+const debouncedCompositeAllLayers = debounce(() => {
+    compositeAllLayers();
+}, 100);
 
 function compositeAllLayers() {
     // FIXED: Save and restore context to ensure proper state management
@@ -19828,12 +19869,21 @@ function initializePaperGallery() {
             item.classList.add('selected');
         }
         
+        // Add tooltip with full paper name
+        item.title = paper.name;
+        
         const img = document.createElement('img');
         img.src = `assets/papers/${paper.id}.png`;
         img.alt = paper.name;
+        img.loading = 'lazy'; // Lazy load thumbnails for better performance
         img.onerror = () => {
-            // Fallback if image doesn't exist
-            img.style.background = '#ccc';
+            // Fallback if image doesn't exist - try papers/ directory
+            img.src = `papers/${paper.id}.png`;
+            img.onerror = () => {
+                // Final fallback with textured background
+                img.style.background = 'repeating-linear-gradient(45deg, #ccc, #ccc 2px, #ddd 2px, #ddd 4px)';
+                img.style.minHeight = '80px';
+            };
         };
         
         const nameLabel = document.createElement('div');
@@ -19850,10 +19900,15 @@ function initializePaperGallery() {
             });
             item.classList.add('selected');
             
-            // Update state and preview
+            // Update state and preview with higher quality rendering
             state.rebellePaper.selectedPaper = paper.id;
             if (preview) {
                 preview.src = `assets/papers/${paper.id}.png`;
+                preview.onerror = () => {
+                    preview.src = `papers/${paper.id}.png`;
+                };
+                // Add alt text for accessibility
+                preview.alt = `Preview of ${paper.name} texture`;
             }
             
             // Update canvas texture to match
@@ -19864,9 +19919,13 @@ function initializePaperGallery() {
         gallery.appendChild(item);
     });
     
-    // Set initial preview
+    // Set initial preview with fallback
     if (preview) {
         preview.src = `assets/papers/${state.rebellePaper.selectedPaper}.png`;
+        preview.onerror = () => {
+            preview.src = `papers/${state.rebellePaper.selectedPaper}.png`;
+        };
+        preview.alt = `Preview of selected paper texture`;
     }
 }
 

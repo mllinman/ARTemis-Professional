@@ -1,0 +1,67 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Paper texture patterns -->
+    <pattern id="hotPressed" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#fafafa"/>
+      <circle cx="1" cy="1" r="0.3" fill="#f0f0f0"/>
+    </pattern>
+    
+    <pattern id="coldPressed" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#f8f8f8"/>
+      <circle cx="1" cy="2" r="0.5" fill="#e8e8e8"/>
+      <circle cx="4" cy="5" r="0.5" fill="#e8e8e8"/>
+      <circle cx="3" cy="1" r="0.4" fill="#e0e0e0"/>
+    </pattern>
+    
+    <pattern id="rough" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#f5f5f5"/>
+      <circle cx="2" cy="3" r="0.8" fill="#d8d8d8"/>
+      <circle cx="6" cy="2" r="0.6" fill="#e0e0e0"/>
+      <circle cx="4" cy="6" r="0.7" fill="#d0d0d0"/>
+      <circle cx="7" cy="7" r="0.5" fill="#e8e8e8"/>
+    </pattern>
+    
+    <pattern id="canvas" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#ebe8e0"/>
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#d8d5cd" stroke-width="1"/>
+      <line x1="0" y1="0" x2="10" y2="0" stroke="#d8d5cd" stroke-width="1"/>
+      <line x1="5" y1="0" x2="5" y2="10" stroke="#e0ddd5" stroke-width="0.5"/>
+      <line x1="0" y1="5" x2="10" y2="5" stroke="#e0ddd5" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#bgGrad2)"/>
+  
+  <!-- Title -->
+  <rect x="0" y="0" width="600" height="50" fill="rgba(30, 30, 30, 0.9)"/>
+  <text x="300" y="32" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1177bb" text-anchor="middle">Professional Paper Textures</text>
+  
+  <!-- Paper samples -->
+  <g transform="translate(30, 70)">
+    <!-- Hot Pressed -->
+    <rect x="0" y="0" width="250" height="140" fill="url(#hotPressed)" stroke="#3e3e42" stroke-width="2" rx="4"/>
+    <text x="125" y="160" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#cccccc" text-anchor="middle">Hot Pressed</text>
+    <text x="125" y="175" font-family="Arial, sans-serif" font-size="11" fill="#888888" text-anchor="middle">Smooth, minimal texture</text>
+    
+    <!-- Cold Pressed -->
+    <rect x="270" y="0" width="250" height="140" fill="url(#coldPressed)" stroke="#3e3e42" stroke-width="2" rx="4"/>
+    <text x="395" y="160" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#cccccc" text-anchor="middle">Cold Pressed</text>
+    <text x="395" y="175" font-family="Arial, sans-serif" font-size="11" fill="#888888" text-anchor="middle">Medium tooth, versatile</text>
+    
+    <!-- Rough -->
+    <rect x="0" y="200" width="250" height="140" fill="url(#rough)" stroke="#3e3e42" stroke-width="2" rx="4"/>
+    <text x="125" y="360" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#cccccc" text-anchor="middle">Rough</text>
+    <text x="125" y="375" font-family="Arial, sans-serif" font-size="11" fill="#888888" text-anchor="middle">Heavy texture, expressive</text>
+    
+    <!-- Canvas -->
+    <rect x="270" y="200" width="250" height="140" fill="url(#canvas)" stroke="#3e3e42" stroke-width="2" rx="4"/>
+    <text x="395" y="360" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#cccccc" text-anchor="middle">Canvas</text>
+    <text x="395" y="375" font-family="Arial, sans-serif" font-size="11" fill="#888888" text-anchor="middle">Woven fabric texture</text>
+  </g>
+</svg>

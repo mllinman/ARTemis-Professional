@@ -1,0 +1,58 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#bgGrad)"/>
+  
+  <!-- Canvas area -->
+  <rect x="20" y="20" width="560" height="360" fill="#ffffff" rx="8"/>
+  
+  <!-- Brush strokes demonstrating variety -->
+  <!-- Oil paint stroke -->
+  <path d="M 50 100 Q 150 80, 250 100 T 450 100" stroke="#8b3a62" stroke-width="25" fill="none" stroke-linecap="round" opacity="0.8"/>
+  
+  <!-- Watercolor stroke -->
+  <ellipse cx="150" cy="200" rx="80" ry="40" fill="#3498db" opacity="0.3"/>
+  <ellipse cx="180" cy="210" rx="60" ry="35" fill="#2980b9" opacity="0.4"/>
+  
+  <!-- Pencil stroke -->
+  <path d="M 350 180 L 500 200" stroke="#555555" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 352 182 L 498 202" stroke="#777777" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.5"/>
+  
+  <!-- Airbrush effect -->
+  <circle cx="480" cy="280" r="60" fill="#e74c3c" opacity="0.15"/>
+  <circle cx="480" cy="280" r="40" fill="#e74c3c" opacity="0.2"/>
+  <circle cx="480" cy="280" r="20" fill="#e74c3c" opacity="0.3"/>
+  
+  <!-- Impressionist dabs -->
+  <g opacity="0.7">
+    <ellipse cx="80" cy="300" rx="8" ry="12" fill="#f39c12" transform="rotate(45 80 300)"/>
+    <ellipse cx="95" cy="310" rx="8" ry="12" fill="#e67e22" transform="rotate(-30 95 310)"/>
+    <ellipse cx="70" cy="315" rx="8" ry="12" fill="#d35400" transform="rotate(60 70 315)"/>
+    <ellipse cx="85" cy="325" rx="8" ry="12" fill="#f39c12" transform="rotate(15 85 325)"/>
+  </g>
+  
+  <!-- Labels -->
+  <rect x="0" y="0" width="600" height="50" fill="rgba(30, 30, 30, 0.9)"/>
+  <text x="300" y="32" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1177bb" text-anchor="middle">Advanced Brush Engine</text>
+  
+  <!-- Feature badges -->
+  <g transform="translate(30, 350)">
+    <rect x="0" y="0" width="130" height="30" fill="#1177bb" rx="4"/>
+    <text x="65" y="20" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">178+ Brushes</text>
+    
+    <rect x="140" y="0" width="140" height="30" fill="#27ae60" rx="4"/>
+    <text x="210" y="20" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">Pressure Sensitive</text>
+    
+    <rect x="290" y="0" width="130" height="30" fill="#e74c3c" rx="4"/>
+    <text x="355" y="20" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">Color Dynamics</text>
+    
+    <rect x="430" y="0" width="140" height="30" fill="#9b59b6" rx="4"/>
+    <text x="500" y="20" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">Bristle Simulation</text>
+  </g>
+</svg>
