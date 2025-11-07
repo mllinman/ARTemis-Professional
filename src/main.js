@@ -9,6 +9,7 @@ function createWindow() {
     width: 1400,
     height: 900,
     backgroundColor: '#1e1e1e',
+    title: 'ARTemis - Professional Digital Painting (Alpha)',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
