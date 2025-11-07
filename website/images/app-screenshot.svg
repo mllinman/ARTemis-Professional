@@ -1,0 +1,95 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#2d2d30"/>
+  
+  <!-- Main canvas area -->
+  <rect x="280" y="40" width="800" height="720" fill="#1e1e1e" stroke="#3e3e42" stroke-width="2"/>
+  
+  <!-- Canvas with gradient -->
+  <defs>
+    <linearGradient id="canvasGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="paperTexture" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#fafafa"/>
+      <circle cx="1" cy="1" r="0.5" fill="#e8e8e8"/>
+      <circle cx="3" cy="3" r="0.5" fill="#e8e8e8"/>
+    </pattern>
+  </defs>
+  
+  <rect x="300" y="60" width="760" height="680" fill="url(#paperTexture)" rx="4"/>
+  
+  <!-- Sample brush stroke -->
+  <path d="M 400 200 Q 500 150, 600 180 T 800 200" stroke="#1177bb" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 420 350 Q 520 400, 620 380 T 820 350" stroke="#bb3311" stroke-width="15" fill="none" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Left panel (Tools) -->
+  <rect x="20" y="40" width="240" height="720" fill="#252526" stroke="#3e3e42" stroke-width="2" rx="4"/>
+  <text x="140" y="70" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#cccccc" text-anchor="middle">Tools Panel</text>
+  
+  <!-- Tool icons -->
+  <g id="tools" transform="translate(40, 100)">
+    <!-- Brush -->
+    <rect x="0" y="0" width="90" height="40" fill="#1177bb" rx="3"/>
+    <text x="45" y="25" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Brush</text>
+    
+    <!-- Eraser -->
+    <rect x="110" y="0" width="90" height="40" fill="#3e3e42" rx="3"/>
+    <text x="155" y="25" font-family="Arial, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">Eraser</text>
+    
+    <!-- Fill -->
+    <rect x="0" y="50" width="90" height="40" fill="#3e3e42" rx="3"/>
+    <text x="45" y="75" font-family="Arial, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">Fill</text>
+    
+    <!-- Eyedropper -->
+    <rect x="110" y="50" width="90" height="40" fill="#3e3e42" rx="3"/>
+    <text x="155" y="75" font-family="Arial, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">Picker</text>
+  </g>
+  
+  <!-- Brush settings -->
+  <text x="140" y="230" font-family="Arial, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">Brush Settings</text>
+  <rect x="40" y="240" width="200" height="8" fill="#3e3e42" rx="4"/>
+  <rect x="40" y="240" width="140" height="8" fill="#1177bb" rx="4"/>
+  <text x="40" y="260" font-family="Arial, sans-serif" font-size="12" fill="#888888">Size: 70%</text>
+  
+  <rect x="40" y="275" width="200" height="8" fill="#3e3e42" rx="4"/>
+  <rect x="40" y="275" width="160" height="8" fill="#1177bb" rx="4"/>
+  <text x="40" y="295" font-family="Arial, sans-serif" font-size="12" fill="#888888">Opacity: 80%</text>
+  
+  <!-- Paper preview section -->
+  <text x="140" y="330" font-family="Arial, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">Paper Type</text>
+  <rect x="40" y="340" width="200" height="120" fill="#ffffff" stroke="#3e3e42" stroke-width="2" rx="4"/>
+  <rect x="45" y="345" width="190" height="110" fill="url(#paperTexture)" rx="3"/>
+  <text x="140" y="425" font-family="Arial, sans-serif" font-size="11" fill="#888888" text-anchor="middle">Arches Cold Pressed</text>
+  
+  <!-- Paper gallery -->
+  <g transform="translate(40, 470)">
+    <rect x="0" y="0" width="45" height="45" fill="url(#paperTexture)" stroke="#1177bb" stroke-width="2" rx="2"/>
+    <rect x="50" y="0" width="45" height="45" fill="#f8f8f8" stroke="#3e3e42" stroke-width="1" rx="2"/>
+    <rect x="100" y="0" width="45" height="45" fill="#f5f5f5" stroke="#3e3e42" stroke-width="1" rx="2"/>
+    <rect x="150" y="0" width="45" height="45" fill="#f2f2f2" stroke="#3e3e42" stroke-width="1" rx="2"/>
+  </g>
+  
+  <!-- Right panel (Layers) -->
+  <rect x="1100" y="40" width="80" height="720" fill="#252526" stroke="#3e3e42" stroke-width="2" rx="4"/>
+  <text x="1140" y="70" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#cccccc" text-anchor="middle">Layers</text>
+  
+  <!-- Layer items -->
+  <g transform="translate(1110, 90)">
+    <rect x="0" y="0" width="60" height="60" fill="#3e3e42" stroke="#555555" stroke-width="1" rx="2"/>
+    <text x="30" y="35" font-family="Arial, sans-serif" font-size="10" fill="#cccccc" text-anchor="middle">Layer 1</text>
+    
+    <rect x="0" y="70" width="60" height="60" fill="#2d2d30" stroke="#555555" stroke-width="1" rx="2"/>
+    <text x="30" y="105" font-family="Arial, sans-serif" font-size="10" fill="#888888" text-anchor="middle">Layer 2</text>
+  </g>
+  
+  <!-- Top menu bar -->
+  <rect x="0" y="0" width="1200" height="30" fill="#2d2d30" stroke="#3e3e42" stroke-width="1"/>
+  <text x="20" y="20" font-family="Arial, sans-serif" font-size="13" fill="#cccccc">File</text>
+  <text x="70" y="20" font-family="Arial, sans-serif" font-size="13" fill="#cccccc">Edit</text>
+  <text x="120" y="20" font-family="Arial, sans-serif" font-size="13" fill="#cccccc">View</text>
+  <text x="180" y="20" font-family="Arial, sans-serif" font-size="13" fill="#cccccc">Image</text>
+  
+  <text x="600" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1177bb" text-anchor="middle">ARTemis Professional</text>
+</svg>
