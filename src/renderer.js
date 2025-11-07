@@ -5192,7 +5192,6 @@ function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
         const later = () => {
-            clearTimeout(timeout);
             func(...args);
         };
         clearTimeout(timeout);
@@ -19875,14 +19874,14 @@ function initializePaperGallery() {
         const img = document.createElement('img');
         img.src = `assets/papers/${paper.id}.png`;
         img.alt = paper.name;
-        img.loading = 'lazy'; // Lazy load thumbnails for better performance
+        // Use eager loading since gallery is immediately visible
+        img.loading = 'eager';
         img.onerror = () => {
             // Fallback if image doesn't exist - try papers/ directory
             img.src = `papers/${paper.id}.png`;
             img.onerror = () => {
-                // Final fallback with textured background
-                img.style.background = 'repeating-linear-gradient(45deg, #ccc, #ccc 2px, #ddd 2px, #ddd 4px)';
-                img.style.minHeight = '80px';
+                // Final fallback with CSS class
+                img.classList.add('paper-texture-fallback');
             };
         };
         

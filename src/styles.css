@@ -1708,9 +1708,10 @@ kbd {
     display: block;
     object-fit: cover;
     border-radius: 4px;
-    /* Show actual paper texture with better rendering */
+    /* Show actual paper texture with better rendering and fallbacks */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
 }
 
 .paper-gallery {
@@ -1752,10 +1753,17 @@ kbd {
     height: 80px;
     object-fit: cover;
     display: block;
-    /* Better texture rendering */
+    /* Better texture rendering with fallbacks */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
     background: #ffffff;
+}
+
+/* Fallback style for missing paper textures */
+.paper-texture-fallback {
+    background: repeating-linear-gradient(45deg, #ccc, #ccc 2px, #ddd 2px, #ddd 4px) !important;
+    min-height: 80px;
 }
 
 .paper-gallery-item .paper-name {
