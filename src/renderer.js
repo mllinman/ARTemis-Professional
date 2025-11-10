@@ -7498,47 +7498,341 @@ function colorToRGBA(color, alpha) {
 
 // Pigment-based color mixing simulation
 function applyPigmentMixing(baseColor, canvasColor, mixAmount) {
-    if (state.brush.pigmentMixing === 'rgb') {
+    if (state.brush.pigmentMixing === 'rgb' || state.brush.paintMixingMode === 'RGB') {
         // Use standard RGB mixing
-        return baseColor;
+        const base = hexToRgb(baseColor);
+        const canvas = hexToRgb(canvasColor);
+        
+        if (!base || !canvas) return baseColor;
+        
+        const mixed = {
+            r: Math.round(base.r * (1 - mixAmount) + canvas.r * mixAmount),
+            g: Math.round(base.g * (1 - mixAmount) + canvas.g * mixAmount),
+            b: Math.round(base.b * (1 - mixAmount) + canvas.b * mixAmount)
+        };
+        
+        return rgbToHex(mixed.r, mixed.g, mixed.b);
     }
     
-    // For 'authentic' or 'advanced' modes, use pigment-based mixing
-    // Convert to pigment-based RYB color space for authentic mixing
+    // For 'authentic' or 'RYB' modes, use pigment-based mixing
+    // Convert RGB to RYB (Red-Yellow-Blue) pigment color space for authentic mixing
     const base = hexToRgb(baseColor);
     const canvas = hexToRgb(canvasColor);
     
     if (!base || !canvas) return baseColor;
     
-    // Simplified pigment mixing (authentic pigment behavior)
-    const mixed = {
-        r: Math.round(base.r * (1 - mixAmount) + canvas.r * mixAmount),
-        g: Math.round(base.g * (1 - mixAmount) + canvas.g * mixAmount),
-        b: Math.round(base.b * (1 - mixAmount) + canvas.b * mixAmount)
+    // Convert RGB to RYB
+    const baseRYB = rgbToRyb(base.r, base.g, base.b);
+    const canvasRYB = rgbToRyb(canvas.r, canvas.g, canvas.b);
+    
+    // Mix in RYB space (pigment mixing)
+    const mixedRYB = {
+        r: baseRYB.r * (1 - mixAmount) + canvasRYB.r * mixAmount,
+        y: baseRYB.y * (1 - mixAmount) + canvasRYB.y * mixAmount,
+        b: baseRYB.b * (1 - mixAmount) + canvasRYB.b * mixAmount
     };
     
-    return rgbToHex(mixed.r, mixed.g, mixed.b);
+    // Convert back to RGB
+    const mixedRGB = rybToRgb(mixedRYB.r, mixedRYB.y, mixedRYB.b);
+    
+    // Apply muddy color prevention if enabled
+    if (state.brush.muddyColorPrevention) {
+        return preventMuddyColor(mixedRGB, base, canvas, mixAmount);
+    }
+    
+    return rgbToHex(
+        Math.round(Math.max(0, Math.min(255, mixedRGB.r))),
+        Math.round(Math.max(0, Math.min(255, mixedRGB.g))),
+        Math.round(Math.max(0, Math.min(255, mixedRGB.b)))
+    );
 }
 
-// Paint viscosity simulation
+// Convert RGB to RYB (Red-Yellow-Blue) color space for authentic pigment mixing
+function rgbToRyb(r, g, b) {
+    // Normalize to 0-1
+    r = r / 255;
+    g = g / 255;
+    b = b / 255;
+    
+    // Remove white
+    const w = Math.min(r, g, b);
+    r -= w;
+    g -= w;
+    b -= w;
+    
+    const maxRGB = Math.max(r, g, b);
+    
+    // Get yellow
+    let y = Math.min(r, g);
+    r -= y;
+    g -= y;
+    
+    // If this unfortunate conversion combines blue and green, then cut each in half to preserve the value's maximum range
+    if (b > 0 && g > 0) {
+        b /= 2;
+        g /= 2;
+    }
+    
+    // Redistribute the remaining green
+    y += g;
+    const maxRYB = Math.max(r, y, b);
+    
+    // Normalize to 0-1 range and add white back
+    if (maxRYB > 0) {
+        const scale = maxRGB / maxRYB;
+        r = r * scale + w;
+        y = y * scale + w;
+        b = b * scale + w;
+    } else {
+        r = w;
+        y = w;
+        b = w;
+    }
+    
+    return { r: r * 255, y: y * 255, b: b * 255 };
+}
+
+// Convert RYB to RGB color space
+function rybToRgb(r, y, b) {
+    // Normalize to 0-1
+    r = r / 255;
+    y = y / 255;
+    b = b / 255;
+    
+    // Remove white
+    const w = Math.min(r, y, b);
+    r -= w;
+    y -= w;
+    b -= w;
+    
+    const maxRYB = Math.max(r, y, b);
+    
+    // Get green
+    let g = Math.min(y, b);
+    y -= g;
+    b -= g;
+    
+    // If this unfortunate conversion combines blue and yellow, then cut each in half
+    if (b > 0 && g > 0) {
+        b *= 2;
+        g *= 2;
+    }
+    
+    // Redistribute the remaining yellow
+    r += y;
+    g += y;
+    
+    const maxRGB = Math.max(r, g, b);
+    
+    // Normalize and add white back
+    if (maxRGB > 0) {
+        const scale = maxRYB / maxRGB;
+        r = r * scale + w;
+        g = g * scale + w;
+        b = b * scale + w;
+    } else {
+        r = w;
+        g = w;
+        b = w;
+    }
+    
+    return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+// Prevent muddy colors by maintaining saturation and value
+function preventMuddyColor(mixed, base, canvas, mixAmount) {
+    // Convert to HSL to check saturation
+    const mixedHSL = rgbToHSL(mixed.r, mixed.g, mixed.b);
+    const baseHSL = rgbToHSL(base.r, base.g, base.b);
+    const canvasHSL = rgbToHSL(canvas.r, canvas.g, canvas.b);
+    
+    // Calculate expected saturation (weighted average)
+    const expectedSat = baseHSL.s * (1 - mixAmount) + canvasHSL.s * mixAmount;
+    
+    // If mixed color is too desaturated (muddy), boost saturation
+    if (mixedHSL.s < expectedSat * 0.7 && expectedSat > 0.2) {
+        mixedHSL.s = Math.min(1, expectedSat * 0.85);
+        const boosted = hslToRGB(mixedHSL.h, mixedHSL.s, mixedHSL.l);
+        return rgbToHex(
+            Math.round(boosted.r),
+            Math.round(boosted.g),
+            Math.round(boosted.b)
+        );
+    }
+    
+    return rgbToHex(
+        Math.round(mixed.r),
+        Math.round(mixed.g),
+        Math.round(mixed.b)
+    );
+}
+
+// RGB to HSL conversion helper
+function rgbToHSL(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    
+    if (max === min) {
+        h = s = 0;
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    
+    return { h: h, s: s, l: l };
+}
+
+// HSL to RGB conversion helper
+function hslToRGB(h, s, l) {
+    let r, g, b;
+    
+    if (s === 0) {
+        r = g = b = l;
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+// Enhanced paint viscosity simulation for realistic oil, acrylic, and watercolor behavior
 function applyPaintViscosity(ctx, size, pressure) {
     const viscosity = state.brush.paintViscosity / 100;
     const dripEffect = state.brush.paintDripEffect / 100;
+    const binderType = state.brush.binderType || 'oil';
     
-    // High viscosity = thicker paint with more texture
-    if (viscosity > 0.6 && state.brush.paintBody === 'heavy') {
-        // Add impasto-like texture
-        const thickness = viscosity * pressure;
-        ctx.shadowBlur = thickness * 2;
-        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+    // OIL PAINT: Thick, buttery consistency with slow drying
+    if (binderType === 'oil') {
+        // High viscosity = thicker paint with impasto texture
+        if (viscosity > 0.5 && state.brush.paintBody === 'heavy') {
+            // Enhanced impasto with visible brush strokes
+            const thickness = viscosity * pressure;
+            ctx.shadowBlur = thickness * 3;
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            
+            // Add subtle highlight for 3D impasto effect
+            ctx.shadowOffsetX = Math.cos(state.brush.angle * Math.PI / 180) * thickness;
+            ctx.shadowOffsetY = Math.sin(state.brush.angle * Math.PI / 180) * thickness;
+        }
+        
+        // Medium body oils have smooth flow
+        if (state.brush.paintBody === 'medium') {
+            // Smooth blending with slight texture
+            ctx.globalCompositeOperation = state.brush.wetInWetBlending ? 'source-over' : 'normal';
+            if (state.brush.wetMixing > 50) {
+                // Enhanced wet blending for oils
+                ctx.globalAlpha *= 0.85 + (pressure * 0.15);
+            }
+        }
+        
+        // Fluid oils can drip and flow
+        if (state.brush.paintBody === 'fluid' && dripEffect > 0.2) {
+            const dripLength = size * dripEffect * pressure;
+            ctx.globalAlpha *= 0.75;
+            // Directional drip based on gravity
+            const gradient = ctx.createLinearGradient(0, 0, 0, dripLength);
+            gradient.addColorStop(0, state.color);
+            gradient.addColorStop(1, state.color + '00'); // Transparent end
+            ctx.fillStyle = gradient;
+            ctx.fillRect(-size/4, size/2, size/2, dripLength);
+        }
     }
     
-    // Drip effect for fluid paints
-    if (dripEffect > 0.3 && state.brush.paintBody === 'fluid') {
-        // Simulate paint dripping (simplified)
-        const dripLength = size * dripEffect * 0.5;
-        ctx.globalAlpha *= 0.7;
-        ctx.fillRect(-size/4, size/2, size/2, dripLength);
+    // ACRYLIC PAINT: Fast-drying, versatile consistency
+    else if (binderType === 'acrylic') {
+        // Acrylics maintain sharp edges and don't blend as much once dry
+        if (state.brush.paintBody === 'heavy') {
+            // Heavy body acrylics have visible peaks
+            const thickness = viscosity * pressure * 0.8;
+            ctx.shadowBlur = thickness * 2;
+            ctx.shadowColor = 'rgba(0,0,0,0.12)';
+        }
+        
+        // Gloss vs matte finish affects appearance
+        if (state.brush.binderAcrylicType === 'gloss') {
+            // Add slight shine to gloss acrylics
+            ctx.globalAlpha *= 1.05;
+        } else if (state.brush.binderAcrylicType === 'matte') {
+            // Matte finish is slightly less saturated
+            ctx.globalAlpha *= 0.95;
+        }
+        
+        // Fluid acrylics flow smoothly
+        if (state.brush.paintBody === 'fluid') {
+            // Smooth, even coverage with less texture
+            ctx.globalAlpha *= 0.9 + (pressure * 0.1);
+        }
+    }
+    
+    // WATERCOLOR: Transparent, flowing with water effects
+    else if (binderType === 'watercolor') {
+        // Watercolors are always transparent and fluid
+        const waterAmount = 1 - (viscosity * 0.5); // More water = less viscosity
+        ctx.globalAlpha *= 0.3 + (viscosity * 0.4); // Base transparency
+        
+        // Wet-on-wet creates soft edges and blooms
+        if (state.brush.wetInWetBlending) {
+            // Feathered edges for wet-on-wet
+            const bleed = state.brush.colorBleeding / 100;
+            ctx.shadowBlur = size * waterAmount * bleed * 2;
+            ctx.shadowColor = state.color + '40'; // Semi-transparent shadow
+        }
+        
+        // Granulation effect (pigment settling)
+        if (state.brush.granulationEffect > 30 && pressure > 0.3) {
+            // Add texture noise for granulating colors
+            const granulation = state.brush.granulationEffect / 100;
+            const noise = Math.random() * granulation * 0.2;
+            ctx.globalAlpha *= (1 - noise);
+        }
+        
+        // Blooming (backruns) in very wet areas
+        if (state.brush.colorBlooming > 40 && waterAmount > 0.6) {
+            const bloom = state.brush.colorBlooming / 100;
+            ctx.shadowBlur = size * bloom * 1.5;
+            ctx.shadowColor = state.color + '20';
+        }
+    }
+    
+    // GOUACHE: Opaque watercolor with matte finish
+    else if (binderType === 'gouache') {
+        // Gouache is opaque unlike watercolor
+        const opacity = state.brush.binderOpacity / 100;
+        ctx.globalAlpha *= 0.7 + (opacity * 0.3);
+        
+        // Matte, chalky appearance
+        ctx.globalCompositeOperation = 'source-over';
+        
+        // Can be diluted for transparency
+        if (state.brush.dilution > 50) {
+            const dilutionFactor = state.brush.dilution / 100;
+            ctx.globalAlpha *= (1 - dilutionFactor * 0.5);
+        }
     }
 }
 
@@ -8101,14 +8395,16 @@ function mixColorFromCanvas(x, y, size, brushColor, mixAmount) {
             Math.ceil(sampleRadius * 2)
         );
         
-        let r = 0, g = 0, b = 0, count = 0;
+        let r = 0, g = 0, b = 0, a = 0, count = 0;
         const data = imageData.data;
         
+        // Sample colors from canvas
         for (let i = 0; i < data.length; i += 4) {
             if (data[i + 3] > 0) {  // Only count non-transparent pixels
                 r += data[i];
                 g += data[i + 1];
                 b += data[i + 2];
+                a += data[i + 3];
                 count++;
             }
         }
@@ -8117,19 +8413,68 @@ function mixColorFromCanvas(x, y, size, brushColor, mixAmount) {
             r = Math.floor(r / count);
             g = Math.floor(g / count);
             b = Math.floor(b / count);
+            a = Math.floor(a / count);
             
             // Parse brush color
             const brushRGB = hexToRgb(brushColor);
+            if (!brushRGB) return brushColor;
             
-            // Mix colors
-            r = Math.floor(brushRGB.r * (1 - mixAmount) + r * mixAmount);
-            g = Math.floor(brushRGB.g * (1 - mixAmount) + g * mixAmount);
-            b = Math.floor(brushRGB.b * (1 - mixAmount) + b * mixAmount);
-            
-            return rgbToHex(r, g, b);
+            // Use RYB pigment mixing for realistic paint behavior
+            if (state.brush.paintMixingMode === 'RYB' && state.wetPalette.enabled) {
+                // Convert both colors to RYB
+                const brushRYB = rgbToRyb(brushRGB.r, brushRGB.g, brushRGB.b);
+                const canvasRYB = rgbToRyb(r, g, b);
+                
+                // Adjust mix amount based on wet palette settings
+                const wetness = state.wetPalette.wetness / 100;
+                const bleedIntensity = state.wetPalette.bleeding / 100;
+                
+                // Wetness affects how much colors blend
+                let effectiveMix = mixAmount * (0.5 + wetness * 0.5);
+                
+                // Bleeding makes colors mix more aggressively
+                if (bleedIntensity > 0.5) {
+                    effectiveMix = Math.min(1, effectiveMix * (1 + bleedIntensity * 0.3));
+                }
+                
+                // Mix in RYB space
+                const mixedRYB = {
+                    r: brushRYB.r * (1 - effectiveMix) + canvasRYB.r * effectiveMix,
+                    y: brushRYB.y * (1 - effectiveMix) + canvasRYB.y * effectiveMix,
+                    b: brushRYB.b * (1 - effectiveMix) + canvasRYB.b * effectiveMix
+                };
+                
+                // Convert back to RGB
+                const mixedRGB = rybToRgb(mixedRYB.r, mixedRYB.y, mixedRYB.b);
+                
+                // Apply muddy color prevention if enabled
+                if (state.brush.muddyColorPrevention) {
+                    const prevented = preventMuddyColor(
+                        { r: mixedRGB.r, g: mixedRGB.g, b: mixedRGB.b },
+                        brushRGB,
+                        { r, g, b },
+                        effectiveMix
+                    );
+                    return prevented;
+                }
+                
+                return rgbToHex(
+                    Math.round(Math.max(0, Math.min(255, mixedRGB.r))),
+                    Math.round(Math.max(0, Math.min(255, mixedRGB.g))),
+                    Math.round(Math.max(0, Math.min(255, mixedRGB.b)))
+                );
+            } else {
+                // Standard RGB mixing
+                r = Math.floor(brushRGB.r * (1 - mixAmount) + r * mixAmount);
+                g = Math.floor(brushRGB.g * (1 - mixAmount) + g * mixAmount);
+                b = Math.floor(brushRGB.b * (1 - mixAmount) + b * mixAmount);
+                
+                return rgbToHex(r, g, b);
+            }
         }
     } catch (e) {
         // Out of bounds or other error, return original color
+        console.warn('Color mixing error:', e);
     }
     
     return brushColor;
@@ -12412,20 +12757,26 @@ function applyOilPaintStyle(imageData, options = {}) {
             g *= colorIntensity;
             b *= colorIntensity;
             
-            // Add impasto texture with directional brush strokes
+            // Enhanced impasto texture with realistic paint flow and peaks
             if (impasto > 0) {
                 // Create directional impasto based on local gradient
                 const angle = Math.atan2(y - height / 2, x - width / 2);
                 const strokeDirection = Math.sin(angle * 3 + x * 0.1) * Math.cos(angle * 2 + y * 0.1);
                 const impastoNoise = strokeDirection * impasto * 15 + (Math.random() - 0.5) * impasto * 10;
                 
-                // Add highlights on impasto ridges
+                // Add highlights on impasto ridges (like light catching thick paint)
                 const brightness = (r + g + b) / 3;
                 const highlight = brightness > 150 ? impastoNoise * 0.5 : impastoNoise * 0.2;
                 
-                r += impastoNoise + highlight;
-                g += impastoNoise + highlight;
-                b += impastoNoise + highlight;
+                // Simulate paint thickness variation based on pressure simulation
+                const thicknessVariation = Math.sin(x * 0.05) * Math.cos(y * 0.05) * impasto * 8;
+                
+                // Add buttery paint flow characteristic of oils
+                const flowPattern = Math.sin(x * 0.02 + y * 0.03) * impasto * 5;
+                
+                r += impastoNoise + highlight + thicknessVariation + flowPattern;
+                g += impastoNoise + highlight + thicknessVariation + flowPattern;
+                b += impastoNoise + highlight + thicknessVariation + flowPattern;
             }
             
             const idx = (y * width + x) * 4;
@@ -12550,30 +12901,69 @@ function applyAcrylicStyle(imageData, options = {}) {
         data[i + 2] = newB * 255;
     }
     
-    // Third pass: Apply bold outlines at edges
+    // Third pass: Apply bold, crisp outlines at edges (acrylic characteristic)
     for (let y = 1; y < height - 1; y++) {
         for (let x = 1; x < width - 1; x++) {
             const idx = (y * width + x) * 4;
-            if (edges[y * width + x] > 0) {
-                // Darken edges for crisp acrylic look
-                const edgeDarken = 0.7;
+            const edgeStrength = edges[y * width + x];
+            
+            if (edgeStrength > 0) {
+                // Enhanced edge darkening for sharp acrylic edges
+                const edgeDarken = 0.65 - (edgeStrength / 255) * 0.15;
                 data[idx] *= edgeDarken;
                 data[idx + 1] *= edgeDarken;
                 data[idx + 2] *= edgeDarken;
+                
+                // Add slight edge sharpening for crisp look
+                const sharpness = edgeStrength / 255;
+                const centerWeight = 1 + sharpness * 0.5;
+                const neighborWeight = -sharpness * 0.125;
+                
+                const neighbors = [
+                    tempData[idx - 4], tempData[idx + 4],
+                    tempData[idx - width * 4], tempData[idx + width * 4]
+                ];
+                
+                for (let c = 0; c < 3; c++) {
+                    let sharpenedValue = tempData[idx + c] * centerWeight;
+                    sharpenedValue += neighbors[0] * neighborWeight;
+                    sharpenedValue += neighbors[1] * neighborWeight;
+                    sharpenedValue += neighbors[2] * neighborWeight;
+                    sharpenedValue += neighbors[3] * neighborWeight;
+                    data[idx + c] = Math.min(255, Math.max(0, sharpenedValue));
+                }
             }
         }
     }
     
-    // Fourth pass: Add slight canvas texture to non-edge areas
+    // Fourth pass: Add realistic canvas texture and acrylic finish
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
-            if (edges[y * width + x] === 0) {
-                const canvasTexture = (Math.sin(x * 0.3) + Math.cos(y * 0.3)) * 2;
+            const edgeStrength = edges[y * width + x];
+            
+            // Add canvas texture to flat areas (less on edges)
+            if (edgeStrength < 100) {
+                const textureAmount = (100 - edgeStrength) / 100;
+                const canvasTexture = (Math.sin(x * 0.3) + Math.cos(y * 0.3)) * 2 * textureAmount;
                 data[i] = Math.min(255, Math.max(0, data[i] + canvasTexture));
                 data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + canvasTexture));
                 data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + canvasTexture));
             }
+            
+            // Simulate matte vs gloss finish (default: semi-gloss)
+            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const glossFactor = saturation > 1.5 ? 1.05 : 0.98; // Higher saturation = glossier
+            
+            data[i] *= glossFactor;
+            data[i + 1] *= glossFactor;
+            data[i + 2] *= glossFactor;
+            
+            // Acrylics have full opacity - ensure solid coverage
+            const opacityBoost = 1.02;
+            data[i] = Math.min(255, data[i] * opacityBoost);
+            data[i + 1] = Math.min(255, data[i + 1] * opacityBoost);
+            data[i + 2] = Math.min(255, data[i + 2] * opacityBoost);
         }
     }
 }
@@ -12676,19 +13066,19 @@ function applyWatercolorStyle(imageData, options = {}) {
         }
     }
     
-    // Fourth pass: Lighten, add paper texture and granulation
+    // Fourth pass: Lighten, add paper texture and enhanced granulation
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
             
-            // Lighten for watercolor transparency
+            // Lighten for watercolor transparency with varied intensity
             const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
             const lightenAmount = 15 + (1 - brightness / 255) * 10;
             data[i] = Math.min(255, data[i] + lightenAmount);
             data[i + 1] = Math.min(255, data[i + 1] + lightenAmount);
             data[i + 2] = Math.min(255, data[i + 2] + lightenAmount);
             
-            // Add paper texture with grain pattern
+            // Add realistic paper texture with grain pattern
             const grainX = Math.sin(x * 0.1) * Math.cos(y * 0.15);
             const grainY = Math.cos(x * 0.15) * Math.sin(y * 0.1);
             const grain = (grainX + grainY + (Math.random() - 0.5)) * paperTexture * 12;
@@ -12697,12 +13087,35 @@ function applyWatercolorStyle(imageData, options = {}) {
             data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain));
             data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain));
             
-            // Add watercolor granulation in darker areas
+            // Enhanced watercolor granulation in darker areas (pigment settling)
             if (brightness < 180) {
                 const granulation = (Math.random() - 0.5) * (1 - brightness / 255) * 8;
                 data[i] = Math.min(255, Math.max(0, data[i] + granulation));
                 data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + granulation));
                 data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + granulation));
+            }
+            
+            // Add blooming effect (backruns) in wet areas with high bleed
+            if (bleed > 0.6 && brightness < 200) {
+                const edgeStrength = edges[y * width + x] / 255;
+                if (edgeStrength > 0.4) {
+                    // Simulate water pooling and pigment redistribution
+                    const bloom = (Math.random() - 0.3) * bleed * 15;
+                    data[i] = Math.min(255, Math.max(0, data[i] + bloom));
+                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + bloom));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + bloom));
+                }
+            }
+            
+            // Simulate water flow patterns on paper
+            if (wetness > 0.5) {
+                const flowX = Math.sin(y * 0.03) * wetness * 3;
+                const flowY = Math.cos(x * 0.03) * wetness * 3;
+                const flow = (flowX + flowY) * (Math.random() * 0.5 + 0.5);
+                
+                data[i] = Math.min(255, Math.max(0, data[i] + flow));
+                data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + flow));
+                data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + flow));
             }
         }
     }
