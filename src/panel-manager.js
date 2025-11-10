@@ -579,7 +579,16 @@ class PanelManager {
      * Update Windows menu with panel toggles
      */
     updateWindowsMenu() {
-        const windowsMenu = document.querySelector('.menu-item .menu-label:contains("Windows")')?.parentElement;
+        // Find Windows menu by checking all menu labels
+        let windowsMenu = null;
+        const menuLabels = document.querySelectorAll('.menu-label');
+        for (const label of menuLabels) {
+            if (label.textContent.trim() === 'Windows') {
+                windowsMenu = label.parentElement;
+                break;
+            }
+        }
+        
         if (!windowsMenu) {
             // Menu doesn't exist yet, will be updated later
             return;
