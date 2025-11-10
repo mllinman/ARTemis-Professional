@@ -576,6 +576,9 @@ body {
     background: white;
     cursor: crosshair;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    /* Hardware acceleration for better performance */
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 #draw-canvas {
@@ -583,6 +586,12 @@ body {
     background: transparent;
     cursor: crosshair;
     pointer-events: auto;
+    /* Hardware acceleration for smooth drawing */
+    will-change: transform;
+    transform: translateZ(0);
+    /* Optimize for crisp rendering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 #canvas-info {

@@ -198,13 +198,20 @@ class VectorPath {
     drawControls(ctx) {
         ctx.save();
         
-        // Draw handles first
+        // Enhanced shadow for better depth perception
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 3;
+        
+        // Draw handles first with improved visibility
         for (let i = 0; i < this.points.length; i++) {
             const point = this.points[i];
             
-            // Draw handle lines
-            ctx.strokeStyle = '#4A90E2';
-            ctx.lineWidth = 1;
+            // Check if this is the selected point for enhanced feedback
+            const isSelected = i === this.selectedPoint;
+            
+            // Draw handle lines with better contrast
+            ctx.strokeStyle = isSelected ? 'rgba(74, 144, 226, 0.9)' : 'rgba(74, 144, 226, 0.6)';
+            ctx.lineWidth = isSelected ? 2 : 1.5;
             ctx.setLineDash([5, 3]);
             
             ctx.beginPath();
@@ -219,38 +226,143 @@ class VectorPath {
             
             ctx.setLineDash([]);
             
-            // Draw handle control points
-            ctx.fillStyle = '#4A90E2';
+            // Draw handle control points with enhanced appearance
+            // Handle In
+            ctx.fillStyle = isSelected ? 'rgba(74, 144, 226, 0.9)' : 'rgba(74, 144, 226, 0.7)';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(point.handleIn.x, point.handleIn.y, 4, 0, Math.PI * 2);
+            ctx.arc(point.handleIn.x, point.handleIn.y, isSelected ? 5 : 4, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
             
+            // Handle Out
             ctx.beginPath();
-            ctx.arc(point.handleOut.x, point.handleOut.y, 4, 0, Math.PI * 2);
+            ctx.arc(point.handleOut.x, point.handleOut.y, isSelected ? 5 : 4, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
+            
+            // Add directional indicators on handles for better feedback
+            if (isSelected) {
+                // Draw small arrows on handles to show direction
+                const drawArrow = (fromX, fromY, toX, toY) => {
+                    const angle = Math.atan2(toY - fromY, toX - fromX);
+                    const arrowSize = 6;
+                    
+                    ctx.save();
+                    ctx.translate(toX, toY);
+                    ctx.rotate(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-arrowSize, -arrowSize/2);
+                    ctx.lineTo(-arrowSize, arrowSize/2);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(74, 144, 226, 0.9)';
+                    ctx.fill();
+                    ctx.restore();
+                };
+                
+                drawArrow(point.x, point.y, point.handleIn.x, point.handleIn.y);
+                drawArrow(point.x, point.y, point.handleOut.x, point.handleOut.y);
+            }
         }
         
-        // Draw anchor points
+        // Draw anchor points with enhanced styling
         for (let i = 0; i < this.points.length; i++) {
             const point = this.points[i];
             const isSelected = i === this.selectedPoint;
+            const isFirstPoint = i === 0;
+            const isLastPoint = i === this.points.length - 1;
             
-            ctx.fillStyle = isSelected ? '#FF6B6B' : '#FFFFFF';
-            ctx.strokeStyle = point.type === 'corner' ? '#FF6B6B' : '#4A90E2';
-            ctx.lineWidth = 2;
+            // Enhanced colors based on point state
+            let fillColor, strokeColor;
+            if (isSelected) {
+                fillColor = '#FF6B6B';
+                strokeColor = '#FF3333';
+            } else if (isFirstPoint) {
+                fillColor = '#4AE290'; // Green for start
+                strokeColor = '#2FB070';
+            } else if (isLastPoint && !this.closed) {
+                fillColor = '#FFB74A'; // Orange for end
+                strokeColor = '#FF9020';
+            } else {
+                fillColor = '#FFFFFF';
+                strokeColor = point.type === 'corner' ? '#FF6B6B' : '#4A90E2';
+            }
+            
+            ctx.fillStyle = fillColor;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2.5;
             
             if (point.type === 'corner') {
-                // Draw square for corner points
-                const size = isSelected ? 8 : 6;
-                ctx.fillRect(point.x - size/2, point.y - size/2, size, size);
-                ctx.strokeRect(point.x - size/2, point.y - size/2, size, size);
+                // Draw square for corner points with rounded edges
+                const size = isSelected ? 10 : 7;
+                ctx.beginPath();
+                const x = point.x - size/2;
+                const y = point.y - size/2;
+                const radius = 1;
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + size - radius, y);
+                ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
+                ctx.lineTo(x + size, y + size - radius);
+                ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
+                ctx.lineTo(x + radius, y + size);
+                ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             } else {
-                // Draw circle for smooth points
-                const radius = isSelected ? 5 : 4;
+                // Draw circle for smooth points with glow effect
+                const radius = isSelected ? 6 : 5;
+                
+                // Add glow for selected point
+                if (isSelected) {
+                    ctx.shadowColor = strokeColor;
+                    ctx.shadowBlur = 8;
+                }
+                
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
                 ctx.stroke();
+            }
+            
+            // Add point index label for better navigation
+            if (isSelected || this.points.length <= 5) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i.toString(), point.x, point.y - 15);
+            }
+        }
+        
+        // Draw path direction indicators
+        if (this.points.length > 1) {
+            ctx.fillStyle = 'rgba(74, 144, 226, 0.5)';
+            ctx.font = 'bold 12px Arial';
+            
+            for (let i = 0; i < this.points.length - 1; i++) {
+                const p1 = this.points[i];
+                const p2 = this.points[i + 1];
+                const midX = (p1.x + p2.x) / 2;
+                const midY = (p1.y + p2.y) / 2;
+                
+                // Draw small arrow showing path direction
+                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                ctx.save();
+                ctx.translate(midX, midY);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-5, -3);
+                ctx.lineTo(-5, 3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
             }
         }
         
