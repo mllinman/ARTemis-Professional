@@ -5,7 +5,7 @@
 const AUTH_CONFIG = {
     GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID', // Replace with actual client ID
     STRIPE_PUBLISHABLE_KEY: 'pk_test_YOUR_STRIPE_KEY', // Replace with actual Stripe key
-    ADMIN_PASSWORD_HASH: 'admin123' // In production, use proper password hashing
+    ADMIN_PASSWORD_HASH: 'Detroit1977!!' // In production, use proper password hashing
 };
 
 const SUBSCRIPTION_TIERS = {
@@ -133,6 +133,69 @@ class AuthManager {
             return true;
         }
         return false;
+    }
+
+    async signInWithEmail(email, password) {
+        // In production, verify with backend
+        // For demo purposes, we'll create a user with the provided email
+        if (!email || !password) {
+            return { success: false, error: 'Email and password are required' };
+        }
+
+        // Simple email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // In demo mode, accept any valid email/password combination
+        // In production, this would verify credentials with backend
+        const user = {
+            id: 'email_' + Date.now(),
+            email: email,
+            name: email.split('@')[0], // Use email username as name
+            picture: '',
+            provider: 'email',
+            subscription: 'FREE',
+            subscriptionDate: null
+        };
+
+        this.setUser(user);
+        return { success: true };
+    }
+
+    async signUpWithEmail(email, password, name) {
+        // In production, create account with backend
+        // For demo purposes, we'll create a user with the provided details
+        if (!email || !password) {
+            return { success: false, error: 'Email and password are required' };
+        }
+
+        // Simple email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // Password strength check
+        if (password.length < 6) {
+            return { success: false, error: 'Password must be at least 6 characters' };
+        }
+
+        // In demo mode, accept any valid email/password combination
+        // In production, this would create the account with backend
+        const user = {
+            id: 'email_' + Date.now(),
+            email: email,
+            name: name || email.split('@')[0],
+            picture: '',
+            provider: 'email',
+            subscription: 'FREE',
+            subscriptionDate: null
+        };
+
+        this.setUser(user);
+        return { success: true };
     }
 
     setUser(user) {
