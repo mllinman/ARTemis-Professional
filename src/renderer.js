@@ -1818,9 +1818,124 @@ function init() {
     // Create initial layer
     addLayer('Background');
     
+    // Initialize Panel Manager for modular UI
+    initPanelManager();
+    
     // Save state on page unload
     window.addEventListener('beforeunload', () => {
         saveAppState();
+    });
+}
+
+// Initialize Panel Manager for modular UI
+function initPanelManager() {
+    // Create global panel manager instance
+    if (typeof PanelManager === 'undefined') {
+        console.warn('PanelManager not loaded yet, panel system will not be available');
+        return;
+    }
+    
+    window.panelManager = new PanelManager();
+    
+    // Register existing panels with proper configuration
+    const panelConfigs = [
+        {
+            id: 'left-panel',
+            title: 'Tools & Brushes',
+            category: 'tools',
+            defaultPosition: 'left',
+            shortcut: 'F5',
+            order: 1
+        },
+        {
+            id: 'color-panel',
+            title: 'Color Picker',
+            category: 'color',
+            defaultPosition: 'left',
+            floatable: true,
+            shortcut: 'F6',
+            order: 2
+        },
+        {
+            id: 'right-panel',
+            title: 'Layers',
+            category: 'layers',
+            defaultPosition: 'right',
+            shortcut: 'F7',
+            order: 3
+        }
+    ];
+    
+    // Register all panels
+    panelConfigs.forEach(config => {
+        const element = document.getElementById(config.id);
+        if (element) {
+            window.panelManager.registerPanel({
+                ...config,
+                element: element
+            });
+        }
+    });
+    
+    // Setup Windows menu actions
+    setupPanelMenuActions();
+}
+
+// Setup panel-related menu actions
+function setupPanelMenuActions() {
+    // Reset panel layout
+    const resetLayoutBtn = document.querySelector('[data-action="window-reset-layout"]');
+    if (resetLayoutBtn) {
+        resetLayoutBtn.addEventListener('click', () => {
+            if (window.panelManager) {
+                window.panelManager.resetPanels();
+                alert('Panel layout has been reset to default.');
+            }
+        });
+    }
+    
+    // Handle keyboard shortcuts for panels
+    document.addEventListener('keydown', (e) => {
+        if (!window.panelManager) return;
+        
+        // F5 - Toggle Tools Panel
+        if (e.key === 'F5') {
+            e.preventDefault();
+            const panel = window.panelManager.panels.get('left-panel');
+            if (panel) {
+                if (panel.visible) {
+                    window.panelManager.hidePanel('left-panel');
+                } else {
+                    window.panelManager.showPanel('left-panel');
+                }
+            }
+        }
+        
+        // F6 - Toggle Color Panel
+        if (e.key === 'F6') {
+            e.preventDefault();
+            const panel = window.panelManager.panels.get('color-panel');
+            if (panel) {
+                if (panel.visible) {
+                    window.panelManager.hidePanel('color-panel');
+                } else {
+                    window.panelManager.showPanel('color-panel');
+                }
+            }
+        }
+        
+        // F7 - Toggle Layers Panel
+        if (e.key === 'F7') {
+            e.preventDefault();
+            const panel = window.panelManager.panels.get('right-panel');
+            if (panel) {
+                if (panel.visible) {
+                    window.panelManager.hidePanel('right-panel');
+                } else {
+                    window.panelManager.showPanel('right-panel');
+                }
+            }
+        }
     });
 }
 
