@@ -47,7 +47,7 @@ ARTemis now features professional-grade tools comparable to industry-leading app
 
 ARTemis includes a comprehensive set of professional digital painting features!
 
-**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)** | **[🎨 Advanced Color Wheel](ADVANCED-COLOR-WHEEL.md)**
+**[📖 Complete Feature Guide](TOP_10_FEATURES.md)** | **[🎨 Photo-to-Paint Guide](PHOTO-TO-PAINT-FEATURES.md)** | **[🖌️ Advanced Brush Engine](ADVANCED-BRUSH-ENGINE.md)** | **[🎨 Advanced Color Wheel](ADVANCED-COLOR-WHEEL.md)** | **[🎨 NEW: Realistic Paint Simulation](REALISTIC_PAINT_ENHANCEMENTS.md)**
 
 #### Core Features:
 1. **Wrap-Around Mode** - Create seamless patterns and textures
@@ -84,13 +84,36 @@ ARTemis includes a comprehensive set of professional digital painting features!
     - Palette Management with import/export
     - Color harmony rules and mixer
 
-#### ⭐ NEW: Graphite Pencils
-15. **✏️ Graphite Pencils** - 8 realistic graphite pencils (4H to 8B):
+#### ⭐ NEW: Realistic Paint Simulation
+15. **🎨 Authentic RYB Color Mixing** - Traditional pigment-based mixing:
+    - Red + Yellow = Orange (like real paint!)
+    - Blue + Yellow = Green (like real paint!)
+    - Red + Blue = Purple (like real paint!)
+    - Prevents muddy colors with smart saturation preservation
+    - Wet palette integration for canvas color pickup
+16. **🎨 Enhanced Oil Paint** - Professional oil painting simulation:
+    - Realistic impasto with 3D paint peaks and highlights
+    - Buttery consistency with natural flow patterns
+    - Paint thickness variation and viscosity control
+    - Wet-in-wet blending for smooth gradients
+    - Winsor Newton and Grumbacher Max characteristics
+17. **🎨 Enhanced Acrylic Paint** - Bold, opaque acrylic behavior:
+    - Ultra-sharp edge retention that doesn't blur
+    - Fast-drying with no wet-on-wet after drying
+    - Full opacity coverage even in thin layers
+    - Gloss, matte, and satin finish options
+18. **🎨 Enhanced Watercolor** - Authentic watercolor effects:
+    - Wet-on-wet blending with soft, feathered edges
+    - Blooming and backruns (cauliflower effects)
+    - Granulation in darker areas (pigment settling)
+    - Natural water flow patterns on paper
+    - Paper absorbency simulation
+19. **✏️ Graphite Pencils** - 8 realistic graphite pencils (4H to 8B):
     - Natural paper grain response and realistic texture
     - Pressure-sensitive with authentic angle variation
     - HB, 2B, 4B, 6B, 8B for darker sketches
     - H, 2H, 4H for precise technical drawing
-16. **🎨 Wet Palette Color Mixing** - Advanced realistic blending:
+20. **🎨 Wet Palette Color Mixing** - Advanced realistic blending:
     - Wetness control (0-100%) for paint moisture
     - Color bleeding (0-100%) for natural mixing
     - Drying time (1-30s) affects blend behavior
