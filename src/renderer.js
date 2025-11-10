@@ -9457,17 +9457,6 @@ function drawPolygonalLassoPreview() {
         drawCtx.setLineDash([]);
     });
 }
-    
-    // Draw points
-    polygonalPoints.forEach(point => {
-        drawCtx.fillStyle = '#ffffff';
-        drawCtx.strokeStyle = '#000000';
-        drawCtx.beginPath();
-        drawCtx.arc(point[0], point[1], 3, 0, Math.PI * 2);
-        drawCtx.fill();
-        drawCtx.stroke();
-    });
-}
 
 function createSelectionFromPath(points) {
     if (!state.activeLayer || points.length < 3) return;
