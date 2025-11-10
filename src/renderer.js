@@ -634,6 +634,11 @@ const state = {
     isPanning: false,
     panStartX: 0,
     panStartY: 0,
+    // Animation frame tracking for performance
+    eraserPreviewFrame: null,
+    lassoPreviewFrame: null,
+    polygonalLassoPreviewFrame: null,
+    vectorPathPreviewFrame: null,
     selection: {
         active: false,
         startX: 0,
@@ -8342,40 +8347,85 @@ function calculateBrushOpacity(pressure) {
 function showEraserPreview(x, y) {
     if (!state.activeLayer) return;
     
-    // Clear previous preview
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    // Use requestAnimationFrame for smooth rendering
+    if (state.eraserPreviewFrame) {
+        cancelAnimationFrame(state.eraserPreviewFrame);
+    }
     
-    // Draw the current layer content
-    drawCtx.save();
-    drawCtx.globalAlpha = 1;
-    drawCtx.drawImage(state.activeLayer.canvas, 0, 0);
-    
-    // Draw a semi-transparent circle showing the eraser area
-    const size = state.eraser.size;
-    const hardness = state.eraser.hardness / 100;
-    
-    drawCtx.globalCompositeOperation = 'destination-out';
-    drawCtx.globalAlpha = ERASER_PREVIEW_OPACITY; // Semi-transparent preview
-    
-    // Create gradient for soft edges
-    const gradient = drawCtx.createRadialGradient(x, y, 0, x, y, size / 2);
-    gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
-    gradient.addColorStop(hardness, `rgba(255, 255, 255, 1)`);
-    gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
-    
-    drawCtx.fillStyle = gradient;
-    drawCtx.beginPath();
-    drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
-    drawCtx.fill();
-    
-    // Draw eraser outline
-    drawCtx.restore();
-    drawCtx.globalCompositeOperation = 'source-over';
-    drawCtx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Red outline to show eraser
-    drawCtx.lineWidth = 2;
-    drawCtx.beginPath();
-    drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
-    drawCtx.stroke();
+    state.eraserPreviewFrame = requestAnimationFrame(() => {
+        // Clear previous preview
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        
+        // Draw the current layer content
+        drawCtx.save();
+        drawCtx.globalAlpha = 1;
+        drawCtx.drawImage(state.activeLayer.canvas, 0, 0);
+        
+        // Draw a semi-transparent circle showing the eraser area
+        const size = state.eraser.size;
+        const hardness = state.eraser.hardness / 100;
+        
+        drawCtx.globalCompositeOperation = 'destination-out';
+        drawCtx.globalAlpha = ERASER_PREVIEW_OPACITY; // Semi-transparent preview
+        
+        // Create gradient for soft edges
+        const gradient = drawCtx.createRadialGradient(x, y, 0, x, y, size / 2);
+        gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
+        gradient.addColorStop(hardness, `rgba(255, 255, 255, 1)`);
+        gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+        
+        drawCtx.fillStyle = gradient;
+        drawCtx.beginPath();
+        drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+        drawCtx.fill();
+        
+        // Draw enhanced eraser outline with technique indicator
+        drawCtx.restore();
+        drawCtx.globalCompositeOperation = 'source-over';
+        
+        // Multi-layer outline for better visibility
+        // Outer black outline
+        drawCtx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        drawCtx.lineWidth = 3;
+        drawCtx.beginPath();
+        drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+        drawCtx.stroke();
+        
+        // Inner white outline
+        drawCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        drawCtx.lineWidth = 1.5;
+        drawCtx.beginPath();
+        drawCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+        drawCtx.stroke();
+        
+        // Technique indicator - different color based on eraser technique
+        let techniqueColor = 'rgba(255, 0, 0, 0.5)';
+        switch(state.eraser.eraserTechnique) {
+            case 'kneaded': techniqueColor = 'rgba(255, 200, 150, 0.5)'; break;
+            case 'pink': techniqueColor = 'rgba(255, 150, 200, 0.5)'; break;
+            case 'sponge': techniqueColor = 'rgba(200, 200, 255, 0.5)'; break;
+            case 'electric': techniqueColor = 'rgba(150, 255, 255, 0.5)'; break;
+        }
+        
+        // Pulsing center dot for better visibility
+        const pulsePhase = (Date.now() % 1000) / 1000; // 0 to 1
+        const pulseAlpha = 0.3 + 0.3 * Math.sin(pulsePhase * Math.PI * 2);
+        drawCtx.fillStyle = techniqueColor.replace(/[\d.]+\)$/, `${pulseAlpha})`);
+        drawCtx.beginPath();
+        drawCtx.arc(x, y, 3, 0, Math.PI * 2);
+        drawCtx.fill();
+        
+        // Hardness indicator - inner circle showing hard edge boundary
+        if (hardness < 0.9) {
+            drawCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            drawCtx.lineWidth = 1;
+            drawCtx.setLineDash([2, 2]);
+            drawCtx.beginPath();
+            drawCtx.arc(x, y, size / 2 * hardness, 0, Math.PI * 2);
+            drawCtx.stroke();
+            drawCtx.setLineDash([]);
+        }
+    });
 }
 
 function commitDrawing() {
@@ -9196,58 +9246,217 @@ function finishPolygonalLassoSelection() {
 }
 
 function drawLassoPreview() {
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    
-    if (lassoPoints.length < 2) return;
-    
-    drawCtx.strokeStyle = '#000000';
-    drawCtx.lineWidth = 1;
-    drawCtx.setLineDash([4, 4]);
-    drawCtx.beginPath();
-    drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
-    for (let i = 1; i < lassoPoints.length; i++) {
-        drawCtx.lineTo(lassoPoints[i][0], lassoPoints[i][1]);
+    // Use requestAnimationFrame for smooth rendering
+    if (state.lassoPreviewFrame) {
+        cancelAnimationFrame(state.lassoPreviewFrame);
     }
-    drawCtx.stroke();
     
-    drawCtx.strokeStyle = '#ffffff';
-    drawCtx.lineDashOffset = 4;
-    drawCtx.beginPath();
-    drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
-    for (let i = 1; i < lassoPoints.length; i++) {
-        drawCtx.lineTo(lassoPoints[i][0], lassoPoints[i][1]);
-    }
-    drawCtx.stroke();
-    
-    drawCtx.setLineDash([]);
+    state.lassoPreviewFrame = requestAnimationFrame(() => {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        
+        if (lassoPoints.length < 2) return;
+        
+        // Draw shadow/glow effect for better visibility
+        drawCtx.save();
+        drawCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        drawCtx.shadowBlur = 4;
+        
+        // Draw smooth anti-aliased path with better line quality
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        
+        // Animated marching ants effect
+        const marchOffset = (Date.now() / 50) % 8; // Smooth animation
+        
+        // Black outline
+        drawCtx.strokeStyle = '#000000';
+        drawCtx.lineWidth = 2;
+        drawCtx.setLineDash([4, 4]);
+        drawCtx.lineDashOffset = -marchOffset;
+        drawCtx.beginPath();
+        drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
+        
+        // Smooth curve through points for better visual feedback
+        if (lassoPoints.length > 2) {
+            for (let i = 1; i < lassoPoints.length - 1; i++) {
+                const xc = (lassoPoints[i][0] + lassoPoints[i + 1][0]) / 2;
+                const yc = (lassoPoints[i][1] + lassoPoints[i + 1][1]) / 2;
+                drawCtx.quadraticCurveTo(lassoPoints[i][0], lassoPoints[i][1], xc, yc);
+            }
+            // Draw to last point
+            const last = lassoPoints.length - 1;
+            drawCtx.lineTo(lassoPoints[last][0], lassoPoints[last][1]);
+        } else {
+            // Just two points, draw straight line
+            drawCtx.lineTo(lassoPoints[1][0], lassoPoints[1][1]);
+        }
+        drawCtx.stroke();
+        
+        // White overlay for contrast
+        drawCtx.strokeStyle = '#ffffff';
+        drawCtx.lineWidth = 1;
+        drawCtx.lineDashOffset = -marchOffset + 4;
+        drawCtx.beginPath();
+        drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
+        
+        if (lassoPoints.length > 2) {
+            for (let i = 1; i < lassoPoints.length - 1; i++) {
+                const xc = (lassoPoints[i][0] + lassoPoints[i + 1][0]) / 2;
+                const yc = (lassoPoints[i][1] + lassoPoints[i + 1][1]) / 2;
+                drawCtx.quadraticCurveTo(lassoPoints[i][0], lassoPoints[i][1], xc, yc);
+            }
+            const last = lassoPoints.length - 1;
+            drawCtx.lineTo(lassoPoints[last][0], lassoPoints[last][1]);
+        } else {
+            drawCtx.lineTo(lassoPoints[1][0], lassoPoints[1][1]);
+        }
+        drawCtx.stroke();
+        
+        // Draw start point indicator (helps user see where they started)
+        if (lassoPoints.length > 0) {
+            drawCtx.fillStyle = 'rgba(0, 150, 255, 0.7)';
+            drawCtx.strokeStyle = 'white';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(lassoPoints[0][0], lassoPoints[0][1], 5, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        }
+        
+        // Draw current end point indicator
+        if (lassoPoints.length > 1) {
+            const last = lassoPoints.length - 1;
+            drawCtx.fillStyle = 'rgba(255, 100, 100, 0.7)';
+            drawCtx.strokeStyle = 'white';
+            drawCtx.lineWidth = 2;
+            drawCtx.beginPath();
+            drawCtx.arc(lassoPoints[last][0], lassoPoints[last][1], 4, 0, Math.PI * 2);
+            drawCtx.fill();
+            drawCtx.stroke();
+        }
+        
+        // Draw semi-transparent fill preview if path would close
+        if (lassoPoints.length >= 3) {
+            const first = lassoPoints[0];
+            const last = lassoPoints[lassoPoints.length - 1];
+            const dist = Math.sqrt(Math.pow(first[0] - last[0], 2) + Math.pow(first[1] - last[1], 2));
+            
+            if (dist < 20) {
+                // Show that path will close
+                drawCtx.fillStyle = 'rgba(100, 200, 255, 0.15)';
+                drawCtx.beginPath();
+                drawCtx.moveTo(lassoPoints[0][0], lassoPoints[0][1]);
+                for (let i = 1; i < lassoPoints.length; i++) {
+                    drawCtx.lineTo(lassoPoints[i][0], lassoPoints[i][1]);
+                }
+                drawCtx.closePath();
+                drawCtx.fill();
+            }
+        }
+        
+        drawCtx.restore();
+        drawCtx.setLineDash([]);
+        
+        // Request next frame for animation
+        if (state.isDrawing && state.tool === 'lasso') {
+            drawLassoPreview();
+        }
+    });
 }
 
 function drawPolygonalLassoPreview() {
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    
-    if (polygonalPoints.length < 1) return;
-    
-    // Draw completed segments
-    drawCtx.strokeStyle = '#000000';
-    drawCtx.lineWidth = 1;
-    drawCtx.setLineDash([4, 4]);
-    drawCtx.beginPath();
-    drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
-    for (let i = 1; i < polygonalPoints.length; i++) {
-        drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+    // Use requestAnimationFrame for smooth rendering
+    if (state.polygonalLassoPreviewFrame) {
+        cancelAnimationFrame(state.polygonalLassoPreviewFrame);
     }
-    drawCtx.stroke();
     
-    drawCtx.strokeStyle = '#ffffff';
-    drawCtx.lineDashOffset = 4;
-    drawCtx.beginPath();
-    drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
-    for (let i = 1; i < polygonalPoints.length; i++) {
-        drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
-    }
-    drawCtx.stroke();
-    
-    drawCtx.setLineDash([]);
+    state.polygonalLassoPreviewFrame = requestAnimationFrame(() => {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        
+        if (polygonalPoints.length < 1) return;
+        
+        drawCtx.save();
+        drawCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        drawCtx.shadowBlur = 4;
+        
+        // Animated marching ants effect
+        const marchOffset = (Date.now() / 50) % 8;
+        
+        // Draw completed segments with anti-aliasing
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.strokeStyle = '#000000';
+        drawCtx.lineWidth = 2;
+        drawCtx.setLineDash([4, 4]);
+        drawCtx.lineDashOffset = -marchOffset;
+        drawCtx.beginPath();
+        drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
+        for (let i = 1; i < polygonalPoints.length; i++) {
+            drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+        }
+        drawCtx.stroke();
+        
+        drawCtx.strokeStyle = '#ffffff';
+        drawCtx.lineWidth = 1;
+        drawCtx.lineDashOffset = -marchOffset + 4;
+        drawCtx.beginPath();
+        drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
+        for (let i = 1; i < polygonalPoints.length; i++) {
+            drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+        }
+        drawCtx.stroke();
+        
+        // Draw vertex points with enhanced visibility
+        for (let i = 0; i < polygonalPoints.length; i++) {
+            const isStart = i === 0;
+            const isEnd = i === polygonalPoints.length - 1;
+            
+            if (isStart) {
+                // Start point - blue
+                drawCtx.fillStyle = 'rgba(0, 150, 255, 0.7)';
+                drawCtx.strokeStyle = 'white';
+                drawCtx.lineWidth = 2;
+                drawCtx.beginPath();
+                drawCtx.arc(polygonalPoints[i][0], polygonalPoints[i][1], 6, 0, Math.PI * 2);
+                drawCtx.fill();
+                drawCtx.stroke();
+            } else if (isEnd) {
+                // End point - red
+                drawCtx.fillStyle = 'rgba(255, 100, 100, 0.7)';
+                drawCtx.strokeStyle = 'white';
+                drawCtx.lineWidth = 2;
+                drawCtx.beginPath();
+                drawCtx.arc(polygonalPoints[i][0], polygonalPoints[i][1], 5, 0, Math.PI * 2);
+                drawCtx.fill();
+                drawCtx.stroke();
+            } else {
+                // Middle points - green
+                drawCtx.fillStyle = 'rgba(100, 255, 100, 0.6)';
+                drawCtx.strokeStyle = 'white';
+                drawCtx.lineWidth = 1.5;
+                drawCtx.beginPath();
+                drawCtx.arc(polygonalPoints[i][0], polygonalPoints[i][1], 4, 0, Math.PI * 2);
+                drawCtx.fill();
+                drawCtx.stroke();
+            }
+        }
+        
+        // Draw semi-transparent fill preview if enough points
+        if (polygonalPoints.length >= 3) {
+            drawCtx.fillStyle = 'rgba(100, 200, 255, 0.15)';
+            drawCtx.beginPath();
+            drawCtx.moveTo(polygonalPoints[0][0], polygonalPoints[0][1]);
+            for (let i = 1; i < polygonalPoints.length; i++) {
+                drawCtx.lineTo(polygonalPoints[i][0], polygonalPoints[i][1]);
+            }
+            drawCtx.closePath();
+            drawCtx.fill();
+        }
+        
+        drawCtx.restore();
+        drawCtx.setLineDash([]);
+    });
+}
     
     // Draw points
     polygonalPoints.forEach(point => {
@@ -13999,20 +14208,48 @@ function finishVectorPath() {
 }
 
 function drawVectorPathPreview() {
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    
-    if (state.vectorPath.currentPath) {
-        // Draw the path
-        state.vectorPath.currentPath.draw(
-            drawCtx,
-            state.color,
-            state.vectorPath.filled ? state.color : null,
-            state.vectorPath.strokeWidth
-        );
-        
-        // Draw control points
-        state.vectorPath.currentPath.drawControls(drawCtx);
+    // Use requestAnimationFrame for smooth rendering
+    if (state.vectorPathPreviewFrame) {
+        cancelAnimationFrame(state.vectorPathPreviewFrame);
     }
+    
+    state.vectorPathPreviewFrame = requestAnimationFrame(() => {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        
+        if (state.vectorPath.currentPath) {
+            // Draw semi-transparent preview of the path
+            drawCtx.save();
+            drawCtx.globalAlpha = 0.8;
+            
+            // Draw the path with enhanced preview
+            state.vectorPath.currentPath.draw(
+                drawCtx,
+                state.color,
+                state.vectorPath.filled ? state.color : null,
+                state.vectorPath.strokeWidth
+            );
+            
+            drawCtx.restore();
+            
+            // Draw control points with full opacity
+            state.vectorPath.currentPath.drawControls(drawCtx);
+            
+            // Add real-time feedback overlay
+            if (state.vectorPath.currentPath.points.length > 0) {
+                // Show path stats in corner
+                drawCtx.save();
+                drawCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                drawCtx.fillRect(10, 10, 160, 60);
+                
+                drawCtx.fillStyle = 'white';
+                drawCtx.font = '12px Arial';
+                drawCtx.fillText(`Points: ${state.vectorPath.currentPath.points.length}`, 20, 30);
+                drawCtx.fillText(`Type: ${state.vectorPath.filled ? 'Filled' : 'Stroke'}`, 20, 50);
+                drawCtx.fillText(`Width: ${state.vectorPath.strokeWidth}px`, 20, 65);
+                drawCtx.restore();
+            }
+        }
+    });
 }
 
 function deleteSelectedPoint() {
@@ -14237,7 +14474,13 @@ function updateCursor() {
     } else if (state.tool === 'text') {
         drawCanvas.style.cursor = 'text';
     } else if (state.tool === 'pen') {
-        drawCanvas.style.cursor = 'crosshair';
+        // Enhanced pen tool cursor with pen icon
+        const penCursorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white" stroke="black" stroke-width="1"/><circle cx="19" cy="5" r="3" fill="rgba(74, 144, 226, 0.8)" stroke="white" stroke-width="1"/></svg>`;
+        drawCanvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(penCursorSvg)}') 2 22, crosshair`;
+    } else if (state.tool === 'lasso' || state.tool === 'polygonal-lasso') {
+        // Enhanced lasso cursor with lasso icon
+        const lassoCursorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C8.7 2 6 4.7 6 8c0 2.4 1.4 4.5 3.5 5.5L8 22h8l-1.5-8.5C16.6 12.5 18 10.4 18 8c0-3.3-2.7-6-6-6z" fill="none" stroke="black" stroke-width="2"/><path d="M12 2C8.7 2 6 4.7 6 8c0 2.4 1.4 4.5 3.5 5.5L8 22h8l-1.5-8.5C16.6 12.5 18 10.4 18 8c0-3.3-2.7-6-6-6z" fill="none" stroke="white" stroke-width="1"/><circle cx="12" cy="8" r="3" fill="rgba(100, 200, 255, 0.7)"/></svg>`;
+        drawCanvas.style.cursor = `url('data:image/svg+xml;utf8,${encodeURIComponent(lassoCursorSvg)}') 12 2, crosshair`;
     } else if (state.tool === 'shapes') {
         drawCanvas.style.cursor = 'crosshair';
     } else if (state.tool === 'crop') {
@@ -15149,6 +15392,29 @@ function selectTool(toolName) {
     
     // DON'T clear selection when switching tools anymore - keep selection persistent
     // Only clear when user explicitly deselects (Ctrl+D or Escape)
+    
+    // Cancel any pending animation frames when switching tools
+    if (state.eraserPreviewFrame) {
+        cancelAnimationFrame(state.eraserPreviewFrame);
+        state.eraserPreviewFrame = null;
+    }
+    if (state.lassoPreviewFrame) {
+        cancelAnimationFrame(state.lassoPreviewFrame);
+        state.lassoPreviewFrame = null;
+    }
+    if (state.polygonalLassoPreviewFrame) {
+        cancelAnimationFrame(state.polygonalLassoPreviewFrame);
+        state.polygonalLassoPreviewFrame = null;
+    }
+    if (state.vectorPathPreviewFrame) {
+        cancelAnimationFrame(state.vectorPathPreviewFrame);
+        state.vectorPathPreviewFrame = null;
+    }
+    
+    // Clear draw canvas when switching away from preview-based tools
+    if (['eraser', 'lasso', 'polygonal-lasso', 'pen'].includes(state.tool)) {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    }
     
     state.tool = toolName;
     
