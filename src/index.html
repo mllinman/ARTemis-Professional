@@ -2557,6 +2557,17 @@
 
     <script src="auth.js"></script>
     <script src="subscription-ui.js"></script>
+    <script>
+        // Check authentication and redirect to login if not authenticated
+        // Only apply in browser mode (not in Electron)
+        if (typeof require === 'undefined') {
+            // We're in browser mode
+            if (!window.authManager || !window.authManager.isAuthenticated()) {
+                // Not authenticated, redirect to login
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
     <script src="advanced-colorwheel.js"></script>
     
     <!-- Phase 15 Enhancement Modules -->

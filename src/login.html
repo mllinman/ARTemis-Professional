@@ -279,6 +279,50 @@
 
             <!-- User Login Tab -->
             <div class="tab-content active" data-tab="user">
+                <!-- Email/Password Sign In -->
+                <div id="signin-mode" class="auth-mode">
+                    <form id="signin-form">
+                        <div class="form-group">
+                            <label for="signin-email">Email</label>
+                            <input type="email" id="signin-email" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signin-password">Password</label>
+                            <input type="password" id="signin-password" placeholder="Enter your password" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Sign In</button>
+                    </form>
+                    
+                    <p style="text-align: center; margin: 16px 0; color: #858585; font-size: 13px;">
+                        Don't have an account? <a href="#" id="show-signup" style="color: #0e639c; text-decoration: none; font-weight: 600;">Sign up</a>
+                    </p>
+                </div>
+
+                <!-- Email/Password Sign Up -->
+                <div id="signup-mode" class="auth-mode" style="display: none;">
+                    <form id="signup-form">
+                        <div class="form-group">
+                            <label for="signup-name">Name</label>
+                            <input type="text" id="signup-name" placeholder="Your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" id="signup-email" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <input type="password" id="signup-password" placeholder="At least 6 characters" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Sign Up</button>
+                    </form>
+                    
+                    <p style="text-align: center; margin: 16px 0; color: #858585; font-size: 13px;">
+                        Already have an account? <a href="#" id="show-signin" style="color: #0e639c; text-decoration: none; font-weight: 600;">Sign in</a>
+                    </p>
+                </div>
+
+                <div class="divider">or</div>
+
                 <button class="google-btn" id="google-signin">
                     <svg viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -289,9 +333,7 @@
                     Continue with Google
                 </button>
 
-                <div class="divider">or continue as guest</div>
-
-                <button class="submit-btn" id="guest-signin">Continue as Guest (Free Tier)</button>
+                <button class="submit-btn" id="guest-signin" style="margin-top: 12px; background: #2d2d30; color: #cccccc;">Continue as Guest (Free Tier)</button>
 
                 <div class="features-preview">
                     <h3>Free Tier Includes:</h3>
@@ -358,6 +400,58 @@
             const errorDiv = document.getElementById('error-message');
             errorDiv.classList.remove('show');
         }
+
+        // Toggle between sign in and sign up
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signin-mode').style.display = 'none';
+            document.getElementById('signup-mode').style.display = 'block';
+            hideError();
+        });
+
+        document.getElementById('show-signin').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signin-mode').style.display = 'block';
+            document.getElementById('signup-mode').style.display = 'none';
+            hideError();
+        });
+
+        // Email Sign In
+        document.getElementById('signin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            
+            try {
+                const result = await window.authManager.signInWithEmail(email, password);
+                if (result.success) {
+                    window.location.href = 'index.html';
+                } else {
+                    showError(result.error || 'Failed to sign in. Please try again.');
+                }
+            } catch (error) {
+                showError('Failed to sign in. Please try again.');
+            }
+        });
+
+        // Email Sign Up
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            try {
+                const result = await window.authManager.signUpWithEmail(email, password, name);
+                if (result.success) {
+                    window.location.href = 'index.html';
+                } else {
+                    showError(result.error || 'Failed to sign up. Please try again.');
+                }
+            } catch (error) {
+                showError('Failed to sign up. Please try again.');
+            }
+        });
 
         // Google Sign In
         document.getElementById('google-signin').addEventListener('click', async () => {
