@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="advanced-colorwheel.css">
     <link rel="stylesheet" href="node-editor.css">
+    <link rel="stylesheet" href="panel-system.css">
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Stripe -->
@@ -179,15 +180,23 @@
             </div>
             <div class="menu-item">
                 <span class="menu-label">Windows</span>
-                <div class="menu-dropdown">
-                    <button class="menu-btn" data-action="window-show-left">Show Tools Panel</button>
-                    <button class="menu-btn" data-action="window-show-color">Show Color Panel</button>
-                    <button class="menu-btn" data-action="window-show-right">Show Layers Panel</button>
-                    <button class="menu-btn" data-action="window-show-toolbar">Show Toolbar</button>
-                    <button class="menu-btn" data-action="window-show-contextual">Show Contextual Taskbar</button>
+                <div class="menu-dropdown" id="windows-menu-dropdown">
+                    <div class="menu-section-label">Panels</div>
+                    <!-- Panel toggles will be dynamically added here by PanelManager -->
+                    <div class="panels-menu-section"></div>
+                    
+                    <div class="menu-divider" style="height: 1px; background: #3e3e42; margin: 4px 0;"></div>
+                    
+                    <div class="menu-section-label">View Options</div>
                     <button class="menu-btn" data-action="window-toggle-rulers" id="toggle-rulers-btn">Toggle Rulers</button>
-                    <button class="menu-btn" data-action="window-node-editor">Node-Based Brush Editor</button>
+                    <button class="menu-btn" data-action="window-toggle-toolbar">Toggle Toolbar</button>
+                    <button class="menu-btn" data-action="window-toggle-contextual">Toggle Contextual Taskbar</button>
+                    
+                    <div class="menu-divider" style="height: 1px; background: #3e3e42; margin: 4px 0;"></div>
+                    
+                    <div class="menu-section-label">Workspace</div>
                     <button class="menu-btn" data-action="window-layout-manager">Manage UI Layouts...</button>
+                    <button class="menu-btn" data-action="window-reset-layout">Reset Panel Layout</button>
                     <button class="menu-btn" data-action="window-compact-mode">Toggle Compact Mode</button>
                     <button class="menu-btn" data-action="window-touch-mode">Toggle Touch Mode</button>
                 </div>
@@ -2616,6 +2625,7 @@
     <script src="workflow-automation.js"></script>
     
     <!-- UI/UX & Accessibility (Category 15) -->
+    <script src="panel-manager.js"></script>
     <script src="ui-customization.js"></script>
     <script src="accessibility.js"></script>
     <script src="learning-help.js"></script>
