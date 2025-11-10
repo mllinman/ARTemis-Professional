@@ -6,6 +6,7 @@ class NodeEditor {
         this.nodes = [];
         this.connections = [];
         this.selectedNode = null;
+        this.selectedNodes = new Set(); // Multi-selection support
         this.nextNodeId = 1;
         
         // Canvas state
@@ -22,11 +23,25 @@ class NodeEditor {
         this.connecting = false;
         this.connectionStart = null;
         this.tempConnectionEnd = null;
+        this.hoveredConnection = null;
         
         // Dragging state
         this.draggingNode = null;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
+        
+        // Selection box state
+        this.isBoxSelecting = false;
+        this.boxSelectStart = null;
+        this.boxSelectElement = null;
+        
+        // Undo/Redo stacks
+        this.undoStack = [];
+        this.redoStack = [];
+        this.maxUndoSteps = 50;
+        
+        // Favorites
+        this.favoriteNodes = new Set(['pressure-input', 'size', 'opacity', 'color-input']);
         
         this.initializeUI();
         this.bindEvents();
@@ -46,17 +61,26 @@ class NodeEditor {
                         <button class="node-editor-btn" id="node-zoom-in" title="Zoom In (+)">+</button>
                         <button class="node-editor-btn" id="node-zoom-reset" title="Reset Zoom (0)">⊙</button>
                     </div>
-                    <button class="node-editor-btn" id="node-export-graph" title="Export Node Graph">Export</button>
-                    <button class="node-editor-btn" id="node-import-graph" title="Import Node Graph">Import</button>
-                    <button class="node-editor-btn" id="node-clear-all">Clear All</button>
-                    <button class="node-editor-btn primary" id="node-save-brush">Save to Brushes</button>
+                    <button class="node-editor-btn" id="node-auto-arrange" title="Auto-Arrange Nodes">🔄 Auto-Arrange</button>
+                    <button class="node-editor-btn" id="node-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+                    <button class="node-editor-btn" id="node-redo" title="Redo (Ctrl+Y)" disabled>↷ Redo</button>
+                    <button class="node-editor-btn" id="node-export-graph" title="Export Node Graph">💾 Export</button>
+                    <button class="node-editor-btn" id="node-import-graph" title="Import Node Graph">📁 Import</button>
+                    <button class="node-editor-btn" id="node-clear-all">🗑️ Clear</button>
+                    <button class="node-editor-btn primary" id="node-save-brush">💾 Save Brush</button>
+                    <button class="node-editor-btn" id="node-help" title="Show Keyboard Shortcuts">❓</button>
                     <button class="node-editor-btn node-editor-close" id="node-editor-close">✕</button>
                 </div>
             </div>
             <div class="node-editor-body">
                 <div class="node-palette">
                     <div class="node-search-container">
-                        <input type="text" id="node-search" placeholder="Search nodes..." class="node-search-input">
+                        <input type="text" id="node-search" placeholder="🔍 Search nodes..." class="node-search-input">
+                        <div class="node-quick-filters">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="favorites">⭐ Favorites</button>
+                            <button class="filter-btn" data-filter="recent">🕐 Recent</button>
+                        </div>
                     </div>
                     <div class="node-category">
                         <h4>Templates</h4>
@@ -75,6 +99,30 @@ class NodeEditor {
                         <button class="node-type-btn template-btn" data-template="color-dynamic">
                             <span class="node-type-icon" style="background: #51cf66;"></span>
                             Color Dynamic
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="watercolor">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Watercolor
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="oil-paint">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Oil Paint
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="ink-pen">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Ink Pen
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="spray-paint">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Spray Paint
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="charcoal">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Charcoal
+                        </button>
+                        <button class="node-type-btn template-btn" data-template="particle-spray">
+                            <span class="node-type-icon" style="background: #51cf66;"></span>
+                            Particle Spray
                         </button>
                     </div>
                     <div class="node-category">
@@ -250,6 +298,72 @@ class NodeEditor {
                         </button>
                     </div>
                     <div class="node-category">
+                        <h4>Advanced Effects</h4>
+                        <button class="node-type-btn" data-node-type="stroke-taper" title="Taper stroke ends">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Stroke Taper
+                        </button>
+                        <button class="node-type-btn" data-node-type="dual-brush" title="Mix two brush textures">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Dual Brush
+                        </button>
+                        <button class="node-type-btn" data-node-type="texture-mode" title="Advanced texture blending">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Texture Mode
+                        </button>
+                        <button class="node-type-btn" data-node-type="transfer-mode" title="Color transfer modes">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Transfer Mode
+                        </button>
+                        <button class="node-type-btn" data-node-type="accumulation" title="Paint accumulation">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Accumulation
+                        </button>
+                        <button class="node-type-btn" data-node-type="airflow" title="Airbrush flow patterns">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Airflow
+                        </button>
+                        <button class="node-type-btn" data-node-type="stamp-spacing" title="Stamp spacing patterns">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Stamp Spacing
+                        </button>
+                        <button class="node-type-btn" data-node-type="edge-softness" title="Variable edge softness">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Edge Softness
+                        </button>
+                        <button class="node-type-btn" data-node-type="bristle-split" title="Bristle splitting effect">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Bristle Split
+                        </button>
+                        <button class="node-type-btn" data-node-type="wetness" title="Wet paint behavior">
+                            <span class="node-type-icon" style="background: #845ef7;"></span>
+                            Wetness
+                        </button>
+                    </div>
+                    <div class="node-category">
+                        <h4>Particle Effects</h4>
+                        <button class="node-type-btn" data-node-type="particle-emitter" title="Emit particles">
+                            <span class="node-type-icon" style="background: #f783ac;"></span>
+                            Particle Emitter
+                        </button>
+                        <button class="node-type-btn" data-node-type="particle-velocity" title="Control particle velocity">
+                            <span class="node-type-icon" style="background: #f783ac;"></span>
+                            Particle Velocity
+                        </button>
+                        <button class="node-type-btn" data-node-type="particle-lifetime" title="Particle lifetime">
+                            <span class="node-type-icon" style="background: #f783ac;"></span>
+                            Particle Lifetime
+                        </button>
+                        <button class="node-type-btn" data-node-type="particle-gravity" title="Apply gravity to particles">
+                            <span class="node-type-icon" style="background: #f783ac;"></span>
+                            Particle Gravity
+                        </button>
+                        <button class="node-type-btn" data-node-type="particle-turbulence" title="Add turbulence">
+                            <span class="node-type-icon" style="background: #f783ac;"></span>
+                            Particle Turbulence
+                        </button>
+                    </div>
+                    <div class="node-category">
                         <h4>Color Nodes</h4>
                         <button class="node-type-btn" data-node-type="hsv-adjust">
                             <span class="node-type-icon" style="background: #ff6b6b;"></span>
@@ -347,22 +461,39 @@ class NodeEditor {
                     </svg>
                     <div class="node-canvas" id="node-canvas">
                     </div>
+                    <div class="node-minimap" id="node-minimap">
+                        <div class="minimap-viewport" id="minimap-viewport"></div>
+                        <canvas id="minimap-canvas" width="200" height="150"></canvas>
+                    </div>
+                    <div class="selection-box" id="selection-box" style="display: none;"></div>
                 </div>
                 <div class="node-properties-panel">
                     <h4>Brush Preview</h4>
                     <div class="node-info">
-                        <p><strong>Node Editor v2.0</strong> - 50+ Nodes Available</p>
+                        <p><strong>Node Editor v3.0</strong> - 50+ Nodes Available</p>
                         <p style="font-size: 11px; margin-top: 8px;">
                             • Connect nodes to create brushes<br>
-                            • Use templates for quick start<br>
-                            • Search nodes with the search box<br>
-                            • Ctrl+C/V to copy/paste nodes<br>
-                            • Ctrl+Wheel to zoom<br>
-                            • Export/Import to share brushes
+                            • Drag & drop from palette<br>
+                            • Box select with Shift+Drag<br>
+                            • Right-click for context menu<br>
+                            • Ctrl+Z/Y for undo/redo<br>
+                            • Use minimap to navigate
                         </p>
                     </div>
                     <div class="brush-preview-container">
+                        <div class="preview-controls">
+                            <button class="preview-btn" id="preview-clear" title="Clear Preview">🗑️</button>
+                            <button class="preview-btn" id="preview-test" title="Test Multiple Strokes">🎨</button>
+                            <select id="preview-mode" class="preview-select">
+                                <option value="stroke">Stroke</option>
+                                <option value="dots">Dots</option>
+                                <option value="spiral">Spiral</option>
+                            </select>
+                        </div>
                         <canvas id="node-brush-preview" class="brush-preview-canvas"></canvas>
+                        <div class="brush-stats" id="brush-stats">
+                            Size: 20px | Opacity: 100% | Flow: 100%
+                        </div>
                     </div>
                     <div class="save-brush-container">
                         <label class="property-label">Brush Name</label>
@@ -373,6 +504,10 @@ class NodeEditor {
                             <option value="favorites">Favorites</option>
                             <option value="project">Current Project</option>
                         </select>
+                        <div class="save-actions">
+                            <button class="node-editor-btn primary full-width" id="node-save-brush-main">💾 Save Brush</button>
+                            <button class="node-editor-btn full-width" id="node-apply-brush">✓ Apply to Current</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -592,19 +727,88 @@ class NodeEditor {
             });
         }
         
+        // New control buttons
+        document.getElementById('node-auto-arrange').addEventListener('click', () => {
+            this.autoArrangeNodes();
+        });
+        
+        document.getElementById('node-undo').addEventListener('click', () => {
+            this.undo();
+        });
+        
+        document.getElementById('node-redo').addEventListener('click', () => {
+            this.redo();
+        });
+        
+        document.getElementById('node-help').addEventListener('click', () => {
+            this.showKeyboardShortcuts();
+        });
+        
+        // Preview controls
+        document.getElementById('preview-clear').addEventListener('click', () => {
+            this.clearPreview();
+        });
+        
+        document.getElementById('preview-test').addEventListener('click', () => {
+            this.testBrushPreview();
+        });
+        
+        document.getElementById('preview-mode').addEventListener('change', (e) => {
+            this.previewMode = e.target.value;
+            this.updateBrushPreview();
+        });
+        
+        // Additional save button
+        document.getElementById('node-save-brush-main').addEventListener('click', () => {
+            this.saveBrush();
+        });
+        
+        document.getElementById('node-apply-brush').addEventListener('click', () => {
+            this.applyToCurrentBrush();
+        });
+        
+        // Filter buttons
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.filterNodesByCategory(e.target.dataset.filter);
+            });
+        });
+        
+        // Context menu on right-click
+        this.nodeCanvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.showContextMenu(e.clientX, e.clientY);
+        });
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (!this.window.classList.contains('visible')) return;
             
             // Delete selected node with Delete key
             if (e.key === 'Delete' && this.selectedNode) {
+                this.saveState();
                 this.deleteNode(this.selectedNode.id);
+                e.preventDefault();
+            }
+            
+            // Ctrl+Z - Undo
+            if (e.ctrlKey && e.key === 'z') {
+                this.undo();
+                e.preventDefault();
+            }
+            
+            // Ctrl+Y - Redo
+            if (e.ctrlKey && e.key === 'y') {
+                this.redo();
                 e.preventDefault();
             }
             
             // Ctrl+A - Select all
             if (e.ctrlKey && e.key === 'a') {
-                // Future: Select all nodes
+                this.selectAll();
                 e.preventDefault();
             }
             
@@ -616,12 +820,14 @@ class NodeEditor {
             
             // Ctrl+V - Paste
             if (e.ctrlKey && e.key === 'v' && this.copiedNode) {
+                this.saveState();
                 this.pasteNode();
                 e.preventDefault();
             }
             
             // Ctrl+D - Duplicate
             if (e.ctrlKey && e.key === 'd' && this.selectedNode) {
+                this.saveState();
                 this.duplicateNode(this.selectedNode);
                 e.preventDefault();
             }
@@ -632,6 +838,12 @@ class NodeEditor {
                     this.selectedNode.element.classList.remove('selected');
                     this.selectedNode = null;
                 }
+                e.preventDefault();
+            }
+            
+            // F1 - Help
+            if (e.key === 'F1') {
+                this.showKeyboardShortcuts();
                 e.preventDefault();
             }
         });
@@ -968,6 +1180,83 @@ class NodeEditor {
                 outputs: [{ name: 'Glaze', type: 'number' }],
                 parameters: { transparency: 80, tint: 20, layers: 3 }
             },
+            // Advanced Effect Nodes
+            'stroke-taper': {
+                inputs: [{ name: 'Progress', type: 'number' }],
+                outputs: [{ name: 'Taper', type: 'number' }],
+                parameters: { startTaper: 10, endTaper: 20, curve: 50 }
+            },
+            'dual-brush': {
+                inputs: [{ name: 'Texture A', type: 'texture' }, { name: 'Texture B', type: 'texture' }],
+                outputs: [{ name: 'Mixed', type: 'texture' }],
+                parameters: { mixMode: 'multiply', balance: 50, contrast: 50 }
+            },
+            'texture-mode': {
+                inputs: [{ name: 'Texture', type: 'texture' }, { name: 'Strength', type: 'number' }],
+                outputs: [{ name: 'Result', type: 'texture' }],
+                parameters: { mode: 'overlay', depth: 50, invert: 0 }
+            },
+            'transfer-mode': {
+                inputs: [{ name: 'Color', type: 'color' }],
+                outputs: [{ name: 'Transferred', type: 'color' }],
+                parameters: { mode: 'normal', opacity: 100 }
+            },
+            'accumulation': {
+                inputs: [{ name: 'Amount', type: 'number' }],
+                outputs: [{ name: 'Buildup', type: 'number' }],
+                parameters: { rate: 50, maximum: 100, decay: 10 }
+            },
+            'airflow': {
+                inputs: [{ name: 'Pressure', type: 'number' }],
+                outputs: [{ name: 'Flow Pattern', type: 'number' }],
+                parameters: { pattern: 'radial', intensity: 50, turbulence: 20 }
+            },
+            'stamp-spacing': {
+                inputs: [{ name: 'Velocity', type: 'number' }],
+                outputs: [{ name: 'Spacing', type: 'number' }],
+                parameters: { baseSpacing: 25, minSpacing: 5, maxSpacing: 100 }
+            },
+            'edge-softness': {
+                inputs: [{ name: 'Distance', type: 'number' }],
+                outputs: [{ name: 'Softness', type: 'number' }],
+                parameters: { inner: 80, outer: 20, curve: 50 }
+            },
+            'bristle-split': {
+                inputs: [{ name: 'Pressure', type: 'number' }],
+                outputs: [{ name: 'Split Amount', type: 'number' }],
+                parameters: { threshold: 70, splitCount: 5, angle: 30 }
+            },
+            'wetness': {
+                inputs: [{ name: 'Amount', type: 'number' }],
+                outputs: [{ name: 'Wet', type: 'number' }],
+                parameters: { wetness: 50, absorption: 30, drying: 20 }
+            },
+            // Particle Effect Nodes
+            'particle-emitter': {
+                inputs: [{ name: 'Rate', type: 'number' }],
+                outputs: [{ name: 'Particles', type: 'number' }],
+                parameters: { rate: 10, size: 5, spread: 45 }
+            },
+            'particle-velocity': {
+                inputs: [{ name: 'Speed', type: 'number' }],
+                outputs: [{ name: 'Velocity', type: 'number' }],
+                parameters: { speed: 50, direction: 0, randomness: 20 }
+            },
+            'particle-lifetime': {
+                inputs: [{ name: 'Duration', type: 'number' }],
+                outputs: [{ name: 'Lifetime', type: 'number' }],
+                parameters: { lifetime: 100, variation: 20, fadeOut: 30 }
+            },
+            'particle-gravity': {
+                inputs: [{ name: 'Force', type: 'number' }],
+                outputs: [{ name: 'Gravity', type: 'number' }],
+                parameters: { strength: 50, direction: 90, drag: 10 }
+            },
+            'particle-turbulence': {
+                inputs: [{ name: 'Intensity', type: 'number' }],
+                outputs: [{ name: 'Turbulence', type: 'number' }],
+                parameters: { intensity: 50, scale: 20, octaves: 3 }
+            },
             'brush-output': {
                 inputs: [
                     { name: 'Size', type: 'number' },
@@ -1201,6 +1490,21 @@ class NodeEditor {
             'watercolor-edge': 'Watercolor Edge',
             'impasto': 'Impasto',
             'glazing': 'Glazing',
+            'stroke-taper': 'Stroke Taper',
+            'dual-brush': 'Dual Brush',
+            'texture-mode': 'Texture Mode',
+            'transfer-mode': 'Transfer Mode',
+            'accumulation': 'Accumulation',
+            'airflow': 'Airflow',
+            'stamp-spacing': 'Stamp Spacing',
+            'edge-softness': 'Edge Softness',
+            'bristle-split': 'Bristle Split',
+            'wetness': 'Wetness',
+            'particle-emitter': 'Particle Emitter',
+            'particle-velocity': 'Particle Velocity',
+            'particle-lifetime': 'Particle Lifetime',
+            'particle-gravity': 'Particle Gravity',
+            'particle-turbulence': 'Particle Turbulence',
             'brush-output': 'Brush Output'
         };
         return names[type] || type;
@@ -2047,6 +2351,24 @@ class NodeEditor {
             case 'color-dynamic':
                 this.createColorDynamicTemplate();
                 break;
+            case 'watercolor':
+                this.createWatercolorTemplate();
+                break;
+            case 'oil-paint':
+                this.createOilPaintTemplate();
+                break;
+            case 'ink-pen':
+                this.createInkPenTemplate();
+                break;
+            case 'spray-paint':
+                this.createSprayPaintTemplate();
+                break;
+            case 'charcoal':
+                this.createCharcoalTemplate();
+                break;
+            case 'particle-spray':
+                this.createParticleSprayTemplate();
+                break;
         }
         
         this.updateBrushPreview();
@@ -2107,6 +2429,140 @@ class NodeEditor {
         
         this.updateNodeParameterControls(colorVarNode);
         this.updateNodeParameterControls(sizeNode);
+    }
+    
+    createWatercolorTemplate() {
+        const pressureNode = this.createNode('pressure-input', 150, 150);
+        const sizeNode = this.createNode('size', 300, 120);
+        sizeNode.parameters.baseSize = 35;
+        const opacityNode = this.createNode('opacity', 300, 220);
+        opacityNode.parameters.baseOpacity = 60;
+        const watercolorNode = this.createNode('watercolor-edge', 450, 170);
+        watercolorNode.parameters.edgeDarkness = 60;
+        watercolorNode.parameters.wetness = 80;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(pressureNode.id, 0, sizeNode.id, 0);
+        this.createConnection(pressureNode.id, 0, opacityNode.id, 0);
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        
+        this.updateNodeParameterControls(sizeNode);
+        this.updateNodeParameterControls(opacityNode);
+        this.updateNodeParameterControls(watercolorNode);
+    }
+    
+    createOilPaintTemplate() {
+        const sizeNode = this.createNode('size', 200, 120);
+        sizeNode.parameters.baseSize = 25;
+        const opacityNode = this.createNode('opacity', 200, 220);
+        opacityNode.parameters.baseOpacity = 90;
+        const impastoNode = this.createNode('impasto', 380, 150);
+        impastoNode.parameters.thickness = 70;
+        impastoNode.parameters.texture = 80;
+        const wetMixNode = this.createNode('wet-mix', 380, 270);
+        wetMixNode.parameters.wetness = 40;
+        wetMixNode.parameters.bleed = 25;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        
+        this.updateNodeParameterControls(sizeNode);
+        this.updateNodeParameterControls(opacityNode);
+        this.updateNodeParameterControls(impastoNode);
+        this.updateNodeParameterControls(wetMixNode);
+    }
+    
+    createInkPenTemplate() {
+        const pressureNode = this.createNode('pressure-input', 150, 150);
+        const sizeNode = this.createNode('size', 300, 120);
+        sizeNode.parameters.baseSize = 8;
+        const opacityNode = this.createNode('opacity', 300, 220);
+        opacityNode.parameters.baseOpacity = 100;
+        const hardnessNode = this.createNode('hardness', 450, 170);
+        hardnessNode.parameters.hardness = 100;
+        const flowNode = this.createNode('flow', 450, 270);
+        flowNode.parameters.flow = 90;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(pressureNode.id, 0, sizeNode.id, 0);
+        this.createConnection(pressureNode.id, 0, opacityNode.id, 0);
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        this.createConnection(hardnessNode.id, 0, outputNode.id, 2);
+        this.createConnection(flowNode.id, 0, outputNode.id, 3);
+        
+        this.updateNodeParameterControls(sizeNode);
+        this.updateNodeParameterControls(opacityNode);
+        this.updateNodeParameterControls(hardnessNode);
+        this.updateNodeParameterControls(flowNode);
+    }
+    
+    createSprayPaintTemplate() {
+        const sizeNode = this.createNode('size', 200, 100);
+        sizeNode.parameters.baseSize = 40;
+        const opacityNode = this.createNode('opacity', 200, 200);
+        opacityNode.parameters.baseOpacity = 30;
+        const scatterNode = this.createNode('scatter', 380, 100);
+        scatterNode.parameters.scatterX = 50;
+        scatterNode.parameters.scatterY = 50;
+        const splatterNode = this.createNode('splatter', 380, 220);
+        splatterNode.parameters.intensity = 40;
+        splatterNode.parameters.count = 15;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        this.createConnection(scatterNode.id, 0, outputNode.id, 4);
+        this.createConnection(scatterNode.id, 1, outputNode.id, 5);
+        
+        this.updateNodeParameterControls(sizeNode);
+        this.updateNodeParameterControls(opacityNode);
+        this.updateNodeParameterControls(scatterNode);
+        this.updateNodeParameterControls(splatterNode);
+    }
+    
+    createCharcoalTemplate() {
+        const pressureNode = this.createNode('pressure-input', 150, 150);
+        const sizeNode = this.createNode('size', 300, 100);
+        sizeNode.parameters.baseSize = 30;
+        const opacityNode = this.createNode('opacity', 300, 200);
+        opacityNode.parameters.baseOpacity = 70;
+        const hardnessNode = this.createNode('hardness', 450, 100);
+        hardnessNode.parameters.hardness = 40;
+        const jitterNode = this.createNode('jitter', 450, 200);
+        jitterNode.parameters.amount = 30;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.createConnection(pressureNode.id, 0, sizeNode.id, 0);
+        this.createConnection(pressureNode.id, 0, opacityNode.id, 0);
+        this.createConnection(sizeNode.id, 0, outputNode.id, 0);
+        this.createConnection(opacityNode.id, 0, outputNode.id, 1);
+        this.createConnection(hardnessNode.id, 0, outputNode.id, 2);
+        
+        this.updateNodeParameterControls(sizeNode);
+        this.updateNodeParameterControls(opacityNode);
+        this.updateNodeParameterControls(hardnessNode);
+        this.updateNodeParameterControls(jitterNode);
+    }
+    
+    createParticleSprayTemplate() {
+        const particleEmitter = this.createNode('particle-emitter', 200, 120);
+        particleEmitter.parameters.rate = 20;
+        particleEmitter.parameters.size = 3;
+        particleEmitter.parameters.spread = 60;
+        const particleVelocity = this.createNode('particle-velocity', 380, 100);
+        particleVelocity.parameters.speed = 60;
+        particleVelocity.parameters.randomness = 40;
+        const particleLifetime = this.createNode('particle-lifetime', 380, 220);
+        particleLifetime.parameters.lifetime = 80;
+        particleLifetime.parameters.variation = 30;
+        const outputNode = this.nodes.find(n => n.type === 'brush-output');
+        
+        this.updateNodeParameterControls(particleEmitter);
+        this.updateNodeParameterControls(particleVelocity);
+        this.updateNodeParameterControls(particleLifetime);
     }
     
     show() {
@@ -2274,6 +2730,385 @@ class NodeEditor {
         }
         
         return (total / maxValue + 1) / 2; // Normalize to 0-1
+    }
+    
+    // New methods for v3.0 features
+    
+    saveState() {
+        const state = this.serializeGraph();
+        this.undoStack.push(JSON.stringify(state));
+        if (this.undoStack.length > this.maxUndoSteps) {
+            this.undoStack.shift();
+        }
+        this.redoStack = []; // Clear redo stack on new action
+        this.updateUndoRedoButtons();
+    }
+    
+    undo() {
+        if (this.undoStack.length === 0) return;
+        
+        const currentState = this.serializeGraph();
+        this.redoStack.push(JSON.stringify(currentState));
+        
+        const previousState = this.undoStack.pop();
+        this.loadGraph(JSON.parse(previousState));
+        this.updateUndoRedoButtons();
+    }
+    
+    redo() {
+        if (this.redoStack.length === 0) return;
+        
+        const currentState = this.serializeGraph();
+        this.undoStack.push(JSON.stringify(currentState));
+        
+        const nextState = this.redoStack.pop();
+        this.loadGraph(JSON.parse(nextState));
+        this.updateUndoRedoButtons();
+    }
+    
+    updateUndoRedoButtons() {
+        const undoBtn = document.getElementById('node-undo');
+        const redoBtn = document.getElementById('node-redo');
+        
+        if (undoBtn) {
+            undoBtn.disabled = this.undoStack.length === 0;
+        }
+        if (redoBtn) {
+            redoBtn.disabled = this.redoStack.length === 0;
+        }
+    }
+    
+    autoArrangeNodes() {
+        // Simple auto-arrange algorithm - arrange nodes in columns by type
+        const nodesByType = new Map();
+        
+        this.nodes.forEach(node => {
+            if (!nodesByType.has(node.type)) {
+                nodesByType.set(node.type, []);
+            }
+            nodesByType.get(node.type).push(node);
+        });
+        
+        let currentX = 200;
+        let currentY = 150;
+        const columnWidth = 250;
+        const rowHeight = 120;
+        
+        nodesByType.forEach((nodes, type) => {
+            nodes.forEach((node, index) => {
+                node.x = currentX;
+                node.y = currentY + (index * rowHeight);
+                this.updateNodePosition(node);
+            });
+            currentX += columnWidth;
+        });
+        
+        this.updateConnections();
+        this.updateBrushPreview();
+    }
+    
+    selectAll() {
+        this.nodes.forEach(node => {
+            node.element.classList.add('selected');
+            this.selectedNodes.add(node);
+        });
+    }
+    
+    showContextMenu(x, y) {
+        // Create context menu if it doesn't exist
+        let menu = document.getElementById('node-context-menu');
+        if (!menu) {
+            menu = document.createElement('div');
+            menu.id = 'node-context-menu';
+            menu.className = 'context-menu';
+            menu.innerHTML = `
+                <div class="context-menu-item" data-action="paste">Paste Node (Ctrl+V)</div>
+                <div class="context-menu-item" data-action="delete">Delete Selected (Del)</div>
+                <div class="context-menu-divider"></div>
+                <div class="context-menu-item" data-action="align-left">Align Left</div>
+                <div class="context-menu-item" data-action="align-right">Align Right</div>
+                <div class="context-menu-item" data-action="align-top">Align Top</div>
+                <div class="context-menu-item" data-action="align-bottom">Align Bottom</div>
+                <div class="context-menu-divider"></div>
+                <div class="context-menu-item" data-action="auto-arrange">Auto-Arrange All</div>
+            `;
+            document.body.appendChild(menu);
+            
+            // Handle menu item clicks
+            menu.addEventListener('click', (e) => {
+                if (e.target.classList.contains('context-menu-item')) {
+                    const action = e.target.dataset.action;
+                    this.handleContextMenuAction(action);
+                    this.hideContextMenu();
+                }
+            });
+            
+            // Hide menu when clicking elsewhere
+            document.addEventListener('click', () => {
+                this.hideContextMenu();
+            }, { once: true });
+        }
+        
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.style.display = 'block';
+    }
+    
+    hideContextMenu() {
+        const menu = document.getElementById('node-context-menu');
+        if (menu) {
+            menu.style.display = 'none';
+        }
+    }
+    
+    handleContextMenuAction(action) {
+        switch (action) {
+            case 'paste':
+                if (this.copiedNode) {
+                    this.saveState();
+                    this.pasteNode();
+                }
+                break;
+            case 'delete':
+                if (this.selectedNode) {
+                    this.saveState();
+                    this.deleteNode(this.selectedNode.id);
+                }
+                break;
+            case 'align-left':
+                this.alignNodes('left');
+                break;
+            case 'align-right':
+                this.alignNodes('right');
+                break;
+            case 'align-top':
+                this.alignNodes('top');
+                break;
+            case 'align-bottom':
+                this.alignNodes('bottom');
+                break;
+            case 'auto-arrange':
+                this.autoArrangeNodes();
+                break;
+        }
+    }
+    
+    alignNodes(direction) {
+        if (this.selectedNodes.size < 2) return;
+        
+        const nodes = Array.from(this.selectedNodes);
+        let value;
+        
+        switch (direction) {
+            case 'left':
+                value = Math.min(...nodes.map(n => n.x));
+                nodes.forEach(n => {
+                    n.x = value;
+                    this.updateNodePosition(n);
+                });
+                break;
+            case 'right':
+                value = Math.max(...nodes.map(n => n.x));
+                nodes.forEach(n => {
+                    n.x = value;
+                    this.updateNodePosition(n);
+                });
+                break;
+            case 'top':
+                value = Math.min(...nodes.map(n => n.y));
+                nodes.forEach(n => {
+                    n.y = value;
+                    this.updateNodePosition(n);
+                });
+                break;
+            case 'bottom':
+                value = Math.max(...nodes.map(n => n.y));
+                nodes.forEach(n => {
+                    n.y = value;
+                    this.updateNodePosition(n);
+                });
+                break;
+        }
+        
+        this.updateConnections();
+    }
+    
+    clearPreview() {
+        const rect = this.previewCanvas.getBoundingClientRect();
+        this.previewCtx.fillStyle = '#ffffff';
+        this.previewCtx.fillRect(0, 0, rect.width, rect.height);
+    }
+    
+    testBrushPreview() {
+        this.clearPreview();
+        const brush = this.evaluateGraph();
+        const rect = this.previewCanvas.getBoundingClientRect();
+        
+        const mode = document.getElementById('preview-mode').value;
+        
+        switch (mode) {
+            case 'stroke':
+                this.drawTestStroke(brush, rect);
+                break;
+            case 'dots':
+                this.drawTestDots(brush, rect);
+                break;
+            case 'spiral':
+                this.drawTestSpiral(brush, rect);
+                break;
+        }
+        
+        this.updateBrushStats(brush);
+    }
+    
+    drawTestStroke(brush, rect) {
+        this.previewCtx.globalAlpha = (brush.opacity || 100) / 100;
+        this.previewCtx.fillStyle = brush.color || '#000000';
+        
+        const centerY = rect.height / 2;
+        const startX = 20;
+        const endX = rect.width - 20;
+        
+        for (let x = startX; x < endX; x += 5) {
+            const y = centerY + Math.sin((x - startX) / 30) * 20;
+            this.previewCtx.beginPath();
+            this.previewCtx.arc(x, y, (brush.size || 20) / 2, 0, Math.PI * 2);
+            this.previewCtx.fill();
+        }
+    }
+    
+    drawTestDots(brush, rect) {
+        this.previewCtx.globalAlpha = (brush.opacity || 100) / 100;
+        this.previewCtx.fillStyle = brush.color || '#000000';
+        
+        for (let i = 0; i < 20; i++) {
+            const x = 30 + Math.random() * (rect.width - 60);
+            const y = 30 + Math.random() * (rect.height - 60);
+            this.previewCtx.beginPath();
+            this.previewCtx.arc(x, y, (brush.size || 20) / 2, 0, Math.PI * 2);
+            this.previewCtx.fill();
+        }
+    }
+    
+    drawTestSpiral(brush, rect) {
+        this.previewCtx.globalAlpha = (brush.opacity || 100) / 100;
+        this.previewCtx.fillStyle = brush.color || '#000000';
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const maxRadius = Math.min(rect.width, rect.height) / 2 - 20;
+        
+        for (let angle = 0; angle < Math.PI * 6; angle += 0.2) {
+            const radius = (angle / (Math.PI * 6)) * maxRadius;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            this.previewCtx.beginPath();
+            this.previewCtx.arc(x, y, (brush.size || 20) / 2, 0, Math.PI * 2);
+            this.previewCtx.fill();
+        }
+    }
+    
+    updateBrushStats(brush) {
+        const statsElement = document.getElementById('brush-stats');
+        if (statsElement) {
+            statsElement.textContent = `Size: ${Math.round(brush.size)}px | Opacity: ${Math.round(brush.opacity)}% | Flow: ${Math.round(brush.flow)}%`;
+        }
+    }
+    
+    applyToCurrentBrush() {
+        const brush = this.evaluateGraph();
+        alert(`Brush applied!\nSize: ${Math.round(brush.size)}px\nOpacity: ${Math.round(brush.opacity)}%\nHardness: ${Math.round(brush.hardness)}%`);
+        // In a real implementation, this would update the current brush in the main application
+    }
+    
+    filterNodesByCategory(category) {
+        const categories = document.querySelectorAll('.node-category');
+        
+        categories.forEach(cat => {
+            const buttons = cat.querySelectorAll('.node-type-btn:not(.template-btn)');
+            let shouldShow = false;
+            
+            buttons.forEach(btn => {
+                const nodeType = btn.getAttribute('data-node-type');
+                
+                if (category === 'all') {
+                    btn.style.display = 'flex';
+                    shouldShow = true;
+                } else if (category === 'favorites' && this.favoriteNodes.has(nodeType)) {
+                    btn.style.display = 'flex';
+                    shouldShow = true;
+                } else if (category === 'recent') {
+                    // TODO: Track recently used nodes
+                    btn.style.display = 'none';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+            
+            // Show/hide category header
+            const header = cat.querySelector('h4');
+            if (header && category !== 'all') {
+                header.style.display = shouldShow ? 'block' : 'none';
+            } else if (header) {
+                header.style.display = 'block';
+            }
+        });
+    }
+    
+    showKeyboardShortcuts() {
+        const helpWindow = document.createElement('div');
+        helpWindow.className = 'help-overlay';
+        helpWindow.innerHTML = `
+            <div class="help-content">
+                <div class="help-header">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <button class="help-close">✕</button>
+                </div>
+                <div class="help-body">
+                    <div class="shortcut-section">
+                        <h4>General</h4>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>Z</kbd> <span>Undo</span></div>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>Y</kbd> <span>Redo</span></div>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>A</kbd> <span>Select All</span></div>
+                        <div class="shortcut"><kbd>Esc</kbd> <span>Deselect</span></div>
+                        <div class="shortcut"><kbd>F1</kbd> <span>Show Help</span></div>
+                    </div>
+                    <div class="shortcut-section">
+                        <h4>Nodes</h4>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>C</kbd> <span>Copy Node</span></div>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>V</kbd> <span>Paste Node</span></div>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>D</kbd> <span>Duplicate Node</span></div>
+                        <div class="shortcut"><kbd>Del</kbd> <span>Delete Node</span></div>
+                    </div>
+                    <div class="shortcut-section">
+                        <h4>Navigation</h4>
+                        <div class="shortcut"><kbd>Ctrl</kbd> + <kbd>Wheel</kbd> <span>Zoom</span></div>
+                        <div class="shortcut"><kbd>Middle Mouse</kbd> <span>Pan Canvas</span></div>
+                        <div class="shortcut"><kbd>Shift</kbd> + <kbd>Drag</kbd> <span>Box Select</span></div>
+                    </div>
+                    <div class="shortcut-section">
+                        <h4>Other</h4>
+                        <div class="shortcut">Right-click on canvas <span>Context Menu</span></div>
+                        <div class="shortcut">Drag from palette <span>Drop to Create</span></div>
+                        <div class="shortcut">Click connection <span>Delete Connection</span></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(helpWindow);
+        
+        // Close button
+        helpWindow.querySelector('.help-close').addEventListener('click', () => {
+            helpWindow.remove();
+        });
+        
+        // Click outside to close
+        helpWindow.addEventListener('click', (e) => {
+            if (e.target === helpWindow) {
+                helpWindow.remove();
+            }
+        });
     }
 }
 
