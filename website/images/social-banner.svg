@@ -1,0 +1,139 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="socialBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="socialStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8" />
+      <stop offset="25%" style="stop-color:#ffd93d;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#6bcf7f;stop-opacity:0.8" />
+      <stop offset="75%" style="stop-color:#4d96ff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#bd93f9;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <filter id="socialGlow">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#socialBg)"/>
+  
+  <!-- Decorative circles -->
+  <g opacity="0.15">
+    <circle cx="100" cy="80" r="60" fill="#ffffff"/>
+    <circle cx="1100" cy="550" r="80" fill="#ffffff"/>
+    <circle cx="200" cy="500" r="40" fill="#ffffff"/>
+    <circle cx="1000" cy="100" r="50" fill="#ffffff"/>
+  </g>
+  
+  <!-- Paint strokes -->
+  <g opacity="0.4" filter="url(#socialGlow)">
+    <path d="M 50 400 Q 200 350 350 380 Q 500 410 650 390" 
+          stroke="url(#socialStroke)" 
+          stroke-width="30" 
+          fill="none" 
+          stroke-linecap="round"/>
+    
+    <path d="M 700 250 Q 850 220 1000 240 Q 1100 255 1150 250" 
+          stroke="url(#socialStroke)" 
+          stroke-width="25" 
+          fill="none" 
+          stroke-linecap="round"/>
+    
+    <!-- Paint splatters -->
+    <circle cx="400" cy="200" r="8" fill="#ffd93d"/>
+    <circle cx="420" cy="195" r="5" fill="#ff6b6b"/>
+    <circle cx="410" cy="210" r="6" fill="#4d96ff"/>
+    
+    <circle cx="800" cy="450" r="10" fill="#6bcf7f"/>
+    <circle cx="820" cy="440" r="6" fill="#bd93f9"/>
+  </g>
+  
+  <!-- Main content -->
+  <g transform="translate(600, 315)">
+    <!-- Logo area with paintbrush -->
+    <g transform="translate(-400, 0)">
+      <rect x="-15" y="-80" width="30" height="120" fill="#8b5a3c" rx="4"/>
+      <ellipse cx="0" cy="-65" rx="17" ry="3" fill="#a0522d" opacity="0.6"/>
+      <ellipse cx="0" cy="-45" rx="17" ry="3" fill="#a0522d" opacity="0.6"/>
+      
+      <path d="M -18 40 L -10 55 L 10 55 L 18 40 Z" fill="#e0e0e0"/>
+      <path d="M -10 55 Q -13 70 -8 78 Q -4 82 0 84 Q 4 82 8 78 Q 13 70 10 55 Z" 
+            fill="#ffffff" opacity="0.95"/>
+      
+      <path d="M 0 80 Q 30 85 45 70" 
+            stroke="url(#socialStroke)" 
+            stroke-width="8" 
+            fill="none" 
+            stroke-linecap="round"/>
+      <ellipse cx="40" cy="73" rx="3" ry="5" fill="#4d96ff" opacity="0.8"/>
+    </g>
+    
+    <!-- Brand name and tagline -->
+    <g>
+      <text x="-320" y="-40" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="90" 
+            font-weight="bold" 
+            fill="#ffffff" 
+            filter="url(#socialGlow)"
+            letter-spacing="-3">A</text>
+      
+      <circle cx="-265" cy="-65" r="6" fill="#ffd93d"/>
+      <circle cx="-258" cy="-60" r="3" fill="#ff6b6b"/>
+      
+      <text x="-240" y="-40" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="90" 
+            font-weight="bold" 
+            fill="#ffffff" 
+            letter-spacing="2">RTemis</text>
+      
+      <text x="-320" y="10" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="32" 
+            font-weight="300" 
+            fill="#ffffff" 
+            opacity="0.95"
+            letter-spacing="4">PROFESSIONAL</text>
+      
+      <text x="-320" y="60" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="28" 
+            font-weight="400" 
+            fill="#ffffff" 
+            opacity="0.9">Professional Digital Painting in Your Browser</text>
+      
+      <!-- Features -->
+      <text x="-320" y="110" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="20" 
+            font-weight="500" 
+            fill="#ffffff" 
+            opacity="0.85">
+        <tspan>✨ 178+ Brushes</tspan>
+        <tspan x="-320" dy="35">🎨 Natural Media</tspan>
+        <tspan x="-320" dy="35">🤖 AI-Powered</tspan>
+      </text>
+      
+      <text x="-90" y="110" 
+            font-family="'Helvetica Neue', Arial, sans-serif" 
+            font-size="20" 
+            font-weight="500" 
+            fill="#ffffff" 
+            opacity="0.85">
+        <tspan>📚 Unlimited Layers</tspan>
+        <tspan x="-90" dy="35">🌐 Works in Browser</tspan>
+        <tspan x="-90" dy="35">💾 PSD Export</tspan>
+      </text>
+    </g>
+  </g>
+</svg>

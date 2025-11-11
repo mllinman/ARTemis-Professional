@@ -1,0 +1,149 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Professional gradient for background -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Brush gradient -->
+    <linearGradient id="brushGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5a3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Metallic ferrule gradient -->
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c0c0c0;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Paint stroke gradient -->
+    <linearGradient id="paintGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.9" />
+      <stop offset="33%" style="stop-color:#ffd93d;stop-opacity:0.9" />
+      <stop offset="66%" style="stop-color:#6bcf7f;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#4d96ff;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with gradient -->
+  <circle cx="200" cy="200" r="190" fill="url(#bgGradient)" opacity="0.95"/>
+  <circle cx="200" cy="200" r="190" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.3"/>
+  
+  <!-- Decorative paint strokes in background -->
+  <g opacity="0.2">
+    <path d="M 80 120 Q 150 100 220 130" stroke="url(#paintGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M 280 150 Q 320 180 300 230" stroke="url(#paintGradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M 100 280 Q 140 300 180 290" stroke="url(#paintGradient)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Main paintbrush design -->
+  <g transform="translate(200, 200)" filter="url(#shadow)">
+    <!-- Brush handle with wood texture -->
+    <rect x="-16" y="-120" width="32" height="160" fill="url(#brushGradient)" rx="4"/>
+    
+    <!-- Wood grain details -->
+    <line x1="-10" y1="-110" x2="-10" y2="-50" stroke="#654321" stroke-width="1" opacity="0.3"/>
+    <line x1="0" y1="-110" x2="0" y2="-50" stroke="#654321" stroke-width="1" opacity="0.3"/>
+    <line x1="10" y1="-110" x2="10" y2="-50" stroke="#654321" stroke-width="1" opacity="0.3"/>
+    
+    <!-- Handle grip rings -->
+    <ellipse cx="0" cy="-100" rx="18" ry="3" fill="#a0522d" opacity="0.6"/>
+    <ellipse cx="0" cy="-80" rx="18" ry="3" fill="#a0522d" opacity="0.6"/>
+    <ellipse cx="0" cy="-60" rx="18" ry="3" fill="#a0522d" opacity="0.6"/>
+    
+    <!-- Ferrule (metal part) with shine -->
+    <path d="M -20 40 L -12 60 L 12 60 L 20 40 Z" fill="url(#metalGradient)"/>
+    <path d="M -18 42 L -11 58 L -9 58 L -16 42 Z" fill="#ffffff" opacity="0.5"/>
+    
+    <!-- Brush bristles with more detail -->
+    <g>
+      <!-- Outer bristles -->
+      <path d="M -12 60 Q -16 85 -10 95 Q -5 100 0 102 Q 5 100 10 95 Q 16 85 12 60 Z" 
+            fill="#ffffff" opacity="0.95" filter="url(#glow)"/>
+      
+      <!-- Inner bristles -->
+      <path d="M -8 60 Q -10 82 -6 92 Q -2 96 0 98 Q 2 96 6 92 Q 10 82 8 60 Z" 
+            fill="#f5f5f5" opacity="0.9"/>
+      
+      <!-- Center bristles -->
+      <path d="M -4 60 L -2 90 L 0 94 L 2 90 L 4 60 Z" fill="#ffffff"/>
+      
+      <!-- Bristle strands detail -->
+      <line x1="-6" y1="65" x2="-4" y2="88" stroke="#e0e0e0" stroke-width="0.5"/>
+      <line x1="0" y1="65" x2="0" y2="94" stroke="#e0e0e0" stroke-width="0.5"/>
+      <line x1="6" y1="65" x2="4" y2="88" stroke="#e0e0e0" stroke-width="0.5"/>
+    </g>
+    
+    <!-- Paint streak coming from brush -->
+    <path d="M 0 95 Q 30 100 45 85 Q 55 75 50 65" 
+          stroke="url(#paintGradient)" 
+          stroke-width="8" 
+          fill="none" 
+          stroke-linecap="round"
+          opacity="0.9"/>
+    
+    <!-- Paint drip -->
+    <ellipse cx="48" cy="68" rx="3" ry="5" fill="#4d96ff" opacity="0.8"/>
+  </g>
+  
+  <!-- Letter "A" with artistic styling -->
+  <g transform="translate(200, 200)" filter="url(#shadow)">
+    <text x="-95" y="-40" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="120" 
+          font-weight="bold" 
+          fill="#ffffff" 
+          stroke="#764ba2" 
+          stroke-width="2"
+          letter-spacing="-5">A</text>
+    
+    <!-- Paint splatter on the A -->
+    <circle cx="-50" cy="-60" r="4" fill="#ffd93d" opacity="0.8"/>
+    <circle cx="-45" cy="-55" r="2" fill="#ff6b6b" opacity="0.8"/>
+    <circle cx="-40" cy="-65" r="3" fill="#6bcf7f" opacity="0.8"/>
+  </g>
+  
+  <!-- App name with professional typography -->
+  <text x="200" y="340" 
+        font-family="'Helvetica Neue', Arial, sans-serif" 
+        font-size="42" 
+        font-weight="700" 
+        fill="#ffffff" 
+        text-anchor="middle"
+        letter-spacing="2">ARTemis</text>
+  
+  <text x="200" y="370" 
+        font-family="'Helvetica Neue', Arial, sans-serif" 
+        font-size="18" 
+        font-weight="400" 
+        fill="#ffffff" 
+        text-anchor="middle"
+        opacity="0.9"
+        letter-spacing="3">PROFESSIONAL</text>
+</svg>
