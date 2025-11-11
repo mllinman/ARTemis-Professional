@@ -14,7 +14,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(135deg, #2d2d30 0%, #1e1e1e 50%, #252526 100%);
             height: 100vh;
             display: flex;
             align-items: center;
@@ -150,7 +150,7 @@
 
         .loading-progress {
             height: 100%;
-            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff, #bd93f9);
+            background: linear-gradient(90deg, #0e639c, #00d4ff, #0e639c);
             background-size: 200% 100%;
             border-radius: 10px;
             width: 0%;
@@ -295,15 +295,16 @@
             <svg class="logo-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="brushGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#8b5a3c;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
                     </linearGradient>
                     <linearGradient id="paintGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.9">
-                            <animate attributeName="stop-color" values="#ff6b6b;#ffd93d;#6bcf7f;#4d96ff;#bd93f9;#ff6b6b" dur="5s" repeatCount="indefinite"/>
+                        <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.95">
+                            <animate attributeName="stop-color" values="#0e639c;#00d4ff;#0e639c" dur="4s" repeatCount="indefinite"/>
                         </stop>
-                        <stop offset="100%" style="stop-color:#4d96ff;stop-opacity:0.9">
-                            <animate attributeName="stop-color" values="#4d96ff;#bd93f9;#ff6b6b;#ffd93d;#6bcf7f;#4d96ff" dur="5s" repeatCount="indefinite"/>
+                        <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.95">
+                            <animate attributeName="stop-color" values="#00d4ff;#0e639c;#00d4ff" dur="4s" repeatCount="indefinite"/>
                         </stop>
                     </linearGradient>
                     <filter id="glow">
@@ -315,30 +316,42 @@
                     </filter>
                 </defs>
                 
-                <!-- Paintbrush -->
+                <!-- Paintbrush - Professional design -->
                 <g transform="translate(150, 150)">
-                    <!-- Handle -->
-                    <rect x="-12" y="-90" width="24" height="120" fill="url(#brushGrad)" rx="3">
-                        <animateTransform attributeName="transform" type="rotate" values="0;-5;0;5;0" dur="4s" repeatCount="indefinite"/>
-                    </rect>
+                    <!-- Handle - tapered -->
+                    <path d="M -13 -90 L -10 30 L 10 30 L 13 -90 Z" fill="url(#brushGrad)">
+                        <animateTransform attributeName="transform" type="rotate" values="0;-4;0;4;0" dur="4s" repeatCount="indefinite"/>
+                    </path>
                     
-                    <!-- Handle rings -->
-                    <ellipse cx="0" cy="-75" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
-                    <ellipse cx="0" cy="-60" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
-                    <ellipse cx="0" cy="-45" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
+                    <!-- Wood grain -->
+                    <line x1="-8" y1="-85" x2="-7" y2="25" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="0" y1="-88" x2="0" y2="28" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="8" y1="-85" x2="7" y2="25" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
                     
-                    <!-- Ferrule -->
-                    <path d="M -15 30 L -9 45 L 9 45 L 15 30 Z" fill="#e0e0e0"/>
+                    <!-- Handle bands -->
+                    <ellipse cx="0" cy="-70" rx="14" ry="2" fill="#2a1808" opacity="0.6"/>
+                    <ellipse cx="0" cy="-50" rx="13" ry="2" fill="#2a1808" opacity="0.6"/>
+                    <ellipse cx="0" cy="-30" rx="12" ry="2" fill="#2a1808" opacity="0.6"/>
                     
-                    <!-- Bristles -->
-                    <path d="M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z" fill="#ffffff" opacity="0.95" filter="url(#glow)">
+                    <!-- Ferrule - metallic -->
+                    <path d="M -11 30 L -8 43 L 8 43 L 11 30 Z" fill="#a0a0a0"/>
+                    <path d="M -10 31 L -8 42 L 8 42 L 10 31 Z" fill="none" stroke="#707070" stroke-width="0.5"/>
+                    <path d="M -9 32 L -7 40 L -5 40 L -7 32 Z" fill="#c0c0c0" opacity="0.6"/>
+                    
+                    <!-- Bristles - realistic soft -->
+                    <path d="M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z" fill="#e8e8e8" opacity="0.95" filter="url(#glow)">
                         <animate attributeName="d" 
-                                 values="M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z;
-                                         M -9 45 Q -13 62 -7 70 Q -3 73 0 74 Q 3 73 7 70 Q 13 62 9 45 Z;
-                                         M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z" 
+                                 values="M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z;
+                                         M -8 43 Q -11 58 -6 67 Q -2 71 0 72 Q 2 71 6 67 Q 11 58 8 43 Z;
+                                         M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z" 
                                  dur="3s" 
                                  repeatCount="indefinite"/>
                     </path>
+                    
+                    <!-- Bristle strands -->
+                    <line x1="-6" y1="45" x2="-5" y2="64" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
+                    <line x1="0" y1="44" x2="0" y2="70" stroke="#e0e0e0" stroke-width="0.4" opacity="0.7"/>
+                    <line x1="6" y1="45" x2="5" y2="64" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
                     
                     <!-- Animated paint stroke -->
                     <path class="paint-stroke" d="M 0 70 Q 30 75 50 60 Q 65 50 70 40" 
@@ -348,10 +361,13 @@
                           stroke-linecap="round"
                           filter="url(#glow)"/>
                     
+                    <!-- Paint loaded on tip -->
+                    <ellipse cx="0" cy="68" rx="2.5" ry="2" fill="#00d4ff" opacity="0.8"/>
+                    
                     <!-- Paint drip -->
-                    <ellipse cx="50" cy="62" rx="2" ry="4" fill="#4d96ff" opacity="0.8">
+                    <ellipse cx="50" cy="62" rx="2" ry="4" fill="#0e639c" opacity="0.85">
                         <animate attributeName="ry" values="4;6;4" dur="2s" repeatCount="indefinite"/>
-                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.85;0.5;0.85" dur="2s" repeatCount="indefinite"/>
                     </ellipse>
                     
                     <!-- Letter A -->
@@ -359,14 +375,14 @@
                           font-family="'Helvetica Neue', Arial, sans-serif" 
                           font-size="90" 
                           font-weight="bold" 
-                          fill="#ffffff" 
+                          fill="#cccccc" 
                           filter="url(#glow)">A</text>
                     
-                    <!-- Paint splatter on A -->
-                    <circle cx="-35" cy="-45" r="3" fill="#ffd93d" opacity="0.8">
+                    <!-- Accent dots on A -->
+                    <circle cx="-35" cy="-45" r="3" fill="#00d4ff" opacity="0.9">
                         <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
                     </circle>
-                    <circle cx="-30" cy="-40" r="2" fill="#ff6b6b" opacity="0.8">
+                    <circle cx="-30" cy="-40" r="2" fill="#0e639c" opacity="0.85">
                         <animate attributeName="r" values="2;3;2" dur="1.8s" repeatCount="indefinite"/>
                     </circle>
                 </g>
@@ -427,7 +443,7 @@
         // Create floating particles
         const particlesContainer = document.getElementById('particles');
         const particleCount = 30;
-        const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#bd93f9', '#f093fb'];
+        const colors = ['#0e639c', '#00d4ff', '#3e3e42', '#858585', '#0a4d7a', '#0e639c'];
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');

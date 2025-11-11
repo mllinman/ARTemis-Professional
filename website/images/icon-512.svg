@@ -1,24 +1,24 @@
 <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#252526;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="brush512" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#8b5a3c;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="metal512" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#c0c0c0;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#9a9a9a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#c0c0c0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8a8a8a;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="paint512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.9" />
-      <stop offset="33%" style="stop-color:#ffd93d;stop-opacity:0.9" />
-      <stop offset="66%" style="stop-color:#6bcf7f;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#4d96ff;stop-opacity:0.9" />
+      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.9" />
     </linearGradient>
     <filter id="shadow512" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
@@ -34,7 +34,7 @@
   </defs>
   
   <rect width="512" height="512" fill="url(#bg512)" rx="96"/>
-  <rect width="512" height="512" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.2" rx="96"/>
+  <rect width="512" height="512" fill="none" stroke="#0e639c" stroke-width="6" opacity="0.4" rx="96"/>
   
   <g opacity="0.15">
     <path d="M 100 140 Q 200 120 300 150" stroke="url(#paint512)" stroke-width="16" fill="none" stroke-linecap="round"/>
@@ -75,7 +75,7 @@
           stroke-linecap="round"
           opacity="0.9"/>
     
-    <ellipse cx="60" cy="85" rx="4" ry="6" fill="#4d96ff" opacity="0.8"/>
+    <ellipse cx="60" cy="85" rx="4" ry="6" fill="#0e639c" opacity="0.85"/>
   </g>
   
   <g transform="translate(256, 256)" filter="url(#shadow512)">
