@@ -7247,7 +7247,15 @@ function drawDotInternal(x, y, pressure, angle = 0) {
     
     // Apply flow (build-up)
     const flow = state.brush.flow / 100;
-    ctx.globalAlpha = opacity * flow;
+    let finalOpacity = opacity * flow;
+    
+    // ENHANCED: Apply paper texture influence on brush strokes
+    if (state.rebellePaper.enabled && state.rebellePaper.textureInfluence > 0) {
+        const paperInfluence = applyPaperTextureInfluence(x, y, size);
+        finalOpacity *= paperInfluence;
+    }
+    
+    ctx.globalAlpha = finalOpacity;
     
     // ENHANCED: Color mixing and dynamics
     let drawColor = state.color;
@@ -20510,6 +20518,80 @@ function preloadPaperTexture(type) {
             createSeamlessPaperTexture(type, 512, intensity, grain);
         }
     });
+}
+
+// Apply paper texture influence on brush strokes for realistic paper interaction
+function applyPaperTextureInfluence(x, y, size) {
+    // Get texture influence strength (0-10 scale)
+    const influenceStrength = state.rebellePaper.textureInfluence / 10;
+    
+    // If influence is very low, skip texture sampling for performance
+    if (influenceStrength < 0.1) {
+        return 1.0;
+    }
+    
+    // Get the paper texture image
+    const paperType = state.rebellePaper.selectedPaper || state.canvasTexture.type;
+    const paperImg = paperTextureCache.get(paperType);
+    
+    if (!paperImg) {
+        // If paper texture not loaded yet, return no influence
+        return 1.0;
+    }
+    
+    // Create a temporary canvas to sample the paper texture
+    const sampleCanvas = document.createElement('canvas');
+    const sampleSize = Math.min(32, Math.ceil(size)); // Sample area size
+    sampleCanvas.width = sampleSize;
+    sampleCanvas.height = sampleSize;
+    const sampleCtx = sampleCanvas.getContext('2d');
+    
+    // Calculate tiled position to sample from paper texture
+    const paperWidth = paperImg.width;
+    const paperHeight = paperImg.height;
+    const sampleX = Math.floor(x % paperWidth);
+    const sampleY = Math.floor(y % paperHeight);
+    
+    // Draw the sampled region
+    sampleCtx.drawImage(
+        paperImg,
+        sampleX, sampleY, Math.min(sampleSize, paperWidth - sampleX), Math.min(sampleSize, paperHeight - sampleY),
+        0, 0, sampleSize, sampleSize
+    );
+    
+    // Get the pixel data
+    const imageData = sampleCtx.getImageData(0, 0, sampleSize, sampleSize);
+    const data = imageData.data;
+    
+    // Calculate average brightness of the paper texture in this region
+    let totalBrightness = 0;
+    let pixelCount = 0;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const brightness = (r + g + b) / 3;
+        totalBrightness += brightness;
+        pixelCount++;
+    }
+    
+    const avgBrightness = totalBrightness / pixelCount;
+    
+    // Normalize brightness (0-255) to opacity multiplier (0.5-1.0)
+    // Darker areas of paper = less paint adheres = lower opacity
+    // Lighter areas = more paint adheres = higher opacity
+    const normalizedBrightness = avgBrightness / 255;
+    
+    // Apply influence strength
+    // When strength is 0, no effect (return 1.0)
+    // When strength is 1, full paper texture influence
+    const baseOpacity = 0.7; // Minimum opacity even in dark paper areas
+    const opacityRange = 1.0 - baseOpacity;
+    const opacityMultiplier = baseOpacity + (normalizedBrightness * opacityRange);
+    
+    // Blend between no influence (1.0) and full influence (opacityMultiplier)
+    return 1.0 - (1.0 - opacityMultiplier) * influenceStrength;
 }
 
 // Procedural texture generation as fallback
