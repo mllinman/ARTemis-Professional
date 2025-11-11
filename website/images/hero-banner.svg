@@ -1,26 +1,24 @@
 <svg width="1920" height="600" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Background gradient -->
+    <!-- Background gradient - dark slate -->
     <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e1e1e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#252526;stop-opacity:1" />
     </linearGradient>
     
-    <!-- Accent gradient -->
+    <!-- Accent gradient - app colors -->
     <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.8" />
-      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:0.8" />
-      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:0.8" />
+      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.6" />
+      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.6" />
     </linearGradient>
     
-    <!-- Brush stroke gradient -->
+    <!-- Brush stroke gradient - primary app colors -->
     <linearGradient id="strokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.6" />
-      <stop offset="25%" style="stop-color:#ffd93d;stop-opacity:0.6" />
-      <stop offset="50%" style="stop-color:#6bcf7f;stop-opacity:0.6" />
-      <stop offset="75%" style="stop-color:#4d96ff;stop-opacity:0.6" />
-      <stop offset="100%" style="stop-color:#bd93f9;stop-opacity:0.6" />
+      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.5" />
+      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.5" />
     </linearGradient>
     
     <!-- Glow filter -->
@@ -71,14 +69,14 @@
           opacity="0.4"/>
     
     <path d="M 200 200 Q 400 150 600 180" 
-          stroke="#667eea" 
+          stroke="#0e639c" 
           stroke-width="25" 
           fill="none" 
           stroke-linecap="round"
           opacity="0.5"/>
     
     <path d="M 1300 450 Q 1500 420 1700 440" 
-          stroke="#f093fb" 
+          stroke="#00d4ff" 
           stroke-width="30" 
           fill="none" 
           stroke-linecap="round"
@@ -86,60 +84,70 @@
     
     <!-- Smaller detail strokes -->
     <path d="M 300 500 Q 350 480 400 490" 
-          stroke="#ffd93d" 
+          stroke="#00d4ff" 
           stroke-width="15" 
           fill="none" 
           stroke-linecap="round"
           opacity="0.6"/>
     
     <path d="M 1500 150 Q 1550 130 1600 145" 
-          stroke="#6bcf7f" 
+          stroke="#0e639c" 
           stroke-width="18" 
           fill="none" 
           stroke-linecap="round"
           opacity="0.6"/>
     
-    <!-- Paint splatters -->
-    <circle cx="800" cy="150" r="8" fill="#ff6b6b" opacity="0.6"/>
-    <circle cx="820" cy="145" r="5" fill="#ffd93d" opacity="0.6"/>
-    <circle cx="810" cy="160" r="6" fill="#4d96ff" opacity="0.6"/>
+    <!-- Paint splatters - app colors -->
+    <circle cx="800" cy="150" r="8" fill="#0e639c" opacity="0.6"/>
+    <circle cx="820" cy="145" r="5" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="810" cy="160" r="6" fill="#0e639c" opacity="0.6"/>
     
-    <circle cx="1100" cy="480" r="10" fill="#6bcf7f" opacity="0.6"/>
-    <circle cx="1120" cy="470" r="6" fill="#bd93f9" opacity="0.6"/>
-    <circle cx="1090" cy="495" r="7" fill="#f093fb" opacity="0.6"/>
+    <circle cx="1100" cy="480" r="10" fill="#00d4ff" opacity="0.6"/>
+    <circle cx="1120" cy="470" r="6" fill="#0e639c" opacity="0.6"/>
+    <circle cx="1090" cy="495" r="7" fill="#00d4ff" opacity="0.6"/>
   </g>
   
-  <!-- Main content area - large paintbrush -->
+  <!-- Main content area - professional paintbrush -->
   <g transform="translate(1400, 300)" opacity="0.8" filter="url(#glow)">
-    <!-- Brush handle -->
-    <rect x="-30" y="-200" width="60" height="280" fill="#8b5a3c" rx="8">
-      <animate attributeName="y" values="-200;-205;-200" dur="3s" repeatCount="indefinite"/>
-    </rect>
+    <!-- Brush handle - tapered -->
+    <path d="M -32 -200 L -25 80 L 25 80 L 32 -200 Z" fill="#3a2818">
+      <animate attributeName="transform" values="translate(0,0);translate(0,-5);translate(0,0)" dur="3s" repeatCount="indefinite"/>
+    </path>
     
     <!-- Wood grain -->
-    <line x1="-20" y1="-190" x2="-20" y2="-80" stroke="#654321" stroke-width="3" opacity="0.3"/>
-    <line x1="0" y1="-190" x2="0" y2="-80" stroke="#654321" stroke-width="3" opacity="0.3"/>
-    <line x1="20" y1="-190" x2="20" y2="-80" stroke="#654321" stroke-width="3" opacity="0.3"/>
+    <line x1="-22" y1="-190" x2="-20" y2="70" stroke="#1a0f08" stroke-width="2" opacity="0.4"/>
+    <line x1="-8" y1="-195" x2="-6" y2="75" stroke="#1a0f08" stroke-width="2" opacity="0.4"/>
+    <line x1="8" y1="-195" x2="6" y2="75" stroke="#1a0f08" stroke-width="2" opacity="0.4"/>
+    <line x1="22" y1="-190" x2="20" y2="70" stroke="#1a0f08" stroke-width="2" opacity="0.4"/>
     
-    <!-- Handle rings -->
-    <ellipse cx="0" cy="-160" rx="32" ry="6" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-120" rx="32" ry="6" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-80" rx="32" ry="6" fill="#a0522d" opacity="0.6"/>
+    <!-- Wood highlights -->
+    <line x1="-26" y1="-180" x2="-24" y2="65" stroke="#5a4028" stroke-width="2" opacity="0.3"/>
     
-    <!-- Ferrule -->
-    <path d="M -35 80 L -20 110 L 20 110 L 35 80 Z" fill="#e0e0e0"/>
-    <path d="M -32 82 L -19 108 L -15 108 L -28 82 Z" fill="#ffffff" opacity="0.6"/>
+    <!-- Handle bands -->
+    <ellipse cx="0" cy="-150" rx="33" ry="5" fill="#2a1808" opacity="0.6"/>
+    <ellipse cx="0" cy="-100" rx="32" ry="5" fill="#2a1808" opacity="0.6"/>
+    <ellipse cx="0" cy="-50" rx="31" ry="5" fill="#2a1808" opacity="0.6"/>
     
-    <!-- Bristles -->
-    <path d="M -20 110 Q -25 135 -15 150 Q -8 156 0 159 Q 8 156 15 150 Q 25 135 20 110 Z" 
-          fill="#ffffff" opacity="0.95">
+    <!-- Ferrule - metallic -->
+    <path d="M -26 80 L -18 108 L 18 108 L 26 80 Z" fill="#a0a0a0"/>
+    <path d="M -24 82 L -17 106 L 17 106 L 24 82 Z" fill="none" stroke="#707070" stroke-width="1"/>
+    <path d="M -22 84 L -16 104 L -12 104 L -18 84 Z" fill="#c0c0c0" opacity="0.6"/>
+    
+    <!-- Bristles - realistic -->
+    <path d="M -18 108 Q -23 130 -13 147 Q -6 154 0 157 Q 6 154 13 147 Q 23 130 18 108 Z" 
+          fill="#e8e8e8" opacity="0.95">
       <animate attributeName="d" 
-               values="M -20 110 Q -25 135 -15 150 Q -8 156 0 159 Q 8 156 15 150 Q 25 135 20 110 Z;
-                       M -20 110 Q -26 137 -16 152 Q -8 158 0 161 Q 8 158 16 152 Q 26 137 20 110 Z;
-                       M -20 110 Q -25 135 -15 150 Q -8 156 0 159 Q 8 156 15 150 Q 25 135 20 110 Z" 
+               values="M -18 108 Q -23 130 -13 147 Q -6 154 0 157 Q 6 154 13 147 Q 23 130 18 108 Z;
+                       M -18 108 Q -24 132 -14 149 Q -6 156 0 159 Q 6 156 14 149 Q 24 132 18 108 Z;
+                       M -18 108 Q -23 130 -13 147 Q -6 154 0 157 Q 6 154 13 147 Q 23 130 18 108 Z" 
                dur="3s" 
                repeatCount="indefinite"/>
     </path>
+    
+    <!-- Bristle strands -->
+    <line x1="-12" y1="112" x2="-10" y2="145" stroke="#d0d0d0" stroke-width="1" opacity="0.6"/>
+    <line x1="0" y1="110" x2="0" y2="155" stroke="#e0e0e0" stroke-width="1.5" opacity="0.7"/>
+    <line x1="12" y1="112" x2="10" y2="145" stroke="#d0d0d0" stroke-width="1" opacity="0.6"/>
     
     <!-- Paint stroke from brush -->
     <path d="M 0 150 Q 100 160 200 120 Q 280 90 350 80" 
@@ -156,11 +164,14 @@
                repeatCount="indefinite"/>
     </path>
     
+    <!-- Paint on brush tip -->
+    <ellipse cx="0" cy="154" rx="6" ry="4" fill="#00d4ff" opacity="0.8"/>
+    
     <!-- Paint drips -->
-    <ellipse cx="100" cy="155" rx="6" ry="10" fill="#ff6b6b" opacity="0.8">
+    <ellipse cx="100" cy="155" rx="6" ry="10" fill="#0e639c" opacity="0.85">
       <animate attributeName="ry" values="10;15;10" dur="2s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="200" cy="125" rx="5" ry="8" fill="#ffd93d" opacity="0.8">
+    <ellipse cx="200" cy="125" rx="5" ry="8" fill="#00d4ff" opacity="0.85">
       <animate attributeName="ry" values="8;12;8" dur="2.5s" repeatCount="indefinite"/>
     </ellipse>
   </g>
@@ -173,30 +184,29 @@
           font-size="180" 
           font-weight="bold" 
           fill="url(#accentGrad)" 
-          stroke="#ffffff" 
+          stroke="#cccccc" 
           stroke-width="3"
           filter="url(#glow)"
           letter-spacing="-8">A</text>
     
     <!-- Paint splash on A -->
-    <circle cx="50" cy="-40" r="8" fill="#ffd93d" opacity="0.8"/>
-    <circle cx="60" cy="-35" r="5" fill="#ff6b6b" opacity="0.8"/>
-    <circle cx="55" cy="-50" r="6" fill="#6bcf7f" opacity="0.8"/>
+    <circle cx="50" cy="-40" r="8" fill="#00d4ff" opacity="0.9"/>
+    <circle cx="60" cy="-35" r="5" fill="#0e639c" opacity="0.85"/>
+    <circle cx="55" cy="-50" r="6" fill="#00d4ff" opacity="0.85"/>
     
     <!-- Brand name -->
     <text x="150" y="-20" 
           font-family="'Helvetica Neue', Arial, sans-serif" 
           font-size="72" 
           font-weight="700" 
-          fill="#ffffff" 
+          fill="#cccccc" 
           letter-spacing="4">RTemis</text>
     
     <text x="150" y="30" 
           font-family="'Helvetica Neue', Arial, sans-serif" 
           font-size="28" 
           font-weight="400" 
-          fill="#ffffff" 
-          opacity="0.8"
+          fill="#858585" 
           letter-spacing="6">PROFESSIONAL</text>
     
     <!-- Tagline -->
@@ -204,15 +214,15 @@
           font-family="'Helvetica Neue', Arial, sans-serif" 
           font-size="32" 
           font-weight="300" 
-          fill="#ffffff" 
-          opacity="0.9">Digital Painting</text>
+          fill="#cccccc" 
+          opacity="0.95">Digital Painting</text>
     
     <text x="0" y="140" 
           font-family="'Helvetica Neue', Arial, sans-serif" 
           font-size="32" 
           font-weight="300" 
-          fill="#ffffff" 
-          opacity="0.9">Redefined</text>
+          fill="#cccccc" 
+          opacity="0.95">Redefined</text>
   </g>
   
   <!-- Feature highlights (bottom) -->
