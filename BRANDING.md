@@ -2,98 +2,93 @@
 
 This document describes the visual branding assets for ARTemis Professional.
 
+## Source Image
+
+**ARTemislogo.png** - The master branding image (1376x768)
+**Location:** `/ARTemislogo.png`
+
+This is the source image from which all branding assets are derived. It features the ARTemis Professional branding with a paint palette icon and professional styling.
+
 ## Logo
 
 ### Professional Logo
-**Location:** `/website/images/logo-professional.svg`
+**Location:** `/website/images/logo-professional.png`
 
-A comprehensive, high-quality logo featuring:
-- Dark slate gradient background matching app theme
-- Professional paintbrush with realistic wood grain texture
-- Tapered brush handle with natural wood finish
-- Metallic ferrule with subtle shine
-- Paint stroke accent in app primary colors (blue/cyan)
-- Large stylized "A" letterform with accent dots
-- "ARTemis PROFESSIONAL" branding text in app colors
+The main logo derived from ARTemislogo.png, optimized for square display:
+- Center-cropped from the source image to maintain key branding elements
+- Paint palette icon with vibrant colors
+- Professional styling
+- High-quality PNG format
 
 **Usage:** Main website header, promotional materials, social media profiles
 
-**Dimensions:** 400x400px (scalable SVG)
+**Dimensions:** 400x400px (PNG)
+
+**Fallback:** `/website/images/logo.png` (identical copy for compatibility)
 
 ### Icon Variations
 
 #### 192x192 Icon
-**Location:** `/src/assets/icon-192.svg` and `/website/images/icon-192.svg`
+**Location:** `/src/assets/icon-192.png` and `/website/images/icon-192.png`
 
-A simplified version optimized for PWA app icons and smaller displays.
-- Rounded corners (36px radius)
-- Simplified paintbrush design
-- Clear "A" lettermark
-- Colorful paint stroke accent
+PWA and mobile icon optimized for smaller displays:
+- Center-cropped from ARTemislogo.png
+- Maintains paint palette branding
+- Optimized for app icons and home screens
 
 **Usage:** PWA manifest, mobile home screen, app listings
 
 #### 512x512 Icon
-**Location:** `/src/assets/icon-512.svg` and `/website/images/icon-512.svg`
+**Location:** `/src/assets/icon-512.png` and `/website/images/icon-512.png`
 
-A high-resolution version with enhanced details:
-- Premium gradient background
-- Detailed brush handle with wood grain
-- Multiple handle grip rings
-- Smooth bristles with individual strands
-- Dynamic paint stroke with drip effect
-- Professional typography
+High-resolution icon for larger displays:
+- Center-cropped from ARTemislogo.png
+- Enhanced detail preservation
+- Suitable for high-DPI displays
 
 **Usage:** High-DPI displays, app store listings, splash screens
 
 #### Favicons
 
-**16x16:** `/website/images/favicon-16.svg`
-- Ultra-simplified design
-- Essential elements only
-- Optimized for browser tabs
+**16x16:** `/website/images/favicon-16.png`
+- Ultra-small version for browser tabs
+- Scaled from ARTemislogo.png
+- Maintains recognizable branding even at tiny size
 
-**32x32:** `/website/images/favicon-32.svg`
-- Simplified but recognizable
-- Clean paintbrush silhouette
-- Small paint accent
+**32x32:** `/website/images/favicon-32.png`
+- Standard favicon size
+- Scaled from ARTemislogo.png
+- Clear and recognizable
+
+**Fallback:** `/website/images/favicon.png` (32x32, identical to favicon-32.png)
 
 **Usage:** Browser tabs, bookmarks, browser UI
 
 ## Banners
 
 ### Hero Banner
-**Location:** `/website/images/hero-banner.svg`
+**Location:** `/website/images/hero-banner.png`
 
 **Dimensions:** 1920x600px
 
-A stunning hero banner for the website featuring:
-- Dark slate gradient background matching app theme
-- Abstract paint strokes in app accent colors
-- Professional animated paintbrush with improved design
-- "ARTemis PROFESSIONAL" branding on the left
-- Feature highlights footer
-- Smooth animations and glow effects
+Wide banner for website hero sections:
+- Derived from ARTemislogo.png
+- Optimized for 1920x600 aspect ratio
+- Maintains brand identity and color scheme
+- Professional PNG format
 
 **Usage:** Website hero section, landing page header
 
-**Key Features:**
-- Responsive design elements
-- CSS animations (paint strokes, brush movement)
-- Professional color palette
-- Feature callouts at bottom
-
 ### Social Media Banner
-**Location:** `/website/images/social-banner.svg`
+**Location:** `/website/images/social-banner.png`
 
 **Dimensions:** 1200x630px (Open Graph standard)
 
 Optimized for social media sharing:
-- Dark slate gradient background matching app theme
-- Central composition with logo and paintbrush
-- Clear branding and tagline
-- 6 key feature callouts
-- Paint strokes and splatter decorations in app colors
+- Derived from ARTemislogo.png
+- Standard Open Graph dimensions
+- Maintains brand consistency
+- High-quality PNG format
 
 **Usage:** 
 - Open Graph meta tags (og:image)
@@ -105,15 +100,16 @@ Optimized for social media sharing:
 
 **Location:** `/src/splash.html`
 
-An artistic loading/welcome screen featuring:
-- Dark slate gradient background matching app theme
-- Floating particle effects (30+ animated elements) in app colors
-- Large animated SVG logo with professional paintbrush
-- Animated paint strokes with app accent color cycling
-- Loading progress bar with shimmer effect in app colors
-- Feature highlights
-- Smooth transitions and entrance animations
+Loading/welcome screen featuring:
+- Beautiful gradient background
+- ARTemislogo.png displayed prominently (500x280px display size)
+- Floating particle effects with animations
+- "ARTemis Professional" branding
+- Loading progress bar with shimmer effect
+- Feature highlights (178+ Brushes, Natural Media, AI-Powered, Unlimited Layers)
+- Smooth fade-in animations
 - Auto-redirect after loading
+- Click-anywhere-to-continue functionality
 
 **Animations Include:**
 - Brush rotation and bristle movement
@@ -201,12 +197,12 @@ Primary: `'Helvetica Neue', Arial, sans-serif`
 
 ## File Formats
 
-All assets are provided as **SVG (Scalable Vector Graphics)** for:
-- Infinite scalability without quality loss
-- Small file sizes
-- Built-in animations and interactivity
-- Easy editing and customization
-- Cross-platform compatibility
+All assets are provided as **PNG (Portable Network Graphics)** derived from ARTemislogo.png:
+- High-quality raster images
+- Full color depth with transparency support
+- Optimized file sizes
+- Universal browser and platform compatibility
+- Professional quality at all sizes
 
 ## Future Enhancements
 
