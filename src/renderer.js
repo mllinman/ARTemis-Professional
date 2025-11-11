@@ -1252,15 +1252,18 @@ const brushPresets = {
     'artrage-airbrush-fine': { size: 25, opacity: 30, hardness: 2, flow: 22, spacing: 5, smoothing: 18, angle: 0, angleJitter: 0, scatterX: 10, scatterY: 10 },
     'artrage-glitter': { size: 20, opacity: 92, hardness: 88, flow: 95, spacing: 35, smoothing: 4, angle: 0, angleJitter: 180, scatterX: 35, scatterY: 35 },
     
-    // GRAPHITE PENCILS - Realistic graphite with paper tooth response
-    'rebelle-graphite-hb': { size: 8, opacity: 78, hardness: 68, flow: 82, spacing: 7, smoothing: 10, angle: 28, angleJitter: 22, scatterX: 5, scatterY: 2 },
-    'rebelle-graphite-2b': { size: 10, opacity: 82, hardness: 65, flow: 85, spacing: 8, smoothing: 12, angle: 30, angleJitter: 24, scatterX: 6, scatterY: 2 },
-    'rebelle-graphite-4b': { size: 12, opacity: 86, hardness: 60, flow: 88, spacing: 9, smoothing: 14, angle: 32, angleJitter: 26, scatterX: 7, scatterY: 3 },
-    'rebelle-graphite-6b': { size: 14, opacity: 90, hardness: 55, flow: 90, spacing: 10, smoothing: 15, angle: 34, angleJitter: 28, scatterX: 8, scatterY: 3 },
-    'rebelle-graphite-8b': { size: 16, opacity: 94, hardness: 50, flow: 92, spacing: 11, smoothing: 16, angle: 36, angleJitter: 30, scatterX: 9, scatterY: 4 },
-    'rebelle-graphite-h': { size: 6, opacity: 74, hardness: 75, flow: 78, spacing: 6, smoothing: 8, angle: 26, angleJitter: 20, scatterX: 4, scatterY: 1 },
-    'rebelle-graphite-2h': { size: 5, opacity: 70, hardness: 80, flow: 75, spacing: 5, smoothing: 7, angle: 24, angleJitter: 18, scatterX: 3, scatterY: 1 },
-    'rebelle-graphite-4h': { size: 4, opacity: 66, hardness: 85, flow: 72, spacing: 4, smoothing: 6, angle: 22, angleJitter: 16, scatterX: 2, scatterY: 1 },
+    // REBELLE GRAPHITE PENCILS - Professional grade graphite with authentic paper tooth response
+    // Enhanced with grade-specific characteristics matching real graphite behavior
+    // Softer grades (B) = darker, softer, more layering | Harder grades (H) = lighter, firmer, precise
+    // Tilt-responsive: tilting pen increases size for broader strokes, mimicking real pencil behavior
+    'rebelle-graphite-8b': { size: 18, opacity: 95, hardness: 45, flow: 94, spacing: 12, smoothing: 18, angle: 38, angleJitter: 32, scatterX: 11, scatterY: 5, tiltSize: 80, tiltAngle: 60 },  // Extra soft - very dark, rich blacks, smooth layering
+    'rebelle-graphite-6b': { size: 15, opacity: 91, hardness: 52, flow: 91, spacing: 10, smoothing: 16, angle: 35, angleJitter: 29, scatterX: 9, scatterY: 4, tiltSize: 75, tiltAngle: 55 },   // Very soft - deep tones, excellent for shading
+    'rebelle-graphite-4b': { size: 13, opacity: 87, hardness: 58, flow: 88, spacing: 9, smoothing: 14, angle: 33, angleJitter: 27, scatterX: 8, scatterY: 3, tiltSize: 70, tiltAngle: 50 },   // Soft - good for sketching and expressive work
+    'rebelle-graphite-2b': { size: 11, opacity: 83, hardness: 63, flow: 85, spacing: 8, smoothing: 13, angle: 31, angleJitter: 25, scatterX: 7, scatterY: 2, tiltSize: 65, tiltAngle: 45 },   // Slightly soft - versatile drawing grade
+    'rebelle-graphite-hb': { size: 9, opacity: 79, hardness: 68, flow: 82, spacing: 7, smoothing: 11, angle: 29, angleJitter: 23, scatterX: 6, scatterY: 2, tiltSize: 60, tiltAngle: 40 },    // Medium - balanced, all-purpose sketching
+    'rebelle-graphite-h': { size: 7, opacity: 75, hardness: 73, flow: 79, spacing: 6, smoothing: 9, angle: 27, angleJitter: 21, scatterX: 5, scatterY: 1, tiltSize: 55, tiltAngle: 35 },     // Slightly hard - precise lines, technical work
+    'rebelle-graphite-2h': { size: 6, opacity: 71, hardness: 78, flow: 76, spacing: 5, smoothing: 8, angle: 25, angleJitter: 19, scatterX: 4, scatterY: 1, tiltSize: 50, tiltAngle: 30 },    // Hard - fine details, crisp edges
+    'rebelle-graphite-4h': { size: 5, opacity: 67, hardness: 83, flow: 73, spacing: 4, smoothing: 7, angle: 23, angleJitter: 17, scatterX: 3, scatterY: 1, tiltSize: 45, tiltAngle: 25 },    // Very hard - technical drawing, light construction lines
     
     // METALLIC // COREL PAINTER & KRITA INSPIRED SPECIAL EFFECTS - Metallic & Special Effects (10)
     'metallic-gold': { size: 35, opacity: 85, hardness: 60, flow: 75, spacing: 12, smoothing: 10, angle: 0, angleJitter: 15, scatterX: 5, scatterY: 5 },
@@ -7465,47 +7468,94 @@ function manageCacheSize(cache) {
 
 // Texture generation for realistic brush effects
 function generatePencilTexture(size) {
-    // Check cache first
-    const cacheKey = Math.ceil(size);
+    // Enhanced graphite texture generation with grade-specific characteristics
+    // Determine graphite grade for texture variation
+    const presetName = state.currentPresetName || '';
+    let graphiteGrade = 'HB'; // default
+    let grainIntensity = 0.6; // How much grain/texture variation
+    let edgeSoftness = 0.5; // Edge softness (0-1, higher = softer)
+    
+    // Extract grade from preset name (e.g., 'rebelle-graphite-2b' -> '2B')
+    if (presetName.includes('graphite')) {
+        if (presetName.includes('8b')) { graphiteGrade = '8B'; grainIntensity = 0.85; edgeSoftness = 0.75; }
+        else if (presetName.includes('6b')) { graphiteGrade = '6B'; grainIntensity = 0.80; edgeSoftness = 0.70; }
+        else if (presetName.includes('4b')) { graphiteGrade = '4B'; grainIntensity = 0.75; edgeSoftness = 0.65; }
+        else if (presetName.includes('2b')) { graphiteGrade = '2B'; grainIntensity = 0.70; edgeSoftness = 0.60; }
+        else if (presetName.includes('4h')) { graphiteGrade = '4H'; grainIntensity = 0.35; edgeSoftness = 0.25; }
+        else if (presetName.includes('2h')) { graphiteGrade = '2H'; grainIntensity = 0.40; edgeSoftness = 0.30; }
+        else if (presetName.includes('-h')) { graphiteGrade = 'H'; grainIntensity = 0.50; edgeSoftness = 0.40; }
+        else { graphiteGrade = 'HB'; grainIntensity = 0.60; edgeSoftness = 0.50; }
+    }
+    
+    // Check cache with grade-specific key
+    const cacheKey = `${Math.ceil(size)}-${graphiteGrade}`;
     if (textureCache.pencil.has(cacheKey)) {
         return textureCache.pencil.get(cacheKey);
     }
     
     // Generate new texture
-    size = cacheKey; // Use rounded size for consistency
+    const roundedSize = Math.ceil(size);
     const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = roundedSize;
+    canvas.height = roundedSize;
     const ctx = canvas.getContext('2d');
     
-    // Create grainy pencil texture - dry paper shows more tooth/texture
-    const imageData = ctx.createImageData(size, size);
+    // Create realistic graphite texture with paper tooth response
+    const imageData = ctx.createImageData(roundedSize, roundedSize);
     const data = imageData.data;
     
-    // Paper wetness affects pencil texture - dry paper has more visible tooth
+    // Paper wetness affects graphite texture - dry paper has more visible tooth
     const paperWetness = state.rebellePaper.wetness / 100;
-    const paperTooth = 1 + (1 - paperWetness) * 0.5; // Dry paper = more texture variation
+    const paperTooth = 1 + (1 - paperWetness) * 0.8; // Dry paper = more texture variation
+    const absorbency = state.rebellePaper.absorbency / 100;
     
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-            const idx = (y * size + x) * 4;
-            const distFromCenter = Math.sqrt(Math.pow(x - size/2, 2) + Math.pow(y - size/2, 2));
-            const normalizedDist = distFromCenter / (size / 2);
+    // Graphite layering - softer grades (B) build up darker, harder grades (H) stay lighter
+    const layerBuildUp = graphiteGrade.includes('B') ? 1.2 : (graphiteGrade.includes('H') ? 0.7 : 1.0);
+    
+    for (let y = 0; y < roundedSize; y++) {
+        for (let x = 0; x < roundedSize; x++) {
+            const idx = (y * roundedSize + x) * 4;
+            const distFromCenter = Math.sqrt(Math.pow(x - roundedSize/2, 2) + Math.pow(y - roundedSize/2, 2));
+            const normalizedDist = distFromCenter / (roundedSize / 2);
             
-            // Pencil grain with radial falloff - more variation on dry paper
-            const grain = (Math.random() * 0.6 + 0.4) * paperTooth;
-            const alpha = normalizedDist < 1 ? (1 - normalizedDist) * grain * 255 : 0;
+            // Enhanced grain pattern with grade-specific characteristics
+            // Softer graphite (B grades) = more particles, smoother coverage
+            // Harder graphite (H grades) = less coverage, more paper tooth visible
+            const baseGrain = Math.random();
+            const grainVariation = (baseGrain * grainIntensity + (1 - grainIntensity)) * paperTooth;
+            
+            // Add subtle directional streaking (like real graphite application)
+            const streakAngle = state.brush.angle * Math.PI / 180;
+            const streakX = Math.cos(streakAngle) * (x - roundedSize/2);
+            const streakY = Math.sin(streakAngle) * (y - roundedSize/2);
+            const streakPattern = 1 + Math.sin((streakX + streakY) * 0.3) * 0.15;
+            
+            // Radial falloff with grade-specific edge softness
+            let edgeFalloff;
+            if (normalizedDist < 1 - edgeSoftness) {
+                edgeFalloff = 1.0; // Core is full strength
+            } else if (normalizedDist < 1) {
+                // Soft edge transition
+                const edgePos = (normalizedDist - (1 - edgeSoftness)) / edgeSoftness;
+                edgeFalloff = 1 - (edgePos * edgePos); // Quadratic falloff for natural edge
+            } else {
+                edgeFalloff = 0;
+            }
+            
+            // Combine all factors
+            const finalGrain = grainVariation * streakPattern * layerBuildUp;
+            const alpha = edgeFalloff * finalGrain * 255;
             
             data[idx] = 255;
             data[idx + 1] = 255;
             data[idx + 2] = 255;
-            data[idx + 3] = alpha;
+            data[idx + 3] = Math.max(0, Math.min(255, alpha));
         }
     }
     
     ctx.putImageData(imageData, 0, 0);
     
-    // Cache the texture
+    // Cache the texture with grade-specific key
     textureCache.pencil.set(cacheKey, canvas);
     manageCacheSize(textureCache.pencil);
     
