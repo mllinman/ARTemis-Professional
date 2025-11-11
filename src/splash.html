@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTemis Professional - Loading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .splash-container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-20px) translateX(10px) rotate(90deg); }
+            50% { transform: translateY(-40px) translateX(-10px) rotate(180deg); }
+            75% { transform: translateY(-20px) translateX(10px) rotate(270deg); }
+        }
+
+        /* Logo container with paint brush */
+        .logo-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+            animation: fadeInScale 1s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Animated paint strokes */
+        .paint-stroke {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2s ease-out forwards;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Brand name */
+        .brand-name {
+            font-size: 72px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+
+        .brand-subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            color: #ffffff;
+            opacity: 0.9;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            animation: slideInUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes slideInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading bar */
+        .loading-container {
+            width: 400px;
+            margin: 0 auto;
+            animation: slideInUp 1s ease-out 0.7s both;
+        }
+
+        .loading-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff, #bd93f9);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            width: 0%;
+            animation: progressBar 3s ease-out forwards, shimmer 2s linear infinite;
+        }
+
+        @keyframes progressBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Feature highlights */
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .feature {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 500;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+        }
+
+        /* Sparkle effect */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffffff;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Version info */
+        .version-info {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            color: #ffffff;
+            font-size: 14px;
+            opacity: 0.7;
+            animation: fadeIn 1s ease-out 1.5s both;
+        }
+
+        /* Call to action hint */
+        .cta-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 14px;
+            opacity: 0;
+            animation: fadeInPulse 1s ease-out 2.5s both, pulse 2s ease-in-out 3.5s infinite;
+        }
+
+        @keyframes fadeInPulse {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+            100% {
+                opacity: 0.8;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo-container {
+                width: 200px;
+                height: 200px;
+            }
+
+            .brand-name {
+                font-size: 48px;
+            }
+
+            .brand-subtitle {
+                font-size: 18px;
+            }
+
+            .loading-container {
+                width: 300px;
+            }
+
+            .features {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated particles background -->
+    <div class="particles" id="particles"></div>
+
+    <div class="splash-container">
+        <!-- Logo with animated paint brush -->
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="brushGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8b5a3c;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="paintGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.9">
+                            <animate attributeName="stop-color" values="#ff6b6b;#ffd93d;#6bcf7f;#4d96ff;#bd93f9;#ff6b6b" dur="5s" repeatCount="indefinite"/>
+                        </stop>
+                        <stop offset="100%" style="stop-color:#4d96ff;stop-opacity:0.9">
+                            <animate attributeName="stop-color" values="#4d96ff;#bd93f9;#ff6b6b;#ffd93d;#6bcf7f;#4d96ff" dur="5s" repeatCount="indefinite"/>
+                        </stop>
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                
+                <!-- Paintbrush -->
+                <g transform="translate(150, 150)">
+                    <!-- Handle -->
+                    <rect x="-12" y="-90" width="24" height="120" fill="url(#brushGrad)" rx="3">
+                        <animateTransform attributeName="transform" type="rotate" values="0;-5;0;5;0" dur="4s" repeatCount="indefinite"/>
+                    </rect>
+                    
+                    <!-- Handle rings -->
+                    <ellipse cx="0" cy="-75" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
+                    <ellipse cx="0" cy="-60" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
+                    <ellipse cx="0" cy="-45" rx="13" ry="2" fill="#a0522d" opacity="0.6"/>
+                    
+                    <!-- Ferrule -->
+                    <path d="M -15 30 L -9 45 L 9 45 L 15 30 Z" fill="#e0e0e0"/>
+                    
+                    <!-- Bristles -->
+                    <path d="M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z" fill="#ffffff" opacity="0.95" filter="url(#glow)">
+                        <animate attributeName="d" 
+                                 values="M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z;
+                                         M -9 45 Q -13 62 -7 70 Q -3 73 0 74 Q 3 73 7 70 Q 13 62 9 45 Z;
+                                         M -9 45 Q -12 60 -6 68 Q -3 71 0 72 Q 3 71 6 68 Q 12 60 9 45 Z" 
+                                 dur="3s" 
+                                 repeatCount="indefinite"/>
+                    </path>
+                    
+                    <!-- Animated paint stroke -->
+                    <path class="paint-stroke" d="M 0 70 Q 30 75 50 60 Q 65 50 70 40" 
+                          stroke="url(#paintGrad)" 
+                          stroke-width="6" 
+                          fill="none" 
+                          stroke-linecap="round"
+                          filter="url(#glow)"/>
+                    
+                    <!-- Paint drip -->
+                    <ellipse cx="50" cy="62" rx="2" ry="4" fill="#4d96ff" opacity="0.8">
+                        <animate attributeName="ry" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <!-- Letter A -->
+                    <text x="-70" y="-30" 
+                          font-family="'Helvetica Neue', Arial, sans-serif" 
+                          font-size="90" 
+                          font-weight="bold" 
+                          fill="#ffffff" 
+                          filter="url(#glow)">A</text>
+                    
+                    <!-- Paint splatter on A -->
+                    <circle cx="-35" cy="-45" r="3" fill="#ffd93d" opacity="0.8">
+                        <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="-30" cy="-40" r="2" fill="#ff6b6b" opacity="0.8">
+                        <animate attributeName="r" values="2;3;2" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                </g>
+                
+                <!-- Sparkles -->
+                <circle class="sparkle" cx="80" cy="80" r="2" fill="#ffffff">
+                    <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle class="sparkle" cx="220" cy="120" r="2" fill="#ffffff">
+                    <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
+                </circle>
+                <circle class="sparkle" cx="180" cy="220" r="2" fill="#ffffff">
+                    <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+
+        <!-- Brand name -->
+        <div class="brand-name">ARTemis</div>
+        <div class="brand-subtitle">Professional</div>
+
+        <!-- Loading bar -->
+        <div class="loading-container">
+            <div class="loading-text">Loading your creative workspace...</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+
+        <!-- Feature highlights -->
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🖌️</span>
+                <span>178+ Brushes</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🎨</span>
+                <span>Natural Media</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🤖</span>
+                <span>AI-Powered</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📚</span>
+                <span>Unlimited Layers</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version info -->
+    <div class="version-info">v1.0.0-alpha</div>
+
+    <!-- CTA hint -->
+    <div class="cta-hint">Click anywhere to continue →</div>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 30;
+        const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4d96ff', '#bd93f9', '#f093fb'];
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = Math.random() * 15 + 5;
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.animationDelay = `${Math.random() * 2}s`;
+            particle.style.animationDuration = `${4 + Math.random() * 4}s`;
+            
+            particlesContainer.appendChild(particle);
+        }
+
+        // Auto-redirect after loading animation completes
+        setTimeout(() => {
+            // Add click handler to continue
+            document.body.style.cursor = 'pointer';
+            document.body.addEventListener('click', () => {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.5s ease-out';
+                setTimeout(() => {
+                    // Redirect to main app or login
+                    window.location.href = 'login.html';
+                }, 500);
+            });
+        }, 3000);
+
+        // Auto-redirect after 5 seconds if no interaction
+        setTimeout(() => {
+            if (document.body.style.opacity !== '0') {
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.5s ease-out';
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 500);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
