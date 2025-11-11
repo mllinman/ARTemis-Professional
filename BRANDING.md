@@ -8,12 +8,13 @@ This document describes the visual branding assets for ARTemis Professional.
 **Location:** `/website/images/logo-professional.svg`
 
 A comprehensive, high-quality logo featuring:
-- Beautiful gradient background (purple to pink)
-- Detailed paintbrush with wood grain texture
-- Metallic ferrule with realistic shine
-- Animated paint stroke with rainbow gradient
-- Large stylized "A" letterform with paint splatters
-- "ARTemis PROFESSIONAL" branding text
+- Dark slate gradient background matching app theme
+- Professional paintbrush with realistic wood grain texture
+- Tapered brush handle with natural wood finish
+- Metallic ferrule with subtle shine
+- Paint stroke accent in app primary colors (blue/cyan)
+- Large stylized "A" letterform with accent dots
+- "ARTemis PROFESSIONAL" branding text in app colors
 
 **Usage:** Main website header, promotional materials, social media profiles
 
@@ -67,9 +68,9 @@ A high-resolution version with enhanced details:
 **Dimensions:** 1920x600px
 
 A stunning hero banner for the website featuring:
-- Deep gradient background (dark blue theme)
-- Abstract paint strokes and geometric shapes
-- Large animated paintbrush on the right
+- Dark slate gradient background matching app theme
+- Abstract paint strokes in app accent colors
+- Professional animated paintbrush with improved design
 - "ARTemis PROFESSIONAL" branding on the left
 - Feature highlights footer
 - Smooth animations and glow effects
@@ -88,11 +89,11 @@ A stunning hero banner for the website featuring:
 **Dimensions:** 1200x630px (Open Graph standard)
 
 Optimized for social media sharing:
-- Vibrant gradient background
+- Dark slate gradient background matching app theme
 - Central composition with logo and paintbrush
 - Clear branding and tagline
 - 6 key feature callouts
-- Paint strokes and splatter decorations
+- Paint strokes and splatter decorations in app colors
 
 **Usage:** 
 - Open Graph meta tags (og:image)
@@ -105,11 +106,11 @@ Optimized for social media sharing:
 **Location:** `/src/splash.html`
 
 An artistic loading/welcome screen featuring:
-- Animated gradient background
-- Floating particle effects (30+ animated elements)
-- Large animated SVG logo with paintbrush
-- Animated paint strokes with color cycling
-- Loading progress bar with shimmer effect
+- Dark slate gradient background matching app theme
+- Floating particle effects (30+ animated elements) in app colors
+- Large animated SVG logo with professional paintbrush
+- Animated paint strokes with app accent color cycling
+- Loading progress bar with shimmer effect in app colors
 - Feature highlights
 - Smooth transitions and entrance animations
 - Auto-redirect after loading
@@ -129,28 +130,31 @@ An artistic loading/welcome screen featuring:
 
 ## Color Palette
 
-### Primary Colors
-- **Purple:** `#667eea` (vibrant)
-- **Deep Purple:** `#764ba2` (medium)
-- **Pink:** `#f093fb` (accent)
+### Primary Colors (App Theme - Dark Slate)
+- **Primary Blue:** `#0e639c` (main accent)
+- **Accent Cyan:** `#00d4ff` (highlights)
+- **Primary Dark:** `#0a4d7a` (darker blue)
 
-### Background Colors
-- **Dark Navy:** `#1a1a2e` (main background)
-- **Medium Navy:** `#16213e` (secondary)
-- **Deep Blue:** `#0f3460` (tertiary)
+### Background Colors (Dark Slate Theme)
+- **Main Background:** `#1e1e1e` (darkest)
+- **Secondary Background:** `#252526` (medium dark)
+- **Tertiary Background:** `#2d2d30` (lighter dark)
+- **Border Color:** `#3e3e42` (UI borders)
 
-### Accent Colors (Paint Palette)
-- **Red:** `#ff6b6b`
-- **Yellow:** `#ffd93d`
-- **Green:** `#6bcf7f`
-- **Blue:** `#4d96ff`
-- **Violet:** `#bd93f9`
+### Text Colors
+- **Primary Text:** `#cccccc` (main text)
+- **Secondary Text:** `#858585` (muted text)
 
-### Neutral Colors
-- **Wood Brown:** `#8b5a3c` (brush handle)
-- **Dark Brown:** `#654321` (wood grain)
-- **Silver:** `#e0e0e0` (ferrule/metal)
-- **White:** `#ffffff` (bristles, text)
+### Brush Colors (Natural Wood & Realistic)
+- **Wood Base:** `#4a3728` (brush handle base)
+- **Wood Mid:** `#3a2818` (handle mid-tone)
+- **Wood Dark:** `#2a1808` (handle shadows)
+- **Wood Grain:** `#1a0f08` (wood grain lines)
+- **Wood Highlight:** `#5a4028` (wood highlights)
+- **Metal Base:** `#a0a0a0` (ferrule base)
+- **Metal Light:** `#c0c0c0` (ferrule highlights)
+- **Metal Dark:** `#8a8a8a` (ferrule shadows)
+- **Bristles:** `#e8e8e8`, `#f0f0f0`, `#f8f8f8` (natural fiber variations)
 
 ## Typography
 
