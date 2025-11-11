@@ -133,11 +133,13 @@ ARTemis includes a comprehensive set of professional digital painting features!
     - Granulation in darker areas (pigment settling)
     - Natural water flow patterns on paper
     - Paper absorbency simulation
-19. **✏️ Graphite Pencils** - 8 realistic graphite pencils (4H to 8B):
-    - Natural paper grain response and realistic texture
-    - Pressure-sensitive with authentic angle variation
-    - HB, 2B, 4B, 6B, 8B for darker sketches
-    - H, 2H, 4H for precise technical drawing
+19. **✏️ Rebelle Graphite Pencils** - 8 professional-grade graphite pencils (4H to 8B):
+    - Grade-specific texture with authentic paper tooth response
+    - Full tilt support for broad shading and fine details
+    - Pressure-sensitive with realistic layering and build-up
+    - HB, 2B, 4B, 6B, 8B for darker sketches and shading
+    - H, 2H, 4H for precise technical drawing and construction lines
+    - **[📖 Complete Graphite Brushes Guide](REBELLE_GRAPHITE_BRUSHES.md)**
 20. **🎨 Wet Palette Color Mixing** - Advanced realistic blending:
     - Wetness control (0-100%) for paint moisture
     - Color bleeding (0-100%) for natural mixing
@@ -530,6 +532,7 @@ The advanced brush engine features:
 - **[⭐ FEATURES_V3_QUICK_START.md](FEATURES_V3_QUICK_START.md)** - 🔥 NEW! Quick overview of V3 features and timeline
 - **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
 - **[⭐ ADVANCED-COLOR-WHEEL.md](ADVANCED-COLOR-WHEEL.md)** - NEW! Coolorus-style color picker with 5 color spaces, gamut lock, palettes
+- **[⭐ REBELLE_GRAPHITE_BRUSHES.md](REBELLE_GRAPHITE_BRUSHES.md)** - NEW! Professional graphite pencils (8B-4H) with tilt support and grade-specific textures
 - **[⭐ PHASE_15_FEATURES.md](PHASE_15_FEATURES.md)** - COMPLETED! Advanced export (PSD, TIFF), WebGL acceleration, tiled rendering, progressive loading (Phase 15)
 - **[PROFESSIONAL_TOOLS.md](PROFESSIONAL_TOOLS.md)** - Professional-grade brushes, Blueline artboard, and keyboard customization
 - **[BRUSH-ENGINE.md](BRUSH-ENGINE.md)** - Complete guide to the brush system basics
