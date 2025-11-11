@@ -4031,6 +4031,10 @@ function setupAdvancedFeatures() {
     if (canvasTextureTypeSelect) {
         canvasTextureTypeSelect.addEventListener('change', (e) => {
             state.canvasTexture.type = e.target.value;
+            // Preload the new texture
+            preloadPaperTexture(e.target.value);
+            // Clear texture cache for new settings
+            generatedTextureCache.clear();
             compositeAllLayers();
         });
     }
@@ -4041,6 +4045,8 @@ function setupAdvancedFeatures() {
         canvasTextureIntensitySlider.addEventListener('input', (e) => {
             state.canvasTexture.intensity = parseInt(e.target.value);
             canvasTextureIntensityValue.textContent = state.canvasTexture.intensity + '%';
+            // Clear texture cache for new settings
+            generatedTextureCache.clear();
             // Use debounced version for smooth slider interaction
             debouncedCompositeAllLayers();
         });
@@ -4052,6 +4058,8 @@ function setupAdvancedFeatures() {
         canvasTextureGrainSlider.addEventListener('input', (e) => {
             state.canvasTexture.grain = parseInt(e.target.value);
             canvasTextureGrainValue.textContent = state.canvasTexture.grain + '%';
+            // Clear texture cache for new settings
+            generatedTextureCache.clear();
             // Use debounced version for smooth slider interaction
             debouncedCompositeAllLayers();
         });
@@ -5782,9 +5790,11 @@ function compositeAllLayers() {
     
     mainCtx.restore();
     
-    // Apply canvas texture
+    // Apply canvas texture (async, non-blocking)
     if (state.canvasTexture.enabled) {
-        applyCanvasTexture();
+        applyCanvasTexture().catch(err => {
+            console.warn('Error applying canvas texture:', err);
+        });
     }
     
     // Draw reference image
@@ -20369,9 +20379,141 @@ function exportTimelapse() {
     // TODO: Implement actual video export using gif.js or webm-writer
 }
 
-// Canvas Texture Generation
-function generateCanvasTexture(type, intensity) {
+// ============================================
+// Paper Texture System - Enhanced
+// ============================================
+
+// Cache for loaded paper texture images and generated textures
+const paperTextureCache = new Map();
+const generatedTextureCache = new Map();
+
+// Load actual paper texture image
+async function loadPaperTexture(type) {
+    // Check cache first
+    if (paperTextureCache.has(type)) {
+        return paperTextureCache.get(type);
+    }
+    
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        
+        // Try assets/papers first, then papers directory
+        img.src = `assets/papers/${type}.png`;
+        
+        img.onload = () => {
+            paperTextureCache.set(type, img);
+            resolve(img);
+        };
+        
+        img.onerror = () => {
+            // Try fallback path
+            img.src = `papers/${type}.png`;
+            img.onload = () => {
+                paperTextureCache.set(type, img);
+                resolve(img);
+            };
+            img.onerror = () => {
+                // If both fail, return null to trigger procedural generation
+                resolve(null);
+            };
+        };
+    });
+}
+
+// Create seamless tiled paper texture at high resolution
+async function createSeamlessPaperTexture(type, targetSize, intensity, grain) {
+    // Check generated texture cache
+    const cacheKey = `${type}-${targetSize}-${intensity}-${grain}`;
+    if (generatedTextureCache.has(cacheKey)) {
+        return generatedTextureCache.get(cacheKey);
+    }
+    
+    const paperImg = await loadPaperTexture(type);
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = targetSize;
+    canvas.height = targetSize;
+    const ctx = canvas.getContext('2d');
+    
+    if (paperImg) {
+        // Use actual paper texture image
+        // Create seamless tiling by drawing the paper multiple times
+        const paperWidth = paperImg.width;
+        const paperHeight = paperImg.height;
+        
+        // Calculate how many times we need to tile to cover the canvas
+        const tilesX = Math.ceil(targetSize / paperWidth) + 1;
+        const tilesY = Math.ceil(targetSize / paperHeight) + 1;
+        
+        // Draw tiled paper texture
+        for (let ty = 0; ty < tilesY; ty++) {
+            for (let tx = 0; tx < tilesX; tx++) {
+                ctx.drawImage(
+                    paperImg,
+                    tx * paperWidth,
+                    ty * paperHeight,
+                    paperWidth,
+                    paperHeight
+                );
+            }
+        }
+        
+        // Apply intensity and grain adjustments
+        const imageData = ctx.getImageData(0, 0, targetSize, targetSize);
+        const data = imageData.data;
+        const grainFactor = grain / 100;
+        const intensityFactor = intensity / 100;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            // Apply grain visibility
+            const grayValue = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const baseValue = 240; // Light paper base
+            const textureValue = baseValue - (baseValue - grayValue) * grainFactor;
+            
+            data[i] = textureValue;
+            data[i + 1] = textureValue;
+            data[i + 2] = textureValue;
+            // Apply intensity to alpha channel for better blending
+            data[i + 3] = Math.min(255, data[i + 3] * intensityFactor);
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Cache the generated texture
+        generatedTextureCache.set(cacheKey, canvas);
+        return canvas;
+    } else {
+        // Fallback to procedural generation if image not found
+        const proceduralCanvas = generateProceduralTexture(type, targetSize, intensity, grain);
+        generatedTextureCache.set(cacheKey, proceduralCanvas);
+        return proceduralCanvas;
+    }
+}
+
+// Canvas Texture Generation (updated to use real paper images)
+async function generateCanvasTexture(type, intensity) {
     const size = 512;
+    const grain = (state.canvasTexture.grain || 50) / 100;
+    
+    // Try to load actual paper texture first
+    const textureCanvas = await createSeamlessPaperTexture(type, size, intensity, grain * 100);
+    return textureCanvas;
+}
+
+// Preload paper texture for immediate use
+function preloadPaperTexture(type) {
+    loadPaperTexture(type).then(img => {
+        if (img) {
+            // Pre-generate common texture sizes
+            const intensity = state.canvasTexture.intensity;
+            const grain = state.canvasTexture.grain || 50;
+            createSeamlessPaperTexture(type, 512, intensity, grain);
+        }
+    });
+}
+
+// Procedural texture generation as fallback
+function generateProceduralTexture(type, size, intensity, grain) {
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -20380,126 +20522,126 @@ function generateCanvasTexture(type, intensity) {
     const imageData = ctx.createImageData(size, size);
     const data = imageData.data;
     const alpha = intensity * 2.55; // Convert percentage to 0-255
-    const grain = (state.canvasTexture.grain || 50) / 100;
+    const grainFactor = grain / 100;
     
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             const idx = (y * size + x) * 4;
             let value = 0;
             
-            // Professional Paper Textures (25+ types)
+            // Professional Paper Textures (25+ types) - Procedural fallback
             switch(type) {
                 // Hot Pressed (Smooth) Papers
                 case 'canson-xl-hot-pressed-200lb':
-                    value = Math.random() * 15 * grain + (Math.sin(x * 0.1) + Math.sin(y * 0.1)) * 5;
+                    value = Math.random() * 15 * grainFactor + (Math.sin(x * 0.1) + Math.sin(y * 0.1)) * 5;
                     break;
                 case 'canson-xl-hot-pressed-140lb':
-                    value = Math.random() * 18 * grain + (Math.sin(x * 0.12) + Math.sin(y * 0.12)) * 4;
+                    value = Math.random() * 18 * grainFactor + (Math.sin(x * 0.12) + Math.sin(y * 0.12)) * 4;
                     break;
                 case 'strathmore-400-hot-pressed':
-                    value = Math.random() * 12 * grain + (Math.sin(x * 0.08) + Math.sin(y * 0.08)) * 6;
+                    value = Math.random() * 12 * grainFactor + (Math.sin(x * 0.08) + Math.sin(y * 0.08)) * 6;
                     break;
                     
                 // Cold Pressed (Medium Texture) Papers
                 case 'canson-xl-cold-pressed-140lb':
-                    value = Math.random() * 35 * grain + (Math.sin(x * 0.3) + Math.cos(y * 0.25)) * 12;
+                    value = Math.random() * 35 * grainFactor + (Math.sin(x * 0.3) + Math.cos(y * 0.25)) * 12;
                     break;
                 case 'arches-cold-pressed-140lb':
-                    value = Math.random() * 40 * grain + (Math.sin(x * 0.35) + Math.cos(y * 0.3)) * 15;
+                    value = Math.random() * 40 * grainFactor + (Math.sin(x * 0.35) + Math.cos(y * 0.3)) * 15;
                     break;
                 case 'fabriano-artistico-cold-pressed':
-                    value = Math.random() * 38 * grain + (Math.sin(x * 0.32) + Math.cos(y * 0.28)) * 14;
+                    value = Math.random() * 38 * grainFactor + (Math.sin(x * 0.32) + Math.cos(y * 0.28)) * 14;
                     break;
                 case 'strathmore-500-cold-pressed':
-                    value = Math.random() * 36 * grain + (Math.sin(x * 0.31) + Math.cos(y * 0.27)) * 13;
+                    value = Math.random() * 36 * grainFactor + (Math.sin(x * 0.31) + Math.cos(y * 0.27)) * 13;
                     break;
                     
                 // Rough Papers
                 case 'arches-rough-300lb':
-                    value = Math.random() * 55 * grain + (Math.sin(x * 0.5) + Math.cos(y * 0.45)) * 20 + Math.sin(x * y * 0.001) * 10;
+                    value = Math.random() * 55 * grainFactor + (Math.sin(x * 0.5) + Math.cos(y * 0.45)) * 20 + Math.sin(x * y * 0.001) * 10;
                     break;
                 case 'fabriano-artistico-rough':
-                    value = Math.random() * 52 * grain + (Math.sin(x * 0.48) + Math.cos(y * 0.42)) * 18;
+                    value = Math.random() * 52 * grainFactor + (Math.sin(x * 0.48) + Math.cos(y * 0.42)) * 18;
                     break;
                 case 'saunders-waterford-rough':
-                    value = Math.random() * 50 * grain + (Math.sin(x * 0.46) + Math.cos(y * 0.4)) * 17;
+                    value = Math.random() * 50 * grainFactor + (Math.sin(x * 0.46) + Math.cos(y * 0.4)) * 17;
                     break;
                     
                 // Bristol & Illustration Board
                 case 'bristol-vellum':
-                    value = Math.random() * 22 * grain + (Math.sin(x * 0.15) + Math.sin(y * 0.15)) * 8;
+                    value = Math.random() * 22 * grainFactor + (Math.sin(x * 0.15) + Math.sin(y * 0.15)) * 8;
                     break;
                 case 'bristol-smooth':
-                    value = Math.random() * 10 * grain + (Math.sin(x * 0.05) + Math.sin(y * 0.05)) * 3;
+                    value = Math.random() * 10 * grainFactor + (Math.sin(x * 0.05) + Math.sin(y * 0.05)) * 3;
                     break;
                 case 'strathmore-500-bristol-plate':
-                    value = Math.random() * 8 * grain + (Math.sin(x * 0.04) + Math.sin(y * 0.04)) * 2;
+                    value = Math.random() * 8 * grainFactor + (Math.sin(x * 0.04) + Math.sin(y * 0.04)) * 2;
                     break;
                     
                 // Canvas & Linen
                 case 'canvas-fine-linen':
-                    value = (Math.sin(x * 0.4) + Math.sin(y * 0.4)) * 18 * grain + Math.random() * 15;
+                    value = (Math.sin(x * 0.4) + Math.sin(y * 0.4)) * 18 * grainFactor + Math.random() * 15;
                     break;
                 case 'canvas-cotton-duck':
-                    value = (Math.sin(x * 0.5) + Math.sin(y * 0.5)) * 22 * grain + Math.random() * 18;
+                    value = (Math.sin(x * 0.5) + Math.sin(y * 0.5)) * 22 * grainFactor + Math.random() * 18;
                     break;
                 case 'canvas-rough-weave':
-                    value = (Math.sin(x * 0.6) + Math.sin(y * 0.6)) * 25 * grain + Math.random() * 20;
+                    value = (Math.sin(x * 0.6) + Math.sin(y * 0.6)) * 25 * grainFactor + Math.random() * 20;
                     break;
                     
                 // Specialty Papers
                 case 'stonehenge-white':
-                    value = Math.random() * 28 * grain + (Math.sin(x * 0.2) + Math.sin(y * 0.2)) * 10;
+                    value = Math.random() * 28 * grainFactor + (Math.sin(x * 0.2) + Math.sin(y * 0.2)) * 10;
                     break;
                 case 'rives-bfk':
-                    value = Math.random() * 32 * grain + (Math.sin(x * 0.25) + Math.sin(y * 0.25)) * 11;
+                    value = Math.random() * 32 * grainFactor + (Math.sin(x * 0.25) + Math.sin(y * 0.25)) * 11;
                     break;
                 case 'hahnemuhle-leonardo':
-                    value = Math.random() * 30 * grain + (Math.sin(x * 0.22) + Math.sin(y * 0.22)) * 10;
+                    value = Math.random() * 30 * grainFactor + (Math.sin(x * 0.22) + Math.sin(y * 0.22)) * 10;
                     break;
                     
                 // Multimedia & Mixed Media
                 case 'strathmore-400-mixed-media':
-                    value = Math.random() * 25 * grain + (Math.sin(x * 0.18) + Math.sin(y * 0.18)) * 9;
+                    value = Math.random() * 25 * grainFactor + (Math.sin(x * 0.18) + Math.sin(y * 0.18)) * 9;
                     break;
                 case 'canson-xl-mixed-media':
-                    value = Math.random() * 26 * grain + (Math.sin(x * 0.19) + Math.sin(y * 0.19)) * 9;
+                    value = Math.random() * 26 * grainFactor + (Math.sin(x * 0.19) + Math.sin(y * 0.19)) * 9;
                     break;
                     
                 // Toned & Colored Papers
                 case 'strathmore-toned-gray':
-                    value = Math.random() * 24 * grain + (Math.sin(x * 0.17) + Math.sin(y * 0.17)) * 8 + 20;
+                    value = Math.random() * 24 * grainFactor + (Math.sin(x * 0.17) + Math.sin(y * 0.17)) * 8 + 20;
                     break;
                 case 'strathmore-toned-tan':
-                    value = Math.random() * 24 * grain + (Math.sin(x * 0.17) + Math.sin(y * 0.17)) * 8 + 15;
+                    value = Math.random() * 24 * grainFactor + (Math.sin(x * 0.17) + Math.sin(y * 0.17)) * 8 + 15;
                     break;
                 case 'canson-mi-teintes':
-                    value = Math.random() * 34 * grain + (Math.sin(x * 0.28) + Math.sin(y * 0.28)) * 12;
+                    value = Math.random() * 34 * grainFactor + (Math.sin(x * 0.28) + Math.sin(y * 0.28)) * 12;
                     break;
                     
                 // Drawing Papers
                 case 'strathmore-400-drawing':
-                    value = Math.random() * 27 * grain + (Math.sin(x * 0.21) + Math.sin(y * 0.21)) * 10;
+                    value = Math.random() * 27 * grainFactor + (Math.sin(x * 0.21) + Math.sin(y * 0.21)) * 10;
                     break;
                 case 'canson-foundation-drawing':
-                    value = Math.random() * 29 * grain + (Math.sin(x * 0.23) + Math.sin(y * 0.23)) * 10;
+                    value = Math.random() * 29 * grainFactor + (Math.sin(x * 0.23) + Math.sin(y * 0.23)) * 10;
                     break;
                     
                 // Legacy/Generic Types
                 case 'canvas':
-                    value = (Math.sin(x * 0.5) + Math.sin(y * 0.5)) * 10 * grain + Math.random() * 20;
+                    value = (Math.sin(x * 0.5) + Math.sin(y * 0.5)) * 10 * grainFactor + Math.random() * 20;
                     break;
                 case 'paper':
-                    value = Math.random() * 30 * grain;
+                    value = Math.random() * 30 * grainFactor;
                     break;
                 case 'linen':
-                    value = (Math.sin(x * 0.3) + Math.sin(y * 0.3)) * 15 * grain + Math.random() * 15;
+                    value = (Math.sin(x * 0.3) + Math.sin(y * 0.3)) * 15 * grainFactor + Math.random() * 15;
                     break;
                 case 'rough':
-                    value = Math.random() * 50 * grain;
+                    value = Math.random() * 50 * grainFactor;
                     break;
                 default:
-                    value = Math.random() * 30 * grain;
+                    value = Math.random() * 30 * grainFactor;
             }
             
             data[idx] = 255;
@@ -20514,10 +20656,10 @@ function generateCanvasTexture(type, intensity) {
 }
 
 // Apply canvas texture overlay to main canvas
-function applyCanvasTexture() {
+async function applyCanvasTexture() {
     if (!state.canvasTexture.enabled) return;
     
-    const texture = generateCanvasTexture(state.canvasTexture.type, state.canvasTexture.intensity);
+    const texture = await generateCanvasTexture(state.canvasTexture.type, state.canvasTexture.intensity);
     const pattern = mainCtx.createPattern(texture, 'repeat');
     
     mainCtx.save();
@@ -21178,6 +21320,10 @@ function initializePaperGallery() {
             
             // Update canvas texture to match
             state.canvasTexture.type = paper.id;
+            // Preload the paper texture
+            preloadPaperTexture(paper.id);
+            // Clear texture cache for new paper type
+            generatedTextureCache.clear();
             compositeAllLayers();
         });
         
