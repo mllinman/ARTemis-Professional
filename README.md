@@ -29,6 +29,31 @@ ARTemis offers flexible pricing to suit your needs:
 
 🔐 **[Learn More About Subscription Features](SUBSCRIPTION_FEATURES.md)**
 
+## 🚀 V3 Features (2026-2028 Roadmap) ⭐ NEW
+
+ARTemis V3 brings next-generation features for professional digital artists:
+
+### The 5 Strategic Pillars
+1. 🤖 **AI-Native Creative Intelligence** - AI as your creative partner
+2. ☁️ **Cloud-First Architecture** - Work anywhere, collaborate in real-time
+3. ⚡ **Performance Revolution** - 32K+ canvases with <1ms latency
+4. 📱 **Universal Accessibility** - Desktop, web, mobile, VR/AR
+5. 🔌 **Open Ecosystem** - Plugin marketplace, creator monetization
+
+### Currently Available (Beta)
+- ✅ **Plugin System API** - Extensible platform for custom features
+- ✅ **PWA Support** - Install as standalone app, works offline
+- ✅ **Feature Flags** - Granular control over beta features
+
+### Enable V3 Beta Access
+1. Click **V3 Features 🚀** menu → **Toggle Beta Access**
+2. Or press **Ctrl+Shift+V**
+3. Reload the page
+
+📖 **[Complete V3 Roadmap](FEATURES_V3.md)** | **[V3 Quick Start](FEATURES_V3_QUICK_START.md)** | **[Implementation Guide](FEATURES_V3_IMPLEMENTATION.md)**
+
+---
+
 ## Features
 
 ### ⭐ Professional Features
