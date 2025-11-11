@@ -1821,6 +1821,10 @@ function init() {
     // Initialize Panel Manager for modular UI
     initPanelManager();
     
+    // Initialize Brush Preview System
+    initBrushPreview();
+    attachBrushPreviewListeners();
+    
     // Save state on page unload
     window.addEventListener('beforeunload', () => {
         saveAppState();
@@ -2502,6 +2506,16 @@ function setupBrushPresets() {
                 presetSelect.value = brushId;
             });
             
+            // Add hover preview
+            item.addEventListener('mouseenter', () => {
+                showBrushHoverPreview(brushId);
+            });
+            
+            item.addEventListener('mouseleave', () => {
+                // Restore preview to current brush
+                updateBrushPreview();
+            });
+            
             gallery.appendChild(item);
         });
     };
@@ -2783,6 +2797,281 @@ function applyBrushPreset(presetName) {
     }
     
     updateCursor();
+    
+    // Update brush preview
+    updateBrushPreview();
+}
+
+// ============================================================================
+// BRUSH PREVIEW SYSTEM - Similar to Painter/Photoshop/Krita
+// ============================================================================
+
+let brushPreviewCanvas = null;
+let brushPreviewCtx = null;
+let brushPreviewEnabled = true;
+
+function initBrushPreview() {
+    brushPreviewCanvas = document.getElementById('brush-preview-canvas');
+    if (!brushPreviewCanvas) return;
+    
+    brushPreviewCtx = brushPreviewCanvas.getContext('2d', { willReadFrequently: true });
+    
+    // Enable/disable preview checkbox
+    const showPreviewCheckbox = document.getElementById('show-brush-preview');
+    if (showPreviewCheckbox) {
+        brushPreviewEnabled = showPreviewCheckbox.checked;
+        showPreviewCheckbox.addEventListener('change', (e) => {
+            brushPreviewEnabled = e.target.checked;
+            if (brushPreviewEnabled) {
+                updateBrushPreview();
+            } else {
+                clearBrushPreview();
+            }
+        });
+    }
+    
+    // Initial preview
+    updateBrushPreview();
+}
+
+function clearBrushPreview() {
+    if (!brushPreviewCtx) return;
+    brushPreviewCtx.clearRect(0, 0, brushPreviewCanvas.width, brushPreviewCanvas.height);
+}
+
+function updateBrushPreview() {
+    if (!brushPreviewEnabled || !brushPreviewCtx) return;
+    
+    // Clear previous preview
+    clearBrushPreview();
+    
+    // Draw stroke preview
+    drawBrushPreviewStroke();
+    
+    // Update info text
+    const info = document.getElementById('brush-preview-info');
+    if (info) {
+        const brushName = state.currentPresetName || 'custom';
+        info.textContent = `${brushName} • Size: ${state.brush.size}px • Opacity: ${state.brush.opacity}% • Hardness: ${state.brush.hardness}%`;
+    }
+}
+
+function drawBrushPreviewStroke() {
+    const canvas = brushPreviewCanvas;
+    const ctx = brushPreviewCtx;
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Save current state
+    const originalColor = state.color;
+    const originalTool = state.tool;
+    
+    // Set up preview color (use current color or black)
+    const previewColor = state.color || '#000000';
+    
+    // Save context
+    ctx.save();
+    
+    // Draw a curved stroke that showcases the brush
+    const startX = 20;
+    const startY = height / 2;
+    const endX = width - 20;
+    const endY = height / 2;
+    const controlY = height / 2;
+    
+    // Calculate number of dabs based on spacing
+    const spacing = Math.max(1, state.brush.spacing || 10);
+    const brushSize = Math.min(state.brush.size, 50); // Cap size for preview
+    const dabSpacing = (brushSize * spacing) / 100;
+    const strokeLength = endX - startX;
+    const numDabs = Math.ceil(strokeLength / dabSpacing);
+    
+    // Draw stroke with dabs
+    for (let i = 0; i <= numDabs; i++) {
+        const t = i / numDabs;
+        
+        // Calculate position along curved stroke
+        const x = startX + t * (endX - startX);
+        const y = startY + Math.sin(t * Math.PI) * 15; // Slight curve
+        
+        // Simulate pressure variation
+        const pressure = 0.3 + 0.7 * Math.sin(t * Math.PI);
+        
+        // Calculate size with pressure
+        let size = brushSize;
+        if (state.brush.pressureSize) {
+            size = brushSize * (0.3 + 0.7 * pressure);
+        }
+        
+        // Calculate opacity with pressure
+        let opacity = state.brush.opacity / 100;
+        if (state.brush.pressureOpacity) {
+            opacity *= (0.3 + 0.7 * pressure);
+        }
+        
+        // Apply flow
+        opacity *= (state.brush.flow || 100) / 100;
+        
+        // Apply scatter
+        const scatterX = (Math.random() - 0.5) * state.brush.scatterX * size / 100;
+        const scatterY = (Math.random() - 0.5) * state.brush.scatterY * size / 100;
+        const dabX = x + scatterX;
+        const dabY = y + scatterY;
+        
+        // Draw dab
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.translate(dabX, dabY);
+        
+        // Apply angle and jitter
+        const angle = ((state.brush.angle || 0) + (Math.random() - 0.5) * (state.brush.angleJitter || 0)) * Math.PI / 180;
+        ctx.rotate(angle);
+        
+        // Draw brush tip
+        drawBrushPreviewTip(ctx, size, previewColor);
+        
+        ctx.restore();
+    }
+    
+    ctx.restore();
+    
+    // Restore state
+    state.color = originalColor;
+    state.tool = originalTool;
+}
+
+function drawBrushPreviewTip(ctx, size, color) {
+    const hardness = (state.brush.hardness || 80) / 100;
+    
+    switch (state.brushTipShape || 'circle') {
+        case 'circle':
+            // Create radial gradient for softness
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(hardness, color);
+            gradient.addColorStop(1, color + '00'); // Transparent
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+            
+        case 'square':
+            ctx.fillStyle = color;
+            ctx.globalAlpha *= hardness;
+            ctx.fillRect(-size / 2, -size / 2, size, size);
+            break;
+            
+        case 'star':
+            ctx.fillStyle = color;
+            ctx.globalAlpha *= hardness;
+            ctx.beginPath();
+            const spikes = 5;
+            const outerRadius = size / 2;
+            const innerRadius = size / 4;
+            for (let i = 0; i < spikes * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (Math.PI / spikes) * i;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+            break;
+            
+        default:
+            // Default to circle
+            const defaultGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
+            defaultGradient.addColorStop(0, color);
+            defaultGradient.addColorStop(hardness, color);
+            defaultGradient.addColorStop(1, color + '00');
+            ctx.fillStyle = defaultGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+    }
+}
+
+// Add preview update to all brush setting controls
+function attachBrushPreviewListeners() {
+    // List of all brush controls that should trigger preview update
+    const brushControls = [
+        'brush-size', 'brush-opacity', 'brush-hardness', 'brush-flow', 
+        'brush-spacing', 'brush-angle', 'brush-angle-jitter',
+        'brush-scatter-x', 'brush-scatter-y', 'brush-smoothing',
+        'brush-velocity-size', 'brush-velocity-opacity',
+        'brush-tilt-size', 'brush-tilt-angle'
+    ];
+    
+    brushControls.forEach(id => {
+        const control = document.getElementById(id);
+        if (control) {
+            control.addEventListener('input', () => {
+                // Add small delay to avoid too many updates
+                if (control.previewTimeout) {
+                    clearTimeout(control.previewTimeout);
+                }
+                control.previewTimeout = setTimeout(() => {
+                    updateBrushPreview();
+                }, 50);
+            });
+        }
+    });
+    
+    // Color picker
+    const colorPicker = document.getElementById('color-picker');
+    if (colorPicker) {
+        colorPicker.addEventListener('input', () => {
+            updateBrushPreview();
+        });
+    }
+}
+
+// Show brush preview on hover
+function showBrushHoverPreview(brushId) {
+    if (!brushPreviewEnabled || !brushPreviewCtx) return;
+    
+    const preset = brushPresets[brushId] || state.customBrushes.find(b => b.name === brushId);
+    if (!preset) return;
+    
+    // Save current state
+    const savedState = {
+        size: state.brush.size,
+        opacity: state.brush.opacity,
+        hardness: state.brush.hardness,
+        flow: state.brush.flow,
+        spacing: state.brush.spacing,
+        angle: state.brush.angle,
+        angleJitter: state.brush.angleJitter,
+        scatterX: state.brush.scatterX,
+        scatterY: state.brush.scatterY,
+        currentPresetName: state.currentPresetName
+    };
+    
+    // Temporarily apply preset for preview
+    Object.assign(state.brush, preset);
+    state.currentPresetName = brushId;
+    
+    // Draw preview
+    clearBrushPreview();
+    drawBrushPreviewStroke();
+    
+    // Update info text
+    const info = document.getElementById('brush-preview-info');
+    if (info) {
+        const brushName = brushId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        info.textContent = `Preview: ${brushName} • Size: ${preset.size}px • Opacity: ${preset.opacity}% • Hardness: ${preset.hardness}%`;
+    }
+    
+    // Restore original state
+    Object.assign(state.brush, savedState);
+    state.currentPresetName = savedState.currentPresetName;
 }
 
 // Brush Preset Save/Load System
