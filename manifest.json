@@ -1,0 +1,79 @@
+{
+  "name": "ARTemis Professional - V3",
+  "short_name": "ARTemis V3",
+  "description": "Professional digital painting application with V3 features: AI-powered tools, cloud collaboration, and more",
+  "start_url": "/src/index.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#007bff",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/src/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "graphics",
+    "productivity",
+    "utilities"
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/main-interface.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Main painting interface"
+    },
+    {
+      "src": "/screenshots/brush-engine.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Advanced brush engine"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Canvas",
+      "short_name": "New",
+      "description": "Create a new canvas",
+      "url": "/src/index.html?action=new",
+      "icons": [
+        {
+          "src": "/src/assets/icon-new.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Open File",
+      "short_name": "Open",
+      "description": "Open an existing file",
+      "url": "/src/index.html?action=open",
+      "icons": [
+        {
+          "src": "/src/assets/icon-open.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "features": [
+    "WebGPU rendering",
+    "AI-powered tools",
+    "Cloud synchronization",
+    "Real-time collaboration",
+    "Plugin marketplace",
+    "Offline support"
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,10 @@
+# Cloud Features (Pillar 2: Cloud-First Architecture)
+
+This directory will contain implementations for:
+- Cloud Storage (Q1 2026)
+- Cloud Rendering (Q1 2026)
+- Real-time Collaboration (Q2 2026)
+- Asset Management System (Q3 2026)
+- Cross-Platform Sync (Q4 2026)
+
+See FEATURES_V3.md for detailed specifications.

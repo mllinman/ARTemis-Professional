@@ -1,0 +1,10 @@
+# Platform Features (Pillar 4: Universal Accessibility)
+
+This directory contains implementations for:
+- ✅ PWA Mode (Q1 2026) - Implemented in pwa.js
+- Offline Mode (Q1 2026) - In progress
+- Mobile Apps (Q2 2026)
+- 3D Integration (Q2 2026)
+- VR/AR Support (Q4 2026)
+
+See FEATURES_V3.md for detailed specifications.
