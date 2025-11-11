@@ -233,6 +233,11 @@ TOTAL                          60KB    1,860   30,700
 - [UI-IMPROVEMENTS.md](UI-IMPROVEMENTS.md) - UI features
 - [FEATURES.md](FEATURES.md) - All features list
 
+### Specialized Brush Guides
+- [REBELLE_GRAPHITE_BRUSHES.md](REBELLE_GRAPHITE_BRUSHES.md) - ⭐ NEW! Professional graphite pencils (8B-4H) with tilt support
+- [ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md) - Complete brush engine with 178+ presets
+- [REALISTIC_PAINT_TOOLS.md](REALISTIC_PAINT_TOOLS.md) - Realistic paint simulation tools
+
 ### Implementation Docs
 - [CHANGES.md](CHANGES.md) - Change log
 - [IMPLEMENTATION-SUMMARY.md](IMPLEMENTATION-SUMMARY.md) - UI implementation
