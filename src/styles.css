@@ -1885,6 +1885,24 @@ kbd {
     }
 }
 
+/* Brush Preview Canvas Styles */
+#brush-preview-container {
+    transition: all 0.2s ease;
+}
+
+#brush-preview-container:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#brush-preview-canvas {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+}
+
+#brush-preview-info {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 /* Phase 10 Enhancement: Theme notification animations */
 @keyframes slideInRight {
     from {
