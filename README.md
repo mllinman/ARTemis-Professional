@@ -501,6 +501,8 @@ The advanced brush engine features:
 ## Documentation
 
 ### User Documentation
+- **[⭐ FEATURES_V3.md](FEATURES_V3.md)** - 🔥 NEW! Next-generation roadmap (2026-2028) - AI-native, cloud-first, performance revolution
+- **[⭐ FEATURES_V3_QUICK_START.md](FEATURES_V3_QUICK_START.md)** - 🔥 NEW! Quick overview of V3 features and timeline
 - **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
 - **[⭐ ADVANCED-COLOR-WHEEL.md](ADVANCED-COLOR-WHEEL.md)** - NEW! Coolorus-style color picker with 5 color spaces, gamut lock, palettes
 - **[⭐ PHASE_15_FEATURES.md](PHASE_15_FEATURES.md)** - COMPLETED! Advanced export (PSD, TIFF), WebGL acceleration, tiled rendering, progressive loading (Phase 15)
@@ -509,8 +511,8 @@ The advanced brush engine features:
 - **[LAYER-ORGANIZATION-FEATURES.md](LAYER-ORGANIZATION-FEATURES.md)** - Layer types, ordering, and flattening guide
 - **[UI-IMPROVEMENTS.md](UI-IMPROVEMENTS.md)** - Modern UI features documentation
 - **[USAGE.md](USAGE.md)** - General usage guide
-- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Comprehensive roadmap of planned features
-- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - ⭐ NEW! Second round of enhancements with 230+ features from industry research
+- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Comprehensive roadmap of planned features (V1)
+- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - Second round of enhancements with 230+ features from industry research (V2)
 
 ### Business Documentation
 - **[BUSINESS_PLAN.md](BUSINESS_PLAN.md)** - Complete business plan for BulletDrop Studios LLC ⭐ NEW
@@ -522,11 +524,23 @@ The advanced brush engine features:
 
 ## Future Enhancements
 
-For detailed roadmaps of all planned features:
-- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - Original comprehensive roadmap
-- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - ⭐ NEW! Second round with 230+ cutting-edge features from 2024-2025 industry research
+### 🔥 NEW: Features List V3 (2026-2028 Roadmap)
+**The Next Evolution of ARTemis - Making it better than any software currently available**
 
-### Quick Overview
+- **[FEATURES_V3.md](FEATURES_V3.md)** - 🚀 Complete next-generation roadmap with 5 strategic pillars:
+  - 🤖 AI-Native Creative Intelligence
+  - ☁️ Cloud-First Architecture  
+  - ⚡ Performance Revolution (32K+ canvases, <1ms latency)
+  - 📱 Universal Accessibility (Desktop, Web, Mobile, VR/AR)
+  - 🔌 Open Ecosystem (Plugin marketplace, creator monetization)
+
+- **[FEATURES_V3_QUICK_START.md](FEATURES_V3_QUICK_START.md)** - ⚡ Fast overview of V3 features and timeline
+
+### Previous Roadmaps
+- **[FUTURE_ENHANCEMENTS.md](FUTURE_ENHANCEMENTS.md)** - V1 roadmap (mostly completed)
+- **[FUTURE_ENHANCEMENTS_2.md](FUTURE_ENHANCEMENTS_2.md)** - V2 roadmap with 230+ features from industry research (in progress)
+
+### Quick Overview of Current Status
 - ~~Gradient tool~~ ✅ COMPLETED
 - ~~Text tool~~ ✅ COMPLETED
 - ~~Shape tools (rectangle, ellipse, line)~~ ✅ COMPLETED
@@ -537,8 +551,15 @@ For detailed roadmaps of all planned features:
 - ~~Custom brush tip shapes and textures~~ ✅ COMPLETED
 - ~~Brush preset save/load system~~ ✅ COMPLETED
 - ~~Plugin system~~ ✅ COMPLETED
-- Cloud save support
-- Collaboration features
+
+### Coming in V3
+- 🤖 AI Canvas Companion (Q1 2026)
+- ☁️ Real-time Collaboration (Q2 2026)
+- ⚡ WebGPU Rendering (Q1 2026)
+- 📱 Mobile Apps (Q2 2026)
+- 🔌 Plugin Marketplace (Q1 2026)
+- 🎨 3D Integration (Q2 2026)
+- 🥽 VR/AR Support (Q4 2026)
 
 ## License
 
