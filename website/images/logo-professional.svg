@@ -1,39 +1,46 @@
 <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Dark slate gradient for background -->
+    <!-- Gray gradient background matching reference -->
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#252526;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#a8b2c0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8a95a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6a7580;stop-opacity:1" />
     </linearGradient>
     
-    <!-- Brush gradient - professional dark wood -->
-    <linearGradient id="brushGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
+    <!-- 3D metallic text gradient - blue/teal -->
+    <linearGradient id="textMetallic" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8d5e0;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#6ba5bf;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3d7a95;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#4d8aa5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a5568;stop-opacity:1" />
     </linearGradient>
     
-    <!-- Metallic ferrule gradient -->
-    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#9a9a9a;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#c0c0c0;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8a8a8a;stop-opacity:1" />
+    <!-- Flowing paint gradient - blue to purple -->
+    <linearGradient id="flowPaint1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a5f7a;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#2d8fb8;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#4db8e8;stop-opacity:0.9" />
     </linearGradient>
     
-    <!-- Accent stroke gradient - primary app colors -->
-    <linearGradient id="paintGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.9" />
+    <linearGradient id="flowPaint2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6b4c9a;stop-opacity:0.85" />
+      <stop offset="50%" style="stop-color:#8e6cc5;stop-opacity:0.85" />
+      <stop offset="100%" style="stop-color:#b88ce8;stop-opacity:0.85" />
+    </linearGradient>
+    
+    <linearGradient id="flowPaint3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4db8e8;stop-opacity:0.9" />
       <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#2d8fb8;stop-opacity:0.9" />
     </linearGradient>
     
-    <!-- Shadow filter -->
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
-      <feOffset dx="2" dy="2" result="offsetblur"/>
+    <!-- Deep shadow filter for 3D effect -->
+    <filter id="deepShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="3" dy="5" result="offsetblur"/>
       <feComponentTransfer>
-        <feFuncA type="linear" slope="0.3"/>
+        <feFuncA type="linear" slope="0.5"/>
       </feComponentTransfer>
       <feMerge>
         <feMergeNode/>
@@ -41,124 +48,123 @@
       </feMerge>
     </filter>
     
-    <!-- Glow effect -->
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+    <!-- Glow effect for paint -->
+    <filter id="paintGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    
+    <!-- Soft shadow for paint flows -->
+    <filter id="softShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="3" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
-  <!-- Background circle with dark slate gradient -->
-  <circle cx="200" cy="200" r="190" fill="url(#bgGradient)" opacity="1"/>
-  <circle cx="200" cy="200" r="190" fill="none" stroke="#0e639c" stroke-width="3" opacity="0.5"/>
+  <!-- Background with gray gradient -->
+  <rect width="400" height="400" fill="url(#bgGradient)"/>
   
-  <!-- Decorative paint strokes in background -->
-  <g opacity="0.15">
-    <path d="M 80 120 Q 150 100 220 130" stroke="#0e639c" stroke-width="8" fill="none" stroke-linecap="round"/>
-    <path d="M 280 150 Q 320 180 300 230" stroke="#00d4ff" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <path d="M 100 280 Q 140 300 180 290" stroke="#0e639c" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <!-- Flowing paint effects - upper left -->
+  <g filter="url(#softShadow)">
+    <path d="M 20 80 Q 40 60 70 55 Q 100 52 130 60 Q 150 65 160 80" 
+          fill="url(#flowPaint1)" stroke="none" opacity="0.8"/>
+    <path d="M 25 90 Q 50 70 85 68 Q 120 67 150 75" 
+          fill="url(#flowPaint3)" stroke="none" opacity="0.7"/>
+    <path d="M 30 100 Q 60 85 95 88 Q 125 90 145 100" 
+          fill="url(#flowPaint1)" stroke="none" opacity="0.6"/>
   </g>
   
-  <!-- Main paintbrush design - Professional quality -->
-  <g transform="translate(200, 200)" filter="url(#shadow)">
-    <!-- Brush handle with wood texture - tapered design -->
-    <path d="M -18 -120 L -14 40 L 14 40 L 18 -120 Z" fill="url(#brushGradient)" />
-    
-    <!-- Wood grain details - natural flow -->
-    <path d="M -12 -110 Q -11 -60 -10 -20 Q -9 10 -8 35" stroke="#1a0f08" stroke-width="0.5" opacity="0.4" fill="none"/>
-    <path d="M -4 -115 Q -3 -65 -2 -25 Q -1 5 0 38" stroke="#1a0f08" stroke-width="0.5" opacity="0.4" fill="none"/>
-    <path d="M 4 -115 Q 3 -65 2 -25 Q 1 5 0 38" stroke="#1a0f08" stroke-width="0.5" opacity="0.4" fill="none"/>
-    <path d="M 12 -110 Q 11 -60 10 -20 Q 9 10 8 35" stroke="#1a0f08" stroke-width="0.5" opacity="0.4" fill="none"/>
-    
-    <!-- Wood highlights -->
-    <path d="M -15 -100 Q -14 -50 -13 0 Q -12 20 -11 38" stroke="#5a4028" stroke-width="1" opacity="0.3" fill="none"/>
-    <path d="M 15 -100 Q 14 -50 13 0 Q 12 20 11 38" stroke="#2a1808" stroke-width="1" opacity="0.5" fill="none"/>
-    
-    <!-- Handle grip bands - subtle -->
-    <ellipse cx="0" cy="-95" rx="19" ry="2.5" fill="#2a1808" opacity="0.6"/>
-    <ellipse cx="0" cy="-70" rx="19" ry="2.5" fill="#2a1808" opacity="0.6"/>
-    <ellipse cx="0" cy="-45" rx="18" ry="2.5" fill="#2a1808" opacity="0.6"/>
-    
-    <!-- Ferrule (metal part) with realistic taper -->
-    <path d="M -15 40 L -10 55 L 10 55 L 15 40 Z" fill="url(#metalGradient)"/>
-    <path d="M -13 42 L -9 53 L 9 53 L 13 42 Z" fill="none" stroke="#606060" stroke-width="0.5"/>
-    <!-- Metal shine -->
-    <path d="M -12 43 L -9 52 L -7 52 L -10 43 Z" fill="#d0d0d0" opacity="0.6"/>
-    <path d="M 7 52 L 9 52 L 12 43 L 10 43 Z" fill="#505050" opacity="0.4"/>
-    
-    <!-- Brush bristles - realistic soft natural fibers -->
-    <g>
-      <!-- Main bristle body -->
-      <path d="M -10 55 Q -12 70 -8 85 Q -4 95 0 98 Q 4 95 8 85 Q 12 70 10 55 Z" 
-            fill="#e8e8e8" opacity="0.95"/>
-      
-      <!-- Bristle variations for depth -->
-      <path d="M -7 55 Q -8 72 -5 87 Q -2 94 0 96 Q 2 94 5 87 Q 8 72 7 55 Z" 
-            fill="#f0f0f0" opacity="0.9"/>
-      
-      <!-- Center highlight -->
-      <path d="M -3 55 L -1 90 L 0 95 L 1 90 L 3 55 Z" fill="#f8f8f8"/>
-      
-      <!-- Individual bristle strands - realistic detail -->
-      <line x1="-8" y1="58" x2="-7" y2="84" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
-      <line x1="-5" y1="57" x2="-4" y2="89" stroke="#d8d8d8" stroke-width="0.3" opacity="0.6"/>
-      <line x1="-2" y1="56" x2="-1" y2="92" stroke="#e0e0e0" stroke-width="0.3" opacity="0.6"/>
-      <line x1="0" y1="55" x2="0" y2="95" stroke="#e8e8e8" stroke-width="0.4" opacity="0.7"/>
-      <line x1="2" y1="56" x2="1" y2="92" stroke="#e0e0e0" stroke-width="0.3" opacity="0.6"/>
-      <line x1="5" y1="57" x2="4" y2="89" stroke="#d8d8d8" stroke-width="0.3" opacity="0.6"/>
-      <line x1="8" y1="58" x2="7" y2="84" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
-      
-      <!-- Bristle tip softness -->
-      <ellipse cx="0" cy="96" rx="4" ry="2" fill="#f0f0f0" opacity="0.5"/>
-    </g>
-    
-    <!-- Paint stroke with app accent color -->
-    <path d="M 0 92 Q 20 95 35 85 Q 45 78 50 70" 
-          stroke="url(#paintGradient)" 
-          stroke-width="6" 
-          fill="none" 
-          stroke-linecap="round"
-          opacity="0.95"/>
-    
-    <!-- Paint loaded on brush tip -->
-    <ellipse cx="0" cy="94" rx="3" ry="2" fill="#00d4ff" opacity="0.7"/>
-    <ellipse cx="48" cy="72" rx="2.5" ry="4" fill="#0e639c" opacity="0.8"/>
+  <!-- Flowing paint effects - bottom right -->
+  <g filter="url(#softShadow)">
+    <path d="M 240 320 Q 270 310 300 315 Q 330 320 360 335 Q 380 345 385 360" 
+          fill="url(#flowPaint2)" stroke="none" opacity="0.8"/>
+    <path d="M 250 330 Q 280 323 310 328 Q 340 333 370 348" 
+          fill="url(#flowPaint3)" stroke="none" opacity="0.7"/>
+    <path d="M 260 340 Q 285 335 315 340 Q 345 345 375 358" 
+          fill="url(#flowPaint1)" stroke="none" opacity="0.6"/>
   </g>
   
-  <!-- Letter "A" with artistic styling -->
-  <g transform="translate(200, 200)" filter="url(#shadow)">
-    <text x="-95" y="-40" 
-          font-family="'Helvetica Neue', Arial, sans-serif" 
-          font-size="120" 
-          font-weight="bold" 
-          fill="#cccccc" 
-          stroke="#0e639c" 
-          stroke-width="2"
-          letter-spacing="-5">A</text>
+  <!-- Small paint orbs/spheres -->
+  <circle cx="90" cy="350" r="12" fill="#6b4c9a" filter="url(#paintGlow)" opacity="0.7"/>
+  <circle cx="90" cy="350" r="8" fill="#8e6cc5" opacity="0.5"/>
+  
+  <circle cx="320" cy="90" r="15" fill="#2d8fb8" filter="url(#paintGlow)" opacity="0.7"/>
+  <circle cx="320" cy="90" r="10" fill="#4db8e8" opacity="0.5"/>
+  
+  <!-- Main "Artemis" text with 3D metallic effect -->
+  <g filter="url(#deepShadow)">
+    <!-- Text outline for depth -->
+    <text x="200" y="220" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="95" 
+          font-weight="bold"
+          font-style="italic"
+          fill="#1a2832" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
     
-    <!-- Accent dots on the A -->
-    <circle cx="-50" cy="-60" r="4" fill="#00d4ff" opacity="0.9"/>
-    <circle cx="-45" cy="-55" r="2" fill="#0e639c" opacity="0.8"/>
-    <circle cx="-40" cy="-65" r="3" fill="#00d4ff" opacity="0.85"/>
+    <!-- Main metallic text -->
+    <text x="200" y="216" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="95" 
+          font-weight="bold"
+          font-style="italic"
+          fill="url(#textMetallic)" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
+    
+    <!-- Highlight on text -->
+    <text x="200" y="213" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="95" 
+          font-weight="bold"
+          font-style="italic"
+          fill="none"
+          stroke="#d8eef5"
+          stroke-width="0.8"
+          text-anchor="middle"
+          letter-spacing="-2"
+          opacity="0.5">Artemis</text>
   </g>
   
-  <!-- App name with professional typography -->
-  <text x="200" y="340" 
+  <!-- Purple/magenta dot accent on the "i" -->
+  <circle cx="239" cy="165" r="8" fill="#6b4c9a" filter="url(#paintGlow)"/>
+  <circle cx="239" cy="165" r="6" fill="#a86cd5" opacity="0.8"/>
+  <circle cx="237" cy="163" r="3" fill="#d8a8ff" opacity="0.6"/>
+  
+  <!-- Subtitle -->
+  <text x="200" y="265" 
         font-family="'Helvetica Neue', Arial, sans-serif" 
-        font-size="42" 
-        font-weight="700" 
-        fill="#cccccc" 
-        text-anchor="middle"
-        letter-spacing="2">ARTemis</text>
-  
-  <text x="200" y="370" 
-        font-family="'Helvetica Neue', Arial, sans-serif" 
-        font-size="18" 
+        font-size="24" 
         font-weight="400" 
-        fill="#858585" 
+        fill="#ffffff" 
         text-anchor="middle"
-        letter-spacing="3">PROFESSIONAL</text>
+        letter-spacing="6"
+        opacity="0.95">DIGITAL PAINTING SOFTWARE</text>
+  
+  <!-- Additional flowing paint strokes -->
+  <g filter="url(#softShadow)" opacity="0.5">
+    <path d="M 50 200 Q 80 195 110 200" 
+          stroke="url(#flowPaint1)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M 290 180 Q 320 175 350 180" 
+          stroke="url(#flowPaint2)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Particle effects -->
+  <g opacity="0.4">
+    <circle cx="130" cy="120" r="2" fill="#4db8e8"/>
+    <circle cx="270" cy="250" r="2" fill="#a86cd5"/>
+    <circle cx="70" cy="280" r="1.5" fill="#00d4ff"/>
+    <circle cx="340" cy="140" r="1.5" fill="#6b4c9a"/>
+  </g>
 </svg>
