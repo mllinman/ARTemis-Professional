@@ -1,50 +1,57 @@
 <svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg192" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#252526;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#a8b2c0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8a95a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6a7580;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="brush192" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
+    <linearGradient id="metal192" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8d5e0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3d7a95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a5568;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="paint192" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.9" />
-      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.9" />
+      <stop offset="0%" style="stop-color:#2d8fb8;stop-opacity:0.85" />
+      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.85" />
+      <stop offset="100%" style="stop-color:#4db8e8;stop-opacity:0.85" />
     </linearGradient>
+    <filter id="shadow192">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="3"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
   <rect width="192" height="192" fill="url(#bg192)" rx="36"/>
   
-  <g transform="translate(96, 96)">
-    <rect x="-8" y="-60" width="16" height="80" fill="url(#brush192)" rx="2"/>
-    <ellipse cx="0" cy="-50" rx="9" ry="1.5" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-40" rx="9" ry="1.5" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-30" rx="9" ry="1.5" fill="#a0522d" opacity="0.6"/>
-    
-    <path d="M -10 20 L -6 30 L 6 30 L 10 20 Z" fill="#e0e0e0"/>
-    <path d="M -9 21 L -5.5 29 L -4 29 L -8 21 Z" fill="#fff" opacity="0.5"/>
-    
-    <path d="M -6 30 Q -8 42 -5 48 Q -2.5 50 0 51 Q 2.5 50 5 48 Q 8 42 6 30 Z" fill="#fff" opacity="0.95"/>
-    <path d="M -4 30 Q -5 40 -3 46 Q -1 48 0 49 Q 1 48 3 46 Q 5 40 4 30 Z" fill="#f5f5f5" opacity="0.9"/>
-    
-    <path d="M 0 48 Q 15 50 22 42 Q 27 37 25 32" 
-          stroke="url(#paint192)" 
-          stroke-width="4" 
-          fill="none" 
-          stroke-linecap="round"
-          opacity="0.9"/>
-    <ellipse cx="24" cy="34" rx="1.5" ry="2.5" fill="#0e639c" opacity="0.85"/>
+  <!-- Flowing paint accent -->
+  <path d="M 30 50 Q 45 42 65 48 Q 80 53 85 65" fill="url(#paint192)" opacity="0.6"/>
+  <path d="M 107 127 Q 125 123 145 130 Q 160 135 165 147" fill="#6b4c9a" opacity="0.6"/>
+  
+  <!-- Paint orbs -->
+  <circle cx="150" cy="48" r="8" fill="#2d8fb8" opacity="0.6"/>
+  <circle cx="150" cy="48" r="5" fill="#4db8e8" opacity="0.4"/>
+  
+  <!-- "Artemis" text -->
+  <g filter="url(#shadow192)">
+    <text x="96" y="110" 
+          font-family="'Georgia', serif" 
+          font-size="52" 
+          font-weight="bold"
+          font-style="italic"
+          fill="url(#metal192)" 
+          text-anchor="middle"
+          letter-spacing="-1">Artemis</text>
   </g>
   
-  <text x="48" y="65" 
-        font-family="'Helvetica Neue', Arial, sans-serif" 
-        font-size="58" 
-        font-weight="bold" 
-        fill="#cccccc"
-        letter-spacing="-2">A</text>
-  <circle cx="58" cy="52" r="2" fill="#00d4ff" opacity="0.9"/>
+  <!-- Purple dot on i -->
+  <circle cx="102" cy="77" r="5" fill="#6b4c9a"/>
+  <circle cx="102" cy="77" r="3.5" fill="#a86cd5" opacity="0.7"/>
+  
+  <!-- Small particles -->
+  <circle cx="45" cy="145" r="1.5" fill="#4db8e8" opacity="0.5"/>
+  <circle cx="148" cy="68" r="1.5" fill="#a86cd5" opacity="0.5"/>
 </svg>

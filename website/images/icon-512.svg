@@ -1,30 +1,50 @@
 <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#252526;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#a8b2c0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8a95a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6a7580;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="brush512" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
+    <linearGradient id="textMetal512" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8d5e0;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#6ba5bf;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3d7a95;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#4d8aa5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a5568;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="metal512" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#9a9a9a;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#c0c0c0;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8a8a8a;stop-opacity:1" />
+    <linearGradient id="flowPaint512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a5f7a;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#2d8fb8;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#4db8e8;stop-opacity:0.8" />
     </linearGradient>
-    <linearGradient id="paint512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.9" />
-      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.9" />
+    <linearGradient id="flowPaint2_512" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6b4c9a;stop-opacity:0.75" />
+      <stop offset="50%" style="stop-color:#8e6cc5;stop-opacity:0.75" />
+      <stop offset="100%" style="stop-color:#b88ce8;stop-opacity:0.75" />
     </linearGradient>
-    <filter id="shadow512" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
-      <feOffset dx="4" dy="4" result="offsetblur"/>
+    <filter id="deepShadow512" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dx="5" dy="8" result="offsetblur"/>
       <feComponentTransfer>
-        <feFuncA type="linear" slope="0.3"/>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="paintGlow512">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softShadow512">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+      <feOffset dx="3" dy="5" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
       </feComponentTransfer>
       <feMerge>
         <feMergeNode/>
@@ -34,48 +54,77 @@
   </defs>
   
   <rect width="512" height="512" fill="url(#bg512)" rx="96"/>
-  <rect width="512" height="512" fill="none" stroke="#0e639c" stroke-width="6" opacity="0.4" rx="96"/>
   
-  <g opacity="0.15">
-    <path d="M 100 140 Q 200 120 300 150" stroke="url(#paint512)" stroke-width="16" fill="none" stroke-linecap="round"/>
-    <path d="M 380 180 Q 420 220 400 280" stroke="url(#paint512)" stroke-width="12" fill="none" stroke-linecap="round"/>
-    <path d="M 120 380 Q 180 410 240 390" stroke="url(#paint512)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <!-- Flowing paint effects -->
+  <g filter="url(#softShadow512)" opacity="0.75">
+    <path d="M 80 130 Q 130 105 200 120 Q 270 135 320 170 Q 360 195 380 230" 
+          fill="url(#flowPaint512)" stroke="none"/>
+    <path d="M 100 165 Q 160 145 230 160 Q 300 175 350 200" 
+          fill="url(#flowPaint512)" stroke="none" opacity="0.7"/>
   </g>
   
-  <g transform="translate(256, 256)" filter="url(#shadow512)">
-    <rect x="-20" y="-150" width="40" height="200" fill="url(#brush512)" rx="5"/>
+  <g filter="url(#softShadow512)" opacity="0.75">
+    <path d="M 280 340 Q 340 325 400 340 Q 460 355 485 385" 
+          fill="url(#flowPaint2_512)" stroke="none"/>
+    <path d="M 300 370 Q 360 358 420 373 Q 470 385 490 410" 
+          fill="url(#flowPaint512)" stroke="none" opacity="0.7"/>
+  </g>
+  
+  <!-- Paint orbs -->
+  <g filter="url(#paintGlow512)">
+    <circle cx="140" cy="420" r="28" fill="#6b4c9a" opacity="0.7"/>
+    <circle cx="140" cy="420" r="20" fill="#8e6cc5" opacity="0.5"/>
     
-    <line x1="-12" y1="-140" x2="-12" y2="-60" stroke="#654321" stroke-width="2" opacity="0.3"/>
-    <line x1="0" y1="-140" x2="0" y2="-60" stroke="#654321" stroke-width="2" opacity="0.3"/>
-    <line x1="12" y1="-140" x2="12" y2="-60" stroke="#654321" stroke-width="2" opacity="0.3"/>
+    <circle cx="405" cy="120" r="35" fill="#2d8fb8" opacity="0.7"/>
+    <circle cx="405" cy="120" r="25" fill="#4db8e8" opacity="0.5"/>
+  </g>
+  
+  <!-- "Artemis" text with 3D metallic effect -->
+  <g transform="translate(256, 300)" filter="url(#deepShadow512)">
+    <text x="0" y="10" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="130" 
+          font-weight="bold"
+          font-style="italic"
+          fill="#1a2832" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
     
-    <ellipse cx="0" cy="-125" rx="22" ry="4" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-100" rx="22" ry="4" fill="#a0522d" opacity="0.6"/>
-    <ellipse cx="0" cy="-75" rx="22" ry="4" fill="#a0522d" opacity="0.6"/>
+    <text x="0" y="0" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="130" 
+          font-weight="bold"
+          font-style="italic"
+          fill="url(#textMetal512)" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
     
-    <path d="M -25 50 L -15 75 L 15 75 L 25 50 Z" fill="url(#metal512)"/>
-    <path d="M -23 52 L -14 73 L -11 73 L -20 52 Z" fill="#ffffff" opacity="0.6"/>
-    
-    <g>
-      <path d="M -15 75 Q -20 105 -12 120 Q -6 125 0 128 Q 6 125 12 120 Q 20 105 15 75 Z" 
-            fill="#ffffff" opacity="0.95"/>
-      <path d="M -10 75 Q -12 102 -7 115 Q -2.5 120 0 122 Q 2.5 120 7 115 Q 12 102 10 75 Z" 
-            fill="#f5f5f5" opacity="0.9"/>
-      <path d="M -5 75 L -2.5 112 L 0 117 L 2.5 112 L 5 75 Z" fill="#ffffff"/>
-      
-      <line x1="-7" y1="80" x2="-5" y2="110" stroke="#e0e0e0" stroke-width="1"/>
-      <line x1="0" y1="80" x2="0" y2="117" stroke="#e0e0e0" stroke-width="1"/>
-      <line x1="7" y1="80" x2="5" y2="110" stroke="#e0e0e0" stroke-width="1"/>
-    </g>
-    
-    <path d="M 0 120 Q 38 125 56 105 Q 69 93 63 80" 
-          stroke="url(#paint512)" 
-          stroke-width="10" 
-          fill="none" 
-          stroke-linecap="round"
-          opacity="0.9"/>
-    
-    <ellipse cx="60" cy="85" rx="4" ry="6" fill="#0e639c" opacity="0.85"/>
+    <text x="0" y="-4" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="130" 
+          font-weight="bold"
+          font-style="italic"
+          fill="none"
+          stroke="#d8eef5"
+          stroke-width="1.5"
+          text-anchor="middle"
+          letter-spacing="-2"
+          opacity="0.4">Artemis</text>
+  </g>
+  
+  <!-- Purple dot on i -->
+  <g transform="translate(256, 300)" filter="url(#paintGlow512)">
+    <circle cx="24" cy="-66" r="13" fill="#6b4c9a"/>
+    <circle cx="24" cy="-66" r="10" fill="#a86cd5" opacity="0.8"/>
+    <circle cx="22" cy="-68" r="6" fill="#d8a8ff" opacity="0.6"/>
+  </g>
+  
+  <!-- Particles -->
+  <g opacity="0.5">
+    <circle cx="190" cy="200" r="4" fill="#4db8e8"/>
+    <circle cx="370" cy="350" r="4" fill="#a86cd5"/>
+    <circle cx="110" cy="290" r="3.5" fill="#00d4ff"/>
+    <circle cx="430" cy="220" r="3.5" fill="#6b4c9a"/>
   </g>
   
   <g transform="translate(256, 256)" filter="url(#shadow512)">
