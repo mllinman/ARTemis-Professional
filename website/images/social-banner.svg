@@ -1,21 +1,71 @@
 <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <!-- Gray gradient background -->
     <linearGradient id="socialBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#1e1e1e;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#252526;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#a8b2c0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8a95a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6a7580;stop-opacity:1" />
     </linearGradient>
     
-    <linearGradient id="socialStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.7" />
-      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.7" />
-      <stop offset="100%" style="stop-color:#0e639c;stop-opacity:0.7" />
+    <!-- 3D metallic text gradient -->
+    <linearGradient id="textMetallic" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b8d5e0;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#6ba5bf;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3d7a95;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#4d8aa5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a5568;stop-opacity:1" />
     </linearGradient>
     
-    <filter id="socialGlow">
-      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+    <!-- Flowing paint gradients -->
+    <linearGradient id="flowPaint1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a5f7a;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#2d8fb8;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#4db8e8;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <linearGradient id="flowPaint2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6b4c9a;stop-opacity:0.75" />
+      <stop offset="50%" style="stop-color:#8e6cc5;stop-opacity:0.75" />
+      <stop offset="100%" style="stop-color:#b88ce8;stop-opacity:0.75" />
+    </linearGradient>
+    
+    <linearGradient id="flowPaint3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4db8e8;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#2d8fb8;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="deepShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="3" dy="5" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="paintGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Soft shadow -->
+    <filter id="softShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="3" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
@@ -24,114 +74,137 @@
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#socialBg)"/>
   
-  <!-- Decorative circles -->
-  <g opacity="0.15">
-    <circle cx="100" cy="80" r="60" fill="#ffffff"/>
-    <circle cx="1100" cy="550" r="80" fill="#ffffff"/>
-    <circle cx="200" cy="500" r="40" fill="#ffffff"/>
-    <circle cx="1000" cy="100" r="50" fill="#ffffff"/>
+  <!-- Flowing paint effects - top left -->
+  <g filter="url(#softShadow)" opacity="0.75">
+    <path d="M 30 100 Q 70 80 120 90 Q 170 100 210 120 Q 240 135 255 155" 
+          fill="url(#flowPaint1)" stroke="none"/>
+    <path d="M 45 125 Q 90 110 140 120 Q 190 130 230 145" 
+          fill="url(#flowPaint3)" stroke="none" opacity="0.7"/>
   </g>
   
-  <!-- Paint strokes -->
-  <g opacity="0.4" filter="url(#socialGlow)">
-    <path d="M 50 400 Q 200 350 350 380 Q 500 410 650 390" 
-          stroke="url(#socialStroke)" 
-          stroke-width="30" 
-          fill="none" 
-          stroke-linecap="round"/>
-    
-    <path d="M 700 250 Q 850 220 1000 240 Q 1100 255 1150 250" 
-          stroke="url(#socialStroke)" 
-          stroke-width="25" 
-          fill="none" 
-          stroke-linecap="round"/>
-    
-    <!-- Paint splatters -->
-    <circle cx="400" cy="200" r="8" fill="#00d4ff"/>
-    <circle cx="420" cy="195" r="5" fill="#0e639c"/>
-    <circle cx="410" cy="210" r="6" fill="#00d4ff"/>
-    
-    <circle cx="800" cy="450" r="10" fill="#00d4ff"/>
-    <circle cx="820" cy="440" r="6" fill="#0e639c"/>
+  <!-- Flowing paint effects - bottom right -->
+  <g filter="url(#softShadow)" opacity="0.75">
+    <path d="M 950 475 Q 1000 460 1050 470 Q 1100 480 1140 505 Q 1170 525 1180 550" 
+          fill="url(#flowPaint2)" stroke="none"/>
+    <path d="M 970 500 Q 1015 488 1065 498 Q 1115 508 1155 528" 
+          fill="url(#flowPaint3)" stroke="none" opacity="0.7"/>
   </g>
   
-  <!-- Main content -->
-  <g transform="translate(600, 315)">
-    <!-- Logo area with paintbrush -->
-    <g transform="translate(-400, 0)">
-      <rect x="-15" y="-80" width="30" height="120" fill="#8b5a3c" rx="4"/>
-      <ellipse cx="0" cy="-65" rx="17" ry="3" fill="#a0522d" opacity="0.6"/>
-      <ellipse cx="0" cy="-45" rx="17" ry="3" fill="#a0522d" opacity="0.6"/>
-      
-      <path d="M -18 40 L -10 55 L 10 55 L 18 40 Z" fill="#e0e0e0"/>
-      <path d="M -10 55 Q -13 70 -8 78 Q -4 82 0 84 Q 4 82 8 78 Q 13 70 10 55 Z" 
-            fill="#ffffff" opacity="0.95"/>
-      
-      <path d="M 0 80 Q 30 85 45 70" 
-            stroke="url(#socialStroke)" 
-            stroke-width="8" 
-            fill="none" 
-            stroke-linecap="round"/>
-      <ellipse cx="40" cy="73" rx="3" ry="5" fill="#4d96ff" opacity="0.8"/>
-    </g>
+  <!-- Paint orbs -->
+  <g filter="url(#paintGlow)">
+    <circle cx="130" cy="520" r="18" fill="#6b4c9a" opacity="0.7"/>
+    <circle cx="130" cy="520" r="13" fill="#8e6cc5" opacity="0.5"/>
     
-    <!-- Brand name and tagline -->
-    <g>
-      <text x="-320" y="-40" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="90" 
-            font-weight="bold" 
-            fill="#ffffff" 
-            filter="url(#socialGlow)"
-            letter-spacing="-3">A</text>
-      
-      <circle cx="-265" cy="-65" r="6" fill="#ffd93d"/>
-      <circle cx="-258" cy="-60" r="3" fill="#ff6b6b"/>
-      
-      <text x="-240" y="-40" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="90" 
-            font-weight="bold" 
-            fill="#ffffff" 
-            letter-spacing="2">RTemis</text>
-      
-      <text x="-320" y="10" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="32" 
-            font-weight="300" 
-            fill="#ffffff" 
-            opacity="0.95"
-            letter-spacing="4">PROFESSIONAL</text>
-      
-      <text x="-320" y="60" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="28" 
-            font-weight="400" 
-            fill="#ffffff" 
-            opacity="0.9">Professional Digital Painting in Your Browser</text>
-      
-      <!-- Features -->
-      <text x="-320" y="110" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="20" 
-            font-weight="500" 
-            fill="#ffffff" 
-            opacity="0.85">
-        <tspan>✨ 178+ Brushes</tspan>
-        <tspan x="-320" dy="35">🎨 Natural Media</tspan>
-        <tspan x="-320" dy="35">🤖 AI-Powered</tspan>
-      </text>
-      
-      <text x="-90" y="110" 
-            font-family="'Helvetica Neue', Arial, sans-serif" 
-            font-size="20" 
-            font-weight="500" 
-            fill="#ffffff" 
-            opacity="0.85">
-        <tspan>📚 Unlimited Layers</tspan>
-        <tspan x="-90" dy="35">🌐 Works in Browser</tspan>
-        <tspan x="-90" dy="35">💾 PSD Export</tspan>
-      </text>
-    </g>
+    <circle cx="1050" cy="120" r="22" fill="#2d8fb8" opacity="0.7"/>
+    <circle cx="1050" cy="120" r="16" fill="#4db8e8" opacity="0.5"/>
+  </g>
+  
+  <!-- Main "Artemis" text with 3D metallic effect - centered -->
+  <g transform="translate(600, 315)" filter="url(#deepShadow)">
+    <!-- Text shadow for depth -->
+    <text x="0" y="8" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="110" 
+          font-weight="bold"
+          font-style="italic"
+          fill="#1a2832" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
+    
+    <!-- Main metallic text -->
+    <text x="0" y="0" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="110" 
+          font-weight="bold"
+          font-style="italic"
+          fill="url(#textMetallic)" 
+          text-anchor="middle"
+          letter-spacing="-2">Artemis</text>
+    
+    <!-- Highlight on text -->
+    <text x="0" y="-3" 
+          font-family="'Georgia', 'Times New Roman', serif" 
+          font-size="110" 
+          font-weight="bold"
+          font-style="italic"
+          fill="none"
+          stroke="#d8eef5"
+          stroke-width="1"
+          text-anchor="middle"
+          letter-spacing="-2"
+          opacity="0.4">Artemis</text>
+  </g>
+  
+  <!-- Purple/magenta dot accent on the "i" -->
+  <g transform="translate(600, 315)" filter="url(#paintGlow)">
+    <circle cx="19" cy="-52" r="11" fill="#6b4c9a"/>
+    <circle cx="19" cy="-52" r="8.5" fill="#a86cd5" opacity="0.8"/>
+    <circle cx="17" cy="-54" r="5" fill="#d8a8ff" opacity="0.6"/>
+  </g>
+  
+  <!-- Subtitle -->
+  <text x="600" y="380" 
+        font-family="'Helvetica Neue', Arial, sans-serif" 
+        font-size="28" 
+        font-weight="400" 
+        fill="#ffffff" 
+        text-anchor="middle"
+        letter-spacing="8"
+        opacity="0.95">DIGITAL PAINTING SOFTWARE</text>
+  
+  <!-- Feature callouts at bottom -->
+  <g opacity="0.85">
+    <text x="200" y="565" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" 
+          font-weight="600" 
+          fill="#ffffff" 
+          text-anchor="middle">178+ BRUSHES</text>
+    
+    <text x="400" y="565" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" 
+          font-weight="600" 
+          fill="#ffffff" 
+          text-anchor="middle">AI-POWERED</text>
+    
+    <text x="600" y="565" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" 
+          font-weight="600" 
+          fill="#ffffff" 
+          text-anchor="middle">NODE EDITOR</text>
+    
+    <text x="800" y="565" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" 
+          font-weight="600" 
+          fill="#ffffff" 
+          text-anchor="middle">NATURAL MEDIA</text>
+    
+    <text x="1000" y="565" 
+          font-family="'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" 
+          font-weight="600" 
+          fill="#ffffff" 
+          text-anchor="middle">BROWSER-BASED</text>
+  </g>
+  
+  <!-- Decorative paint strokes -->
+  <g filter="url(#softShadow)" opacity="0.3">
+    <path d="M 250 250 Q 350 240 450 250" 
+          stroke="url(#flowPaint1)" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M 750 380 Q 850 370 950 380" 
+          stroke="url(#flowPaint2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Particle effects -->
+  <g opacity="0.4">
+    <circle cx="180" cy="210" r="3" fill="#4db8e8"/>
+    <circle cx="1020" cy="420" r="3" fill="#a86cd5"/>
+    <circle cx="90" cy="300" r="2.5" fill="#00d4ff"/>
+    <circle cx="1110" cy="220" r="2.5" fill="#6b4c9a"/>
+    <circle cx="350" cy="470" r="2.8" fill="#2d8fb8"/>
+    <circle cx="850" cy="160" r="2.8" fill="#b88ce8"/>
   </g>
 </svg>

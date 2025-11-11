@@ -1,12 +1,11 @@
 <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg16" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2d2d30;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1e1e1e;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#a8b2c0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6a7580;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="16" height="16" fill="url(#bg16)" rx="3"/>
-  <path d="M 8 3 L 8 10" stroke="#e8e8e8" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M 8 10 Q 8 11 9 12" stroke="#e8e8e8" stroke-width="1" fill="none" stroke-linecap="round"/>
-  <circle cx="10" cy="13" r="0.5" fill="#00d4ff"/>
+  <rect width="16" height="16" fill="url(#bg16)"/>
+  <text x="8" y="12" font-family="Georgia, serif" font-size="12" font-weight="bold" font-style="italic" fill="#3d7a95" text-anchor="middle">A</text>
+  <circle cx="9.5" cy="5" r="1.5" fill="#6b4c9a"/>
 </svg>

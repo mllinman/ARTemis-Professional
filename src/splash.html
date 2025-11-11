@@ -14,7 +14,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden;
-            background: linear-gradient(135deg, #2d2d30 0%, #1e1e1e 50%, #252526 100%);
+            background: linear-gradient(135deg, #a8b2c0 0%, #8a95a5 50%, #6a7580 100%);
             height: 100vh;
             display: flex;
             align-items: center;
@@ -41,7 +41,7 @@
         .particle {
             position: absolute;
             border-radius: 50%;
-            opacity: 0.6;
+            opacity: 0.4;
             animation: float 6s infinite ease-in-out;
         }
 
@@ -93,21 +93,23 @@
 
         /* Brand name */
         .brand-name {
-            font-size: 72px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 400;
             color: #ffffff;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            letter-spacing: 3px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 6px;
+            text-transform: uppercase;
             margin-bottom: 10px;
+            margin-top: 20px;
             animation: slideInUp 1s ease-out 0.3s both;
         }
 
         .brand-subtitle {
-            font-size: 24px;
-            font-weight: 400;
+            font-size: 18px;
+            font-weight: 300;
             color: #ffffff;
-            opacity: 0.9;
-            letter-spacing: 5px;
+            opacity: 0.85;
+            letter-spacing: 3px;
             text-transform: uppercase;
             margin-bottom: 40px;
             animation: slideInUp 1s ease-out 0.5s both;
@@ -294,96 +296,157 @@
         <div class="logo-container">
             <svg class="logo-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <linearGradient id="brushGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#4a3728;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#3a2818;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#2a1808;stop-opacity:1" />
+                    <!-- 3D metallic text gradient -->
+                    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#b8d5e0;stop-opacity:1" />
+                        <stop offset="30%" style="stop-color:#6ba5bf;stop-opacity:1" />
+                        <stop offset="60%" style="stop-color:#3d7a95;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2a5568;stop-opacity:1" />
                     </linearGradient>
-                    <linearGradient id="paintGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#0e639c;stop-opacity:0.95">
-                            <animate attributeName="stop-color" values="#0e639c;#00d4ff;#0e639c" dur="4s" repeatCount="indefinite"/>
+                    
+                    <!-- Flowing paint gradients -->
+                    <linearGradient id="paintGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1a5f7a;stop-opacity:0.8">
+                            <animate attributeName="stop-color" values="#1a5f7a;#2d8fb8;#1a5f7a" dur="4s" repeatCount="indefinite"/>
                         </stop>
-                        <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.95">
-                            <animate attributeName="stop-color" values="#00d4ff;#0e639c;#00d4ff" dur="4s" repeatCount="indefinite"/>
+                        <stop offset="100%" style="stop-color:#4db8e8;stop-opacity:0.8">
+                            <animate attributeName="stop-color" values="#4db8e8;#00d4ff;#4db8e8" dur="4s" repeatCount="indefinite"/>
                         </stop>
                     </linearGradient>
+                    
+                    <linearGradient id="paintGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#6b4c9a;stop-opacity:0.8">
+                            <animate attributeName="stop-color" values="#6b4c9a;#8e6cc5;#6b4c9a" dur="5s" repeatCount="indefinite"/>
+                        </stop>
+                        <stop offset="100%" style="stop-color:#b88ce8;stop-opacity:0.8">
+                            <animate attributeName="stop-color" values="#b88ce8;#d8a8ff;#b88ce8" dur="5s" repeatCount="indefinite"/>
+                        </stop>
+                    </linearGradient>
+                    
                     <filter id="glow">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                         <feMerge>
                             <feMergeNode in="coloredBlur"/>
                             <feMergeNode in="SourceGraphic"/>
                         </feMerge>
                     </filter>
+                    
+                    <filter id="deepShadow">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+                        <feOffset dx="2" dy="4"/>
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.6"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
                 </defs>
                 
-                <!-- Paintbrush - Professional design -->
-                <g transform="translate(150, 150)">
-                    <!-- Handle - tapered -->
-                    <path d="M -13 -90 L -10 30 L 10 30 L 13 -90 Z" fill="url(#brushGrad)">
-                        <animateTransform attributeName="transform" type="rotate" values="0;-4;0;4;0" dur="4s" repeatCount="indefinite"/>
-                    </path>
-                    
-                    <!-- Wood grain -->
-                    <line x1="-8" y1="-85" x2="-7" y2="25" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
-                    <line x1="0" y1="-88" x2="0" y2="28" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
-                    <line x1="8" y1="-85" x2="7" y2="25" stroke="#1a0f08" stroke-width="0.5" opacity="0.4"/>
-                    
-                    <!-- Handle bands -->
-                    <ellipse cx="0" cy="-70" rx="14" ry="2" fill="#2a1808" opacity="0.6"/>
-                    <ellipse cx="0" cy="-50" rx="13" ry="2" fill="#2a1808" opacity="0.6"/>
-                    <ellipse cx="0" cy="-30" rx="12" ry="2" fill="#2a1808" opacity="0.6"/>
-                    
-                    <!-- Ferrule - metallic -->
-                    <path d="M -11 30 L -8 43 L 8 43 L 11 30 Z" fill="#a0a0a0"/>
-                    <path d="M -10 31 L -8 42 L 8 42 L 10 31 Z" fill="none" stroke="#707070" stroke-width="0.5"/>
-                    <path d="M -9 32 L -7 40 L -5 40 L -7 32 Z" fill="#c0c0c0" opacity="0.6"/>
-                    
-                    <!-- Bristles - realistic soft -->
-                    <path d="M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z" fill="#e8e8e8" opacity="0.95" filter="url(#glow)">
+                <!-- Flowing paint shapes - upper area -->
+                <g opacity="0.7">
+                    <path d="M 40 90 Q 60 75 90 80 Q 115 85 130 100" fill="url(#paintGrad1)" filter="url(#glow)">
                         <animate attributeName="d" 
-                                 values="M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z;
-                                         M -8 43 Q -11 58 -6 67 Q -2 71 0 72 Q 2 71 6 67 Q 11 58 8 43 Z;
-                                         M -8 43 Q -10 56 -5 65 Q -2 69 0 70 Q 2 69 5 65 Q 10 56 8 43 Z" 
-                                 dur="3s" 
+                                 values="M 40 90 Q 60 75 90 80 Q 115 85 130 100;
+                                         M 40 85 Q 65 70 95 78 Q 120 83 135 98;
+                                         M 40 90 Q 60 75 90 80 Q 115 85 130 100" 
+                                 dur="4s" 
                                  repeatCount="indefinite"/>
                     </path>
-                    
-                    <!-- Bristle strands -->
-                    <line x1="-6" y1="45" x2="-5" y2="64" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
-                    <line x1="0" y1="44" x2="0" y2="70" stroke="#e0e0e0" stroke-width="0.4" opacity="0.7"/>
-                    <line x1="6" y1="45" x2="5" y2="64" stroke="#d0d0d0" stroke-width="0.3" opacity="0.6"/>
-                    
-                    <!-- Animated paint stroke -->
-                    <path class="paint-stroke" d="M 0 70 Q 30 75 50 60 Q 65 50 70 40" 
-                          stroke="url(#paintGrad)" 
-                          stroke-width="6" 
-                          fill="none" 
-                          stroke-linecap="round"
-                          filter="url(#glow)"/>
-                    
-                    <!-- Paint loaded on tip -->
-                    <ellipse cx="0" cy="68" rx="2.5" ry="2" fill="#00d4ff" opacity="0.8"/>
-                    
-                    <!-- Paint drip -->
-                    <ellipse cx="50" cy="62" rx="2" ry="4" fill="#0e639c" opacity="0.85">
-                        <animate attributeName="ry" values="4;6;4" dur="2s" repeatCount="indefinite"/>
-                        <animate attributeName="opacity" values="0.85;0.5;0.85" dur="2s" repeatCount="indefinite"/>
-                    </ellipse>
-                    
-                    <!-- Letter A -->
-                    <text x="-70" y="-30" 
-                          font-family="'Helvetica Neue', Arial, sans-serif" 
-                          font-size="90" 
-                          font-weight="bold" 
-                          fill="#cccccc" 
-                          filter="url(#glow)">A</text>
-                    
-                    <!-- Accent dots on A -->
-                    <circle cx="-35" cy="-45" r="3" fill="#00d4ff" opacity="0.9">
-                        <animate attributeName="r" values="3;4;3" dur="1.5s" repeatCount="indefinite"/>
+                    <path d="M 50 105 Q 75 95 100 100 Q 120 103 130 115" fill="url(#paintGrad1)" opacity="0.6">
+                        <animate attributeName="d" 
+                                 values="M 50 105 Q 75 95 100 100 Q 120 103 130 115;
+                                         M 50 100 Q 78 90 103 98 Q 123 101 133 113;
+                                         M 50 105 Q 75 95 100 100 Q 120 103 130 115" 
+                                 dur="5s" 
+                                 repeatCount="indefinite"/>
+                    </path>
+                </g>
+                
+                <!-- Flowing paint shapes - lower area -->
+                <g opacity="0.7">
+                    <path d="M 170 200 Q 195 193 220 198 Q 240 203 255 218" fill="url(#paintGrad2)" filter="url(#glow)">
+                        <animate attributeName="d" 
+                                 values="M 170 200 Q 195 193 220 198 Q 240 203 255 218;
+                                         M 170 195 Q 198 188 223 195 Q 243 200 258 215;
+                                         M 170 200 Q 195 193 220 198 Q 240 203 255 218" 
+                                 dur="5s" 
+                                 repeatCount="indefinite"/>
+                    </path>
+                    <path d="M 180 213 Q 200 208 220 212 Q 235 215 245 228" fill="url(#paintGrad2)" opacity="0.6">
+                        <animate attributeName="d" 
+                                 values="M 180 213 Q 200 208 220 212 Q 235 215 245 228;
+                                         M 180 208 Q 203 203 223 210 Q 238 213 248 225;
+                                         M 180 213 Q 200 208 220 212 Q 235 215 245 228" 
+                                 dur="4.5s" 
+                                 repeatCount="indefinite"/>
+                    </path>
+                </g>
+                
+                <!-- Paint orbs with glow -->
+                <g filter="url(#glow)">
+                    <circle cx="70" cy="220" r="10" fill="#6b4c9a" opacity="0.7">
+                        <animate attributeName="r" values="10;12;10" dur="2s" repeatCount="indefinite"/>
                     </circle>
-                    <circle cx="-30" cy="-40" r="2" fill="#0e639c" opacity="0.85">
-                        <animate attributeName="r" values="2;3;2" dur="1.8s" repeatCount="indefinite"/>
+                    <circle cx="70" cy="220" r="7" fill="#a86cd5" opacity="0.5">
+                        <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <circle cx="230" cy="90" r="12" fill="#2d8fb8" opacity="0.7">
+                        <animate attributeName="r" values="12;14;12" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="230" cy="90" r="8" fill="#4db8e8" opacity="0.5">
+                        <animate attributeName="r" values="8;10;8" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+                </g>
+                
+                <!-- Main "Artemis" text with 3D metallic effect -->
+                <g transform="translate(150, 150)" filter="url(#deepShadow)">
+                    <!-- Text shadow for depth -->
+                    <text x="0" y="5" 
+                          font-family="'Georgia', 'Times New Roman', serif" 
+                          font-size="65" 
+                          font-weight="bold"
+                          font-style="italic"
+                          fill="#1a2832" 
+                          text-anchor="middle"
+                          letter-spacing="-1">Artemis</text>
+                    
+                    <!-- Main metallic text -->
+                    <text x="0" y="0" 
+                          font-family="'Georgia', 'Times New Roman', serif" 
+                          font-size="65" 
+                          font-weight="bold"
+                          font-style="italic"
+                          fill="url(#metalGrad)" 
+                          text-anchor="middle"
+                          letter-spacing="-1">Artemis</text>
+                    
+                    <!-- Highlight on text -->
+                    <text x="0" y="-2" 
+                          font-family="'Georgia', 'Times New Roman', serif" 
+                          font-size="65" 
+                          font-weight="bold"
+                          font-style="italic"
+                          fill="none"
+                          stroke="#d8eef5"
+                          stroke-width="0.5"
+                          text-anchor="middle"
+                          letter-spacing="-1"
+                          opacity="0.4">Artemis</text>
+                </g>
+                
+                <!-- Purple/magenta dot accent on the "i" -->
+                <g filter="url(#glow)">
+                    <circle cx="158" cy="122" r="5" fill="#6b4c9a">
+                        <animate attributeName="r" values="5;6;5" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="158" cy="122" r="4" fill="#a86cd5" opacity="0.8">
+                        <animate attributeName="r" values="4;5;4" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="157" cy="121" r="2" fill="#d8a8ff" opacity="0.6">
+                        <animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/>
                     </circle>
                 </g>
                 
@@ -401,8 +464,8 @@
         </div>
 
         <!-- Brand name -->
-        <div class="brand-name">ARTemis</div>
-        <div class="brand-subtitle">Professional</div>
+        <div class="brand-name">Digital Painting Software</div>
+        <div class="brand-subtitle">Professional Edition</div>
 
         <!-- Loading bar -->
         <div class="loading-container">
@@ -443,7 +506,7 @@
         // Create floating particles
         const particlesContainer = document.getElementById('particles');
         const particleCount = 30;
-        const colors = ['#0e639c', '#00d4ff', '#3e3e42', '#858585', '#0a4d7a', '#0e639c'];
+        const colors = ['#2d8fb8', '#4db8e8', '#00d4ff', '#6b4c9a', '#8e6cc5', '#b88ce8'];
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
