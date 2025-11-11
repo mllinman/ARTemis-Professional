@@ -1,0 +1,11 @@
+# Ecosystem Features (Pillar 5: Open Ecosystem)
+
+This directory contains implementations for:
+- ✅ Plugin API (Q1 2026) - Implemented in plugin-system.js
+- Plugin Marketplace (Q1 2026) - In progress
+- Creator Monetization (Q1 2026)
+- Scripting API (Q2 2026)
+- Webhooks API (Q3 2026)
+- Blockchain/NFT Tools (Q2 2027)
+
+See FEATURES_V3.md for detailed specifications.

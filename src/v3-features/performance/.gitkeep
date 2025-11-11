@@ -1,0 +1,11 @@
+# Performance Features (Pillar 3: Performance Revolution)
+
+This directory will contain implementations for:
+- WebGPU Rendering (Q1 2026)
+- Tiled Rendering for 32K+ canvases (Q1 2026)
+- Adaptive Quality System (Q1 2026)
+- Compute Shaders (Q2 2026)
+- Multi-GPU Support (Q2 2026)
+- WebAssembly Core (Q3 2026)
+
+See FEATURES_V3.md for detailed specifications.

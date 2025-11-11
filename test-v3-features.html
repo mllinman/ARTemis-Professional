@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTemis V3 Features Test</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        h1 { color: #007bff; }
+        h2 { color: #28a745; margin-top: 30px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #28a745; }
+        .error { background: #dc3545; }
+        .info { background: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .code {
+            background: #2d2d44;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .card {
+            background: #2d2d44;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .badge-success { background: #28a745; }
+        .badge-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🚀 ARTemis V3 Features Test Page</h1>
+    <p>This page tests the V3 features implementation.</p>
+
+    <div id="status-overall" class="status info">
+        ⏳ Loading V3 features...
+    </div>
+
+    <h2>1. Feature Flags System</h2>
+    <div class="card">
+        <p><strong>Status:</strong> <span id="flags-status">Testing...</span></p>
+        <button onclick="testFeatureFlags()">Test Feature Flags</button>
+        <button onclick="enableBetaAccess()">Enable Beta Access</button>
+        <button onclick="showEnabledFeatures()">Show Enabled Features</button>
+        <div id="flags-result" class="code" style="display:none;"></div>
+    </div>
+
+    <h2>2. Browser Capabilities</h2>
+    <div class="card">
+        <p><strong>Status:</strong> <span id="caps-status">Testing...</span></p>
+        <button onclick="testCapabilities()">Detect Capabilities</button>
+        <div id="caps-result" class="grid" style="display:none;"></div>
+    </div>
+
+    <h2>3. Plugin System API</h2>
+    <div class="card">
+        <p><strong>Status:</strong> <span id="plugin-status">Testing...</span></p>
+        <button onclick="testPluginAPI()">Test Plugin API</button>
+        <button onclick="registerTestPlugin()">Register Test Plugin</button>
+        <button onclick="listPlugins()">List Plugins</button>
+        <div id="plugin-result" class="code" style="display:none;"></div>
+    </div>
+
+    <h2>4. V3 Configuration</h2>
+    <div class="card">
+        <p><strong>Status:</strong> <span id="config-status">Testing...</span></p>
+        <button onclick="testConfig()">Test Configuration</button>
+        <div id="config-result" class="code" style="display:none;"></div>
+    </div>
+
+    <h2>5. PWA Features</h2>
+    <div class="card">
+        <p><strong>Status:</strong> <span id="pwa-status">Testing...</span></p>
+        <button onclick="testPWA()">Test PWA Support</button>
+        <div id="pwa-result" class="code" style="display:none;"></div>
+    </div>
+
+    <!-- Load V3 Features -->
+    <script src="src/v3-features/feature-flags.js"></script>
+    <script src="src/v3-features/v3-config.js"></script>
+    <script src="src/v3-features/v3-init.js" type="module"></script>
+
+    <script>
+        // Wait for V3 to initialize
+        window.addEventListener('v3-features-ready', (e) => {
+            document.getElementById('status-overall').className = 'status success';
+            document.getElementById('status-overall').innerHTML = '✅ V3 Features Initialized Successfully!';
+            console.log('V3 Ready:', e.detail);
+        });
+
+        // Test Feature Flags
+        function testFeatureFlags() {
+            const status = document.getElementById('flags-status');
+            const result = document.getElementById('flags-result');
+            
+            try {
+                const enabled = featureFlags.getEnabledFeatures();
+                const debug = featureFlags.getDebugInfo();
+                
+                result.innerHTML = `<pre>${JSON.stringify(debug, null, 2)}</pre>`;
+                result.style.display = 'block';
+                status.innerHTML = '✅ Working';
+                status.className = 'badge badge-success';
+            } catch (e) {
+                status.innerHTML = '❌ Error';
+                status.className = 'badge badge-danger';
+                result.innerHTML = `<pre>Error: ${e.message}</pre>`;
+                result.style.display = 'block';
+            }
+        }
+
+        function enableBetaAccess() {
+            featureFlags.enableBetaAccess();
+            alert('Beta access enabled! Reload the page to activate all features.');
+        }
+
+        function showEnabledFeatures() {
+            const features = featureFlags.getEnabledFeatures();
+            const byPillar = featureFlags.getFeaturesByPillar();
+            
+            alert(`Enabled Features (${features.length}):\n\n${features.join('\n')}`);
+            console.log('Features by pillar:', byPillar);
+        }
+
+        // Test Capabilities
+        function testCapabilities() {
+            const status = document.getElementById('caps-status');
+            const result = document.getElementById('caps-result');
+            
+            if (typeof v3Features === 'undefined') {
+                status.innerHTML = '❌ Not loaded';
+                return;
+            }
+
+            const caps = v3Features.capabilities;
+            
+            let html = '';
+            for (const [key, value] of Object.entries(caps)) {
+                const badge = value ? 'badge-success' : 'badge-danger';
+                const icon = value ? '✅' : '❌';
+                html += `<div class="card">
+                    <strong>${key}</strong><br>
+                    <span class="badge ${badge}">${icon} ${value ? 'Supported' : 'Not Supported'}</span>
+                </div>`;
+            }
+            
+            result.innerHTML = html;
+            result.style.display = 'grid';
+            status.innerHTML = '✅ Detected';
+            status.className = 'badge badge-success';
+        }
+
+        // Test Plugin API
+        function testPluginAPI() {
+            const status = document.getElementById('plugin-status');
+            const result = document.getElementById('plugin-result');
+            
+            if (typeof ARTemisPluginAPI === 'undefined') {
+                status.innerHTML = '❌ Not available';
+                status.className = 'badge badge-danger';
+                result.innerHTML = '<pre>Plugin API not loaded</pre>';
+                result.style.display = 'block';
+                return;
+            }
+
+            const info = {
+                version: ARTemisPluginAPI.version,
+                available: typeof ARTemisPluginAPI.registerPlugin === 'function',
+                methods: Object.keys(ARTemisPluginAPI)
+            };
+            
+            result.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+            result.style.display = 'block';
+            status.innerHTML = '✅ Available';
+            status.className = 'badge badge-success';
+        }
+
+        function registerTestPlugin() {
+            if (typeof ARTemisPluginAPI === 'undefined') {
+                alert('Plugin API not available');
+                return;
+            }
+
+            ARTemisPluginAPI.registerPlugin({
+                id: 'test-plugin-' + Date.now(),
+                name: 'Test Plugin',
+                version: '1.0.0',
+                author: 'Test User',
+                initialize: (api) => {
+                    console.log('Test plugin initialized!');
+                    alert('Test plugin registered successfully!');
+                }
+            });
+        }
+
+        function listPlugins() {
+            if (typeof ARTemisPluginAPI === 'undefined') {
+                alert('Plugin API not available');
+                return;
+            }
+
+            const plugins = ARTemisPluginAPI.listPlugins();
+            alert(`Registered Plugins (${plugins.length}):\n\n${plugins.map(p => `${p.name} v${p.version} by ${p.author}`).join('\n') || 'None'}`);
+        }
+
+        // Test Configuration
+        function testConfig() {
+            const status = document.getElementById('config-status');
+            const result = document.getElementById('config-result');
+            
+            if (typeof V3Config === 'undefined') {
+                status.innerHTML = '❌ Not loaded';
+                return;
+            }
+
+            const info = {
+                version: V3Config.version,
+                tiers: Object.keys(V3Config.tiers),
+                apiBase: V3Config.get('api.base'),
+                roadmapQ1: V3Config.roadmap['2026-Q1']
+            };
+            
+            result.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+            result.style.display = 'block';
+            status.innerHTML = '✅ Available';
+            status.className = 'badge badge-success';
+        }
+
+        // Test PWA
+        function testPWA() {
+            const status = document.getElementById('pwa-status');
+            const result = document.getElementById('pwa-result');
+            
+            const info = {
+                serviceWorker: 'serviceWorker' in navigator,
+                manifest: document.querySelector('link[rel="manifest"]') !== null,
+                online: navigator.onLine,
+                standalone: window.matchMedia('(display-mode: standalone)').matches
+            };
+            
+            result.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+            result.style.display = 'block';
+            status.innerHTML = '✅ Checked';
+            status.className = 'badge badge-success';
+        }
+
+        // Auto-run basic tests after load
+        setTimeout(() => {
+            testCapabilities();
+            testPluginAPI();
+            testConfig();
+            testPWA();
+        }, 2000);
+    </script>
+</body>
+</html>
