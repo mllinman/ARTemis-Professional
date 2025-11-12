@@ -1048,6 +1048,20 @@ const state = {
     autoSyncEnabled: false         // Auto-sync active
 };
 
+// Initialize Performance and Memory Managers for better stability
+let memoryManager = null;
+let performanceManager = null;
+
+// Initialize managers when available
+if (typeof MemoryManager !== 'undefined') {
+    memoryManager = new MemoryManager();
+    console.log('Memory Manager initialized');
+}
+if (typeof PerformanceManager !== 'undefined') {
+    performanceManager = new PerformanceManager();
+    console.log('Performance Manager initialized');
+}
+
 // Default keyboard shortcuts (for reset functionality)
 const defaultKeyboardShortcuts = {
     // Tools
@@ -1851,6 +1865,24 @@ function init() {
     // Initialize Brush Preview System
     initBrushPreview();
     attachBrushPreviewListeners();
+    
+    // Setup periodic memory monitoring for stability
+    if (memoryManager) {
+        setInterval(() => {
+            if (memoryManager.isMemoryAboveThreshold('critical')) {
+                console.warn('Critical memory usage detected, performing cleanup');
+                // Force cleanup of old history states
+                if (state.history.length > 10) {
+                    state.history = state.history.slice(-10);
+                    state.historyIndex = Math.min(state.historyIndex, 9);
+                }
+                // Trigger browser garbage collection if available
+                if (window.gc) {
+                    window.gc();
+                }
+            }
+        }, 30000); // Check every 30 seconds
+    }
     
     // Save state on page unload
     window.addEventListener('beforeunload', () => {
@@ -8689,23 +8721,49 @@ function drawBrushTip(ctx, size) {
             if (brushCategory === 'pencil') {
                 // Pencil/Graphite: grainy, textured strokes
                 const texture = generatePencilTexture(Math.ceil(size));
-                const originalComposite = ctx.globalCompositeOperation;
-                ctx.globalCompositeOperation = state.tool === 'eraser' ? 'destination-out' : 'source-over';
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(texture, -size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = originalComposite; // Restore original composite mode
+                if (state.tool === 'eraser') {
+                    // For eraser: create temp canvas with texture, then apply with destination-out
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = size;
+                    tempCanvas.height = size;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.fillStyle = fillColor;
+                    tempCtx.fillRect(0, 0, size, size);
+                    tempCtx.globalCompositeOperation = 'destination-in';
+                    tempCtx.drawImage(texture, 0, 0, size, size);
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(tempCanvas, -size / 2, -size / 2);
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = fillColor;
+                    ctx.fillRect(-size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(texture, -size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             } else if (brushCategory === 'marker') {
                 // Marker: Copic-style alcohol-based with streaky, translucent layering
                 const texture = generateMarkerTexture(Math.ceil(size));
-                const originalComposite = ctx.globalCompositeOperation;
-                ctx.globalCompositeOperation = state.tool === 'eraser' ? 'destination-out' : 'source-over';
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(texture, -size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = originalComposite; // Restore original composite mode
+                if (state.tool === 'eraser') {
+                    // For eraser: create temp canvas with texture, then apply with destination-out
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = size;
+                    tempCanvas.height = size;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.fillStyle = fillColor;
+                    tempCtx.fillRect(0, 0, size, size);
+                    tempCtx.globalCompositeOperation = 'destination-in';
+                    tempCtx.drawImage(texture, 0, 0, size, size);
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(tempCanvas, -size / 2, -size / 2);
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = fillColor;
+                    ctx.fillRect(-size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(texture, -size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             } else if (brushCategory === 'ink') {
                 // Ink/Pen: FW Acrylic India Ink style - rich, dense black with crisp edges
                 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
@@ -8719,25 +8777,54 @@ function drawBrushTip(ctx, size) {
             } else if (brushCategory === 'watercolor') {
                 // Watercolor: wet, bleeding edges with irregular boundaries
                 const texture = generateWatercolorTexture(Math.ceil(size));
-                const originalComposite = ctx.globalCompositeOperation;
-                ctx.globalCompositeOperation = state.tool === 'eraser' ? 'destination-out' : 'source-over';
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(texture, -size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = originalComposite; // Restore original composite mode
+                if (state.tool === 'eraser') {
+                    // For eraser: create temp canvas with texture, then apply with destination-out
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = size;
+                    tempCanvas.height = size;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.fillStyle = fillColor;
+                    tempCtx.fillRect(0, 0, size, size);
+                    tempCtx.globalCompositeOperation = 'destination-in';
+                    tempCtx.drawImage(texture, 0, 0, size, size);
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(tempCanvas, -size / 2, -size / 2);
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = fillColor;
+                    ctx.fillRect(-size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(texture, -size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             } else if (brushCategory === 'oil') {
                 // Oil/Acrylic: impasto texture with visible canvas weave
                 const texture = generateOilTexture(Math.ceil(size));
-                const originalComposite = ctx.globalCompositeOperation;
-                ctx.globalCompositeOperation = state.tool === 'eraser' ? 'destination-out' : 'source-over';
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(texture, -size / 2, -size / 2, size, size);
-                ctx.globalCompositeOperation = originalComposite; // Restore original composite mode
+                if (state.tool === 'eraser') {
+                    // For eraser: create temp canvas with texture, then apply with destination-out
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = size;
+                    tempCanvas.height = size;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.fillStyle = fillColor;
+                    tempCtx.fillRect(0, 0, size, size);
+                    tempCtx.globalCompositeOperation = 'destination-in';
+                    tempCtx.drawImage(texture, 0, 0, size, size);
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(tempCanvas, -size / 2, -size / 2);
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = fillColor;
+                    ctx.fillRect(-size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(texture, -size / 2, -size / 2, size, size);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
             } else {
                 // Default: smooth gradient for basic brushes
+                if (state.tool === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                }
                 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
                 gradient.addColorStop(0, fillColor);
                 gradient.addColorStop(hardness, fillColor);
@@ -8780,13 +8867,14 @@ function drawBrushTip(ctx, size) {
         case 'custom':
             // Use custom texture if available
             if (state.brushTipTexture) {
-                // For eraser, apply the texture with white color mask
                 if (state.tool === 'eraser') {
+                    // For eraser with custom texture: use destination-out
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(state.brushTipTexture, -size / 2, -size / 2, size, size);
+                } else {
                     ctx.globalCompositeOperation = 'source-over';
-                    ctx.fillStyle = fillColor;
-                    ctx.globalAlpha *= 0.5; // Semi-transparent for texture shape
+                    ctx.drawImage(state.brushTipTexture, -size / 2, -size / 2, size, size);
                 }
-                ctx.drawImage(state.brushTipTexture, -size / 2, -size / 2, size, size);
             } else {
                 // Fall back to circle
                 const fallbackGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
@@ -9646,13 +9734,22 @@ function colorsMatch(c1, c2, tolerance = 0) {
     if (tolerance === 0) {
         return c1[0] === c2[0] && c1[1] === c2[1] && c1[2] === c2[2] && c1[3] === c2[3];
     }
-    // Calculate color difference using Euclidean distance
+    // For transparent pixels, treat alpha separately to allow filling transparent areas
+    // Calculate color difference using Euclidean distance in RGB space
     const rDiff = c1[0] - c2[0];
     const gDiff = c1[1] - c2[1];
     const bDiff = c1[2] - c2[2];
-    const aDiff = c1[3] - c2[3];
-    const distance = Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff + aDiff * aDiff);
-    return distance <= tolerance;
+    const distance = Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+    
+    // If both colors have similar alpha values (within 10), compare RGB only
+    const alphaDiff = Math.abs(c1[3] - c2[3]);
+    if (alphaDiff <= 10) {
+        return distance <= tolerance;
+    }
+    
+    // If alpha differs significantly, include it in the comparison
+    const totalDistance = Math.sqrt(distance * distance + alphaDiff * alphaDiff);
+    return totalDistance <= tolerance * 1.5; // Allow slightly more tolerance for alpha
 }
 
 function hexToRgb(hex) {
@@ -15643,6 +15740,17 @@ function resetZoom() {
 
 // History Management
 function saveState() {
+    // Check memory usage before saving state
+    if (memoryManager && memoryManager.isMemoryAboveThreshold('warning')) {
+        console.warn('Memory usage high, limiting history');
+        // Reduce history limit when memory is constrained
+        const maxHistory = 20;
+        if (state.history.length >= maxHistory) {
+            state.history.shift();
+            state.historyIndex = Math.max(0, state.historyIndex - 1);
+        }
+    }
+    
     // Save layer states and canvas dimensions
     const layerStates = state.layers.map(layer => {
         const canvas = document.createElement('canvas');
@@ -15667,8 +15775,9 @@ function saveState() {
     state.history.push(historyState);
     state.historyIndex++;
     
-    // Limit history size
-    if (state.history.length > 50) {
+    // Limit history size based on memory availability
+    const maxHistory = (memoryManager && memoryManager.isMemoryAboveThreshold('warning')) ? 20 : 50;
+    if (state.history.length > maxHistory) {
         state.history.shift();
         state.historyIndex--;
     }

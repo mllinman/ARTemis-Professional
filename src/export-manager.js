@@ -10,7 +10,7 @@ class ExportManager {
             'jpg': { name: 'JPEG', mimeType: 'image/jpeg', quality: 0.95 },
             'webp': { name: 'WebP', mimeType: 'image/webp', quality: 0.90 },
             'svg': { name: 'SVG', mimeType: 'image/svg+xml', quality: 1.0 },
-            'psd': { name: 'Photoshop', mimeType: 'application/x-photoshop', quality: 1.0 },
+            'psd': { name: 'PSD Document', mimeType: 'application/x-photoshop', quality: 1.0 },
             'tiff': { name: 'TIFF', mimeType: 'image/tiff', quality: 1.0 },
             'pdf': { name: 'PDF', mimeType: 'application/pdf', quality: 1.0 }
         };
