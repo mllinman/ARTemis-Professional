@@ -1,8 +1,8 @@
 /**
- * Krita-Inspired Brush Engines for ARTemis
+ * Advanced Brush Engines for ARTemis
  * 
- * This module implements JavaScript equivalents of Krita's advanced brush engines
- * Originally inspired by Krita's C++ implementation
+ * This module implements JavaScript equivalents of professional advanced brush engines
+ * Originally inspired by professional C++ implementation
  * 
  * Brush Engines Implemented:
  * - Particle Brush: Scatter and spray effects with physics
@@ -14,7 +14,7 @@
 // ============================================================================
 // PARTICLE BRUSH ENGINE
 // ============================================================================
-// Inspired by Krita's particle brush engine (kis_particle_paintop.cpp)
+// Inspired by professional particle brush engine (particle brush algorithms)
 // Simulates spray-like effects with particle physics
 
 class ParticleBrushEngine {
@@ -72,7 +72,7 @@ class ParticleBrushEngine {
 // ============================================================================
 // BRISTLE BRUSH ENGINE
 // ============================================================================
-// Inspired by Krita's bristle brush engine (kis_bristle_paintop.cpp)
+// Inspired by professional bristle brush engine (bristle brush simulation)
 // Simulates individual bristles for natural media effects
 
 class BristleBrushEngine {
@@ -155,7 +155,7 @@ class BristleBrushEngine {
 // ============================================================================
 // HATCHING BRUSH ENGINE
 // ============================================================================
-// Inspired by Krita's hatching brush engine (kis_hatching_paintop.cpp)
+// Inspired by professional hatching brush engine (hatching algorithms)
 // Creates crosshatching patterns for artistic effects
 
 class HatchingBrushEngine {
@@ -224,7 +224,7 @@ class HatchingBrushEngine {
 // ============================================================================
 // CHALK/CHARCOAL BRUSH ENGINE
 // ============================================================================
-// Inspired by Krita's chalk brush and dry media simulation
+// Inspired by professional chalk brush and dry media simulation
 // Creates textured, grainy strokes with accumulation
 
 class ChalkBrushEngine {
@@ -328,7 +328,7 @@ class ChalkBrushEngine {
 // ============================================================================
 
 // Create global instances
-const kritaBrushEngines = {
+const advancedBrushEngines = {
     particle: new ParticleBrushEngine(),
     bristle: new BristleBrushEngine(),
     hatching: new HatchingBrushEngine(),
@@ -337,5 +337,5 @@ const kritaBrushEngines = {
 
 // Export for use in renderer.js
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = kritaBrushEngines;
+    module.exports = advancedBrushEngines;
 }

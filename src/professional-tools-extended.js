@@ -1,8 +1,8 @@
 /**
- * Krita-Inspired Tools for ARTemis
+ * Professional Tools for ARTemis
  * 
- * This module implements JavaScript equivalents of Krita's specialized tools
- * Originally inspired by Krita's C++ tool implementations
+ * This module implements JavaScript equivalents of professional specialized tools
+ * Originally inspired by professional C++ tool implementations
  * 
  * Tools Implemented:
  * - Multibrush Tool: Multi-axis symmetry painting
@@ -13,7 +13,7 @@
 // ============================================================================
 // MULTIBRUSH TOOL
 // ============================================================================
-// Inspired by Krita's multibrush tool (kis_tool_multihand.cpp)
+// Inspired by professional multibrush tool (multibrush algorithms)
 // Allows painting with multiple symmetry axes
 
 class MultibrushTool {
@@ -214,7 +214,7 @@ class MultibrushTool {
 // ============================================================================
 // ASSISTANT TOOL
 // ============================================================================
-// Inspired by Krita's painting assistants (kis_assistant_tool.cpp)
+// Inspired by professional painting assistants (assistant algorithms)
 // Provides perspective guides and vanishing points
 
 class AssistantTool {
@@ -521,7 +521,7 @@ class AssistantTool {
 // ============================================================================
 // DEFORM BRUSH TOOL
 // ============================================================================
-// Inspired by Krita's deform brush (kis_tool_deform.cpp)
+// Inspired by professional deform brush (kis_tool_deform.cpp)
 // Dynamically warps pixels: move, grow, shrink, swirl
 
 class DeformBrushTool {
@@ -652,12 +652,12 @@ class DeformBrushTool {
 // EXPORT TOOLS
 // ============================================================================
 
-const kritaTools = {
+const professionalToolsExtended = {
     multibrush: new MultibrushTool(),
     assistant: new AssistantTool(),
     deformBrush: new DeformBrushTool()
 };
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = kritaTools;
+    module.exports = professionalToolsExtended;
 }
