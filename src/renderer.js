@@ -1334,7 +1334,31 @@ const brushPresets = {
     // High-Performance Brushes
     'quick-sketch': { size: 18, opacity: 80, hardness: 70, flow: 85, spacing: 12, smoothing: 15, angle: 0, angleJitter: 20, scatterX: 5, scatterY: 5 },
     'rapid-paint': { size: 40, opacity: 85, hardness: 60, flow: 80, spacing: 15, smoothing: 10, angle: 0, angleJitter: 15, scatterX: 8, scatterY: 8 },
-    'speed-liner': { size: 12, opacity: 100, hardness: 95, flow: 100, spacing: 8, smoothing: 35, angle: 0, angleJitter: 0, scatterX: 0, scatterY: 0 }
+    'speed-liner': { size: 12, opacity: 100, hardness: 95, flow: 100, spacing: 8, smoothing: 35, angle: 0, angleJitter: 0, scatterX: 0, scatterY: 0 },
+    
+    // KRITA-INSPIRED BRUSHES - New Advanced Brush Engines (15)
+    // Particle Brushes - Physics-based spray effects
+    'krita-particle-spray': { size: 40, opacity: 70, hardness: 50, flow: 60, spacing: 8, smoothing: 10, angle: 0, angleJitter: 0, scatterX: 30, scatterY: 30, engineType: 'particle' },
+    'krita-particle-mist': { size: 60, opacity: 50, hardness: 30, flow: 40, spacing: 10, smoothing: 15, angle: 0, angleJitter: 0, scatterX: 40, scatterY: 40, engineType: 'particle' },
+    'krita-particle-splatter': { size: 30, opacity: 80, hardness: 60, flow: 70, spacing: 15, smoothing: 5, angle: 0, angleJitter: 30, scatterX: 25, scatterY: 25, engineType: 'particle' },
+    
+    // Bristle Brushes - Natural media simulation
+    'krita-bristle-oil': { size: 35, opacity: 90, hardness: 55, flow: 80, spacing: 10, smoothing: 8, angle: 0, angleJitter: 12, scatterX: 4, scatterY: 4, engineType: 'bristle' },
+    'krita-bristle-acrylic': { size: 32, opacity: 88, hardness: 60, flow: 85, spacing: 9, smoothing: 7, angle: 0, angleJitter: 10, scatterX: 3, scatterY: 3, engineType: 'bristle' },
+    'krita-bristle-watercolor': { size: 45, opacity: 60, hardness: 30, flow: 50, spacing: 12, smoothing: 18, angle: 0, angleJitter: 15, scatterX: 10, scatterY: 10, engineType: 'bristle' },
+    'krita-bristle-fan': { size: 50, opacity: 75, hardness: 45, flow: 65, spacing: 14, smoothing: 10, angle: 0, angleJitter: 20, scatterX: 8, scatterY: 8, engineType: 'bristle' },
+    
+    // Hatching Brushes - Crosshatching patterns
+    'krita-hatching-pen': { size: 25, opacity: 85, hardness: 90, flow: 90, spacing: 8, smoothing: 12, angle: 45, angleJitter: 10, scatterX: 0, scatterY: 0, engineType: 'hatching' },
+    'krita-hatching-fine': { size: 18, opacity: 90, hardness: 95, flow: 95, spacing: 6, smoothing: 15, angle: 30, angleJitter: 8, scatterX: 0, scatterY: 0, engineType: 'hatching' },
+    'krita-hatching-crosshatch': { size: 22, opacity: 80, hardness: 88, flow: 88, spacing: 7, smoothing: 10, angle: 45, angleJitter: 15, scatterX: 0, scatterY: 0, engineType: 'hatching' },
+    
+    // Chalk/Charcoal Brushes - Dry media with texture
+    'krita-chalk-soft': { size: 35, opacity: 65, hardness: 50, flow: 70, spacing: 16, smoothing: 8, angle: 45, angleJitter: 30, scatterX: 20, scatterY: 8, engineType: 'chalk' },
+    'krita-chalk-hard': { size: 28, opacity: 80, hardness: 70, flow: 85, spacing: 12, smoothing: 6, angle: 40, angleJitter: 25, scatterX: 15, scatterY: 6, engineType: 'chalk' },
+    'krita-charcoal-stick': { size: 32, opacity: 75, hardness: 60, flow: 78, spacing: 14, smoothing: 10, angle: 50, angleJitter: 35, scatterX: 18, scatterY: 7, engineType: 'chalk' },
+    'krita-pastel-soft': { size: 40, opacity: 60, hardness: 45, flow: 65, spacing: 18, smoothing: 12, angle: 48, angleJitter: 32, scatterX: 22, scatterY: 8, engineType: 'chalk' },
+    'krita-conte-crayon': { size: 26, opacity: 78, hardness: 65, flow: 80, spacing: 13, smoothing: 7, angle: 42, angleJitter: 28, scatterX: 16, scatterY: 6, engineType: 'chalk' }
 };
 
 // Canvas Elements - will be initialized in init()
@@ -2389,6 +2413,7 @@ function setupBrushPresets() {
         'mixer': ['mixer-wet', 'mixer-dry', 'blender-soft', 'blender-hard', 'smudge-soft', 'smudge-hard', 'finger-paint', 'color-sampler', 'paint-mixer', 'palette-scraper'],
         'texture': ['texture-canvas', 'texture-linen', 'texture-paper', 'texture-burlap', 'texture-concrete', 'texture-wood', 'texture-bark', 'texture-stone', 'texture-fabric', 'texture-grain'],
         'enhanced': ['bristle-oil-round', 'bristle-oil-flat', 'bristle-acrylic-round', 'bristle-acrylic-flat', 'mixer-color-pickup', 'wet-blend-natural', 'glazing-transparent', 'dual-texture-soft', 'dual-texture-hard', 'impressionist-dab', 'expressionist-stroke', 'pointillist-dot', 'watercolor-blooming', 'watercolor-granulation', 'sumi-ink-brush', 'chinese-calligraphy', 'ink-wash', 'quick-sketch', 'rapid-paint', 'speed-liner'],
+        'krita': ['krita-particle-spray', 'krita-particle-mist', 'krita-particle-splatter', 'krita-bristle-oil', 'krita-bristle-acrylic', 'krita-bristle-watercolor', 'krita-bristle-fan', 'krita-hatching-pen', 'krita-hatching-fine', 'krita-hatching-crosshatch', 'krita-chalk-soft', 'krita-chalk-hard', 'krita-charcoal-stick', 'krita-pastel-soft', 'krita-conte-crayon'],
         'imported': [] // Will be populated dynamically
     };
     
@@ -3851,6 +3876,140 @@ function setupNewFeatures() {
     
     // Setup Advanced Features
     setupAdvancedFeatures();
+    
+    // Setup Krita Features
+    setupKritaFeatures();
+}
+
+// Setup Krita-Inspired Features (Multibrush, Assistant, etc.)
+function setupKritaFeatures() {
+    // Check if Krita modules are loaded
+    if (typeof kritaTools === 'undefined') {
+        console.warn('Krita tools not loaded');
+        return;
+    }
+    
+    // Krita Multibrush Tool
+    const multibrushEnabled = document.getElementById('krita-multibrush-enabled');
+    if (multibrushEnabled) {
+        multibrushEnabled.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ enabled: e.target.checked });
+            if (e.target.checked) {
+                // Set center to canvas center
+                kritaTools.multibrush.setCenter(state.canvas.width / 2, state.canvas.height / 2);
+            }
+            // Show/hide settings
+            const settings = document.getElementById('krita-multibrush-settings');
+            if (settings) {
+                settings.classList.toggle('hidden', !e.target.checked);
+            }
+            renderCanvas();
+        });
+    }
+    
+    const multibrushMode = document.getElementById('krita-multibrush-mode');
+    if (multibrushMode) {
+        multibrushMode.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ mode: e.target.value });
+            renderCanvas();
+        });
+    }
+    
+    const multibrushAxes = document.getElementById('krita-multibrush-axes');
+    const multibrushAxesValue = document.getElementById('krita-multibrush-axes-value');
+    if (multibrushAxes && multibrushAxesValue) {
+        multibrushAxes.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            multibrushAxesValue.textContent = value;
+            kritaTools.multibrush.updateSettings({ axes: value, copies: value });
+            renderCanvas();
+        });
+    }
+    
+    const multibrushShowAxes = document.getElementById('krita-multibrush-show-axes');
+    if (multibrushShowAxes) {
+        multibrushShowAxes.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ showAxes: e.target.checked });
+            renderCanvas();
+        });
+    }
+    
+    // Krita Assistant Tool
+    const assistantEnabled = document.getElementById('krita-assistant-enabled');
+    if (assistantEnabled) {
+        assistantEnabled.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ showAssistants: e.target.checked });
+            // Show/hide settings
+            const settings = document.getElementById('krita-assistant-settings');
+            if (settings) {
+                settings.classList.toggle('hidden', !e.target.checked);
+            }
+            renderCanvas();
+        });
+    }
+    
+    const assistantSnap = document.getElementById('krita-assistant-snap');
+    if (assistantSnap) {
+        assistantSnap.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ snapToAssistant: e.target.checked });
+        });
+    }
+    
+    const assistantSnapDistance = document.getElementById('krita-assistant-snap-distance');
+    if (assistantSnapDistance) {
+        assistantSnapDistance.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ snapDistance: parseInt(e.target.value) });
+        });
+    }
+    
+    // Assistant creation buttons
+    const perspectiveBtn = document.getElementById('krita-assistant-perspective');
+    if (perspectiveBtn) {
+        perspectiveBtn.addEventListener('click', () => {
+            // Create perspective assistant at canvas center
+            const centerX = state.canvas.width / 2;
+            const centerY = state.canvas.height / 2;
+            kritaTools.assistant.createPerspectiveAssistant(
+                { x: centerX - 200, y: centerY },
+                { x: centerX + 200, y: centerY }
+            );
+            renderCanvas();
+            showNotification('✓ Perspective assistant added', 'success');
+        });
+    }
+    
+    const parallelBtn = document.getElementById('krita-assistant-parallel');
+    if (parallelBtn) {
+        parallelBtn.addEventListener('click', () => {
+            // Create parallel ruler at canvas center
+            const centerX = state.canvas.width / 2;
+            const centerY = state.canvas.height / 2;
+            kritaTools.assistant.createParallelAssistant(
+                { x: centerX - 100, y: centerY - 100 },
+                { x: centerX + 100, y: centerY + 100 }
+            );
+            renderCanvas();
+            showNotification('✓ Parallel ruler added', 'success');
+        });
+    }
+    
+    const gridBtn = document.getElementById('krita-assistant-grid');
+    if (gridBtn) {
+        gridBtn.addEventListener('click', () => {
+            kritaTools.assistant.createGridAssistant(50, 5);
+            renderCanvas();
+            showNotification('✓ Grid assistant added', 'success');
+        });
+    }
+    
+    const clearBtn = document.getElementById('krita-assistant-clear');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            kritaTools.assistant.clearAssistants();
+            renderCanvas();
+            showNotification('✓ Assistants cleared', 'success');
+        });
+    }
 }
 
 // Setup Advanced Features (Wrap-around, Symmetry, etc.)
@@ -7205,8 +7364,16 @@ function continueStroke(x, y, pressure) {
 }
 
 function drawDot(x, y, pressure, angle = 0) {
-    // Draw the main dot
-    drawDotInternal(x, y, pressure, angle);
+    // KRITA: Apply Multibrush transformations if enabled
+    if (typeof kritaTools !== 'undefined' && kritaTools.multibrush.settings.enabled) {
+        const transformedPoints = kritaTools.multibrush.calculateTransforms(x, y);
+        transformedPoints.forEach(point => {
+            drawDotInternal(point.x, point.y, pressure, angle);
+        });
+    } else {
+        // Draw the main dot
+        drawDotInternal(x, y, pressure, angle);
+    }
     
     // Apply symmetry if enabled
     if (state.symmetry.enabled) {
@@ -7233,6 +7400,30 @@ function drawDotInternal(x, y, pressure, angle = 0) {
     const scatterY = (Math.random() - 0.5) * state.brush.scatterY * size / 100;
     x += scatterX;
     y += scatterY;
+    
+    // KRITA: Check if using Krita brush engine
+    if (state.brush.engineType && typeof kritaBrushEngines !== 'undefined') {
+        ctx.save();
+        ctx.globalAlpha = opacity * (state.brush.flow / 100);
+        
+        switch (state.brush.engineType) {
+            case 'particle':
+                kritaBrushEngines.particle.applyBrush(ctx, x, y, size, pressure, state.color);
+                break;
+            case 'bristle':
+                kritaBrushEngines.bristle.applyBrush(ctx, x, y, size, pressure, state.color);
+                break;
+            case 'hatching':
+                kritaBrushEngines.hatching.applyBrush(ctx, x, y, size, pressure, state.color);
+                break;
+            case 'chalk':
+                kritaBrushEngines.chalk.applyBrush(ctx, x, y, size, pressure, state.color);
+                break;
+        }
+        
+        ctx.restore();
+        return;
+    }
     
     // ENHANCED: Draw bristles if enabled
     if (state.brush.bristleCount > 1) {

@@ -1309,6 +1309,7 @@
                                     <option value="metallic">✨ Metallic & Special (10)</option>
                                     <option value="mixer">🎨 Mixer & Blending (10)</option>
                                     <option value="texture">🖼️ Texture Brushes (10)</option>
+                                    <option value="krita">🖌️ Krita-Inspired (15)</option>
                                     <option value="imported">Imported Brushes</option>
                                 </select>
                             </div>
@@ -1419,6 +1420,50 @@
                                     <input type="range" id="symmetry-segments" min="2" max="16" value="8">
                                     <span id="symmetry-segments-value">8</span>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Krita Multibrush Tool -->
+                        <div class="setting-group">
+                            <label>
+                                <input type="checkbox" id="krita-multibrush-enabled">
+                                🖌️ Krita Multibrush
+                            </label>
+                            <div id="krita-multibrush-settings" class="sub-settings hidden">
+                                <label>Mode:</label>
+                                <select id="krita-multibrush-mode" class="brush-select">
+                                    <option value="mirror">Mirror</option>
+                                    <option value="rotate">Rotate</option>
+                                    <option value="translate">Translate</option>
+                                    <option value="snowflake">Snowflake</option>
+                                </select>
+                                <label>Axes/Copies:</label>
+                                <input type="range" id="krita-multibrush-axes" min="2" max="16" value="4">
+                                <span id="krita-multibrush-axes-value">4</span>
+                                <label>
+                                    <input type="checkbox" id="krita-multibrush-show-axes" checked>
+                                    Show Symmetry Axes
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Krita Assistant Tool -->
+                        <div class="setting-group">
+                            <label>
+                                <input type="checkbox" id="krita-assistant-enabled">
+                                📐 Krita Assistant
+                            </label>
+                            <div id="krita-assistant-settings" class="sub-settings hidden">
+                                <button class="secondary-btn" id="krita-assistant-perspective">Add Perspective</button>
+                                <button class="secondary-btn" id="krita-assistant-parallel">Add Parallel</button>
+                                <button class="secondary-btn" id="krita-assistant-grid">Add Grid</button>
+                                <button class="secondary-btn" id="krita-assistant-clear">Clear Assistants</button>
+                                <label>
+                                    <input type="checkbox" id="krita-assistant-snap" checked>
+                                    Snap to Assistant
+                                </label>
+                                <label>Snap Distance (px):</label>
+                                <input type="number" id="krita-assistant-snap-distance" min="5" max="50" value="20" style="width: 60px;">
                             </div>
                         </div>
                         
@@ -2649,6 +2694,11 @@
     <script src="v3-features/feature-flags.js"></script>
     <script src="v3-features/v3-config.js"></script>
     <script src="v3-features/v3-init.js" type="module"></script>
+    
+    <!-- Krita-Inspired Features -->
+    <script src="krita-brush-engines.js"></script>
+    <script src="krita-blend-modes.js"></script>
+    <script src="krita-tools.js"></script>
     
     <script src="renderer.js"></script>
 </body>
