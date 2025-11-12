@@ -464,7 +464,7 @@ ARTemis now offers a truly professional-grade brush engine that rivals and even 
 
 **Key Achievements**:
 - ✅ 178+ professional brush presets
-- ✅ Full Painter/Krita-level features
+- ✅ Full Professional-grade features
 - ✅ Excellent device support (Wacom, XP-Pen, etc.)
 - ✅ Natural media simulation
 - ✅ Advanced color dynamics

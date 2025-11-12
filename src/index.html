@@ -1426,22 +1426,22 @@
                         <!-- Multibrush Tool -->
                         <div class="setting-group">
                             <label>
-                                <input type="checkbox" id="krita-multibrush-enabled">
+                                <input type="checkbox" id="multibrush-enabled">
                                 🖌️ Multibrush Tool
                             </label>
-                            <div id="krita-multibrush-settings" class="sub-settings hidden">
+                            <div id="multibrush-settings" class="sub-settings hidden">
                                 <label>Mode:</label>
-                                <select id="krita-multibrush-mode" class="brush-select">
+                                <select id="multibrush-mode" class="brush-select">
                                     <option value="mirror">Mirror</option>
                                     <option value="rotate">Rotate</option>
                                     <option value="translate">Translate</option>
                                     <option value="snowflake">Snowflake</option>
                                 </select>
                                 <label>Axes/Copies:</label>
-                                <input type="range" id="krita-multibrush-axes" min="2" max="16" value="4">
-                                <span id="krita-multibrush-axes-value">4</span>
+                                <input type="range" id="multibrush-axes" min="2" max="16" value="4">
+                                <span id="multibrush-axes-value">4</span>
                                 <label>
-                                    <input type="checkbox" id="krita-multibrush-show-axes" checked>
+                                    <input type="checkbox" id="multibrush-show-axes" checked>
                                     Show Symmetry Axes
                                 </label>
                             </div>
@@ -1450,20 +1450,20 @@
                         <!-- Drawing Assistant Tool -->
                         <div class="setting-group">
                             <label>
-                                <input type="checkbox" id="krita-assistant-enabled">
+                                <input type="checkbox" id="assistant-enabled">
                                 📐 Drawing Assistant
                             </label>
-                            <div id="krita-assistant-settings" class="sub-settings hidden">
-                                <button class="secondary-btn" id="krita-assistant-perspective">Add Perspective</button>
-                                <button class="secondary-btn" id="krita-assistant-parallel">Add Parallel</button>
-                                <button class="secondary-btn" id="krita-assistant-grid">Add Grid</button>
-                                <button class="secondary-btn" id="krita-assistant-clear">Clear Assistants</button>
+                            <div id="assistant-settings" class="sub-settings hidden">
+                                <button class="secondary-btn" id="assistant-perspective">Add Perspective</button>
+                                <button class="secondary-btn" id="assistant-parallel">Add Parallel</button>
+                                <button class="secondary-btn" id="assistant-grid">Add Grid</button>
+                                <button class="secondary-btn" id="assistant-clear">Clear Assistants</button>
                                 <label>
-                                    <input type="checkbox" id="krita-assistant-snap" checked>
+                                    <input type="checkbox" id="assistant-snap" checked>
                                     Snap to Assistant
                                 </label>
                                 <label>Snap Distance (px):</label>
-                                <input type="number" id="krita-assistant-snap-distance" min="5" max="50" value="20" style="width: 60px;">
+                                <input type="number" id="assistant-snap-distance" min="5" max="50" value="20" style="width: 60px;">
                             </div>
                         </div>
                         
@@ -2700,9 +2700,9 @@
     <script src="v3-features/v3-init.js" type="module"></script>
     
     <!-- Advanced Brush Features -->
-    <script src="krita-brush-engines.js"></script>
-    <script src="krita-blend-modes.js"></script>
-    <script src="krita-tools.js"></script>
+    <script src="advanced-brush-engines.js"></script>
+    <script src="professional-blend-modes.js"></script>
+    <script src="professional-tools-extended.js"></script>
     
     <script src="renderer.js"></script>
 </body>

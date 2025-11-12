@@ -59,7 +59,7 @@ ARTemis V3 brings next-generation features for professional digital artists:
 ### ⭐ Professional Features
 
 🎨 **NEW: Advanced Brush Engine + Vector Tools!**
-ARTemis now features professional-grade tools comparable to industry-leading applications:
+ARTemis now features professional-grade tools with advanced professional features:
 - **178+ Professional Brushes** across 17 categories
 - **Color Dynamics** - Hue, saturation, brightness variation
 - **Bristle Simulation** - Natural media with 1-50 bristles
@@ -156,7 +156,7 @@ ARTemis includes a comprehensive set of professional digital painting features!
     - Real-time preview with seamless tiling
 
 ### 🎨 Professional Painting Tools
-- **⭐ ENHANCED: Advanced Brush Engine** - Industry-leading brush system (Painter/Krita-level)
+- **⭐ ENHANCED: Advanced Brush Engine** - Industry-leading brush system (Professional-grade)
   - **Core Settings:** Size, opacity, hardness with full pressure sensitivity
   - **Flow Control:** Build-up/layering for natural paint application
   - **Spacing:** Adjustable brush dab spacing (1-100%)
@@ -530,7 +530,7 @@ The advanced brush engine features:
 ### User Documentation
 - **[⭐ FEATURES_V3.md](FEATURES_V3.md)** - 🔥 NEW! Next-generation roadmap (2026-2028) - AI-native, cloud-first, performance revolution
 - **[⭐ FEATURES_V3_QUICK_START.md](FEATURES_V3_QUICK_START.md)** - 🔥 NEW! Quick overview of V3 features and timeline
-- **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Painter/Krita-level brush features, 178+ presets, device support
+- **[⭐ ADVANCED-BRUSH-ENGINE.md](ADVANCED-BRUSH-ENGINE.md)** - NEW! Professional-grade brush features, 178+ presets, device support
 - **[⭐ ADVANCED-COLOR-WHEEL.md](ADVANCED-COLOR-WHEEL.md)** - NEW! Coolorus-style color picker with 5 color spaces, gamut lock, palettes
 - **[⭐ REBELLE_GRAPHITE_BRUSHES.md](REBELLE_GRAPHITE_BRUSHES.md)** - NEW! Professional graphite pencils (8B-4H) with tilt support and grade-specific textures
 - **[⭐ PHASE_15_FEATURES.md](PHASE_15_FEATURES.md)** - COMPLETED! Advanced export (PSD, TIFF), WebGL acceleration, tiled rendering, progressive loading (Phase 15)

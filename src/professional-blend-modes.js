@@ -17,7 +17,7 @@
 // BLEND MODE IMPLEMENTATIONS
 // ============================================================================
 
-const kritaBlendModes = {
+const professionalBlendModes = {
     /**
      * Grain Extract
      * Extracts the grain/texture from an image by comparing with base
@@ -190,14 +190,14 @@ const kritaBlendModes = {
  * @param {string} blendMode - Blend mode name
  * @returns {ImageData} Result image data
  */
-function applyKritaBlendMode(ctx, sourceData, destData, blendMode) {
-    if (!kritaBlendModes[blendMode]) {
-        console.warn(`Blend mode '${blendMode}' not found in Krita blend modes`);
+function applyProfessionalBlendMode(ctx, sourceData, destData, blendMode) {
+    if (!professionalBlendModes[blendMode]) {
+        console.warn(`Blend mode '${blendMode}' not found in professional blend modes`);
         return sourceData;
     }
     
     const result = ctx.createImageData(sourceData.width, sourceData.height);
-    const blendFunc = kritaBlendModes[blendMode];
+    const blendFunc = professionalBlendModes[blendMode];
     
     for (let i = 0; i < sourceData.data.length; i += 4) {
         const srcR = sourceData.data[i];
@@ -225,20 +225,20 @@ function applyKritaBlendMode(ctx, sourceData, destData, blendMode) {
 }
 
 /**
- * Get list of all available Krita blend modes
+ * Get list of all available professional blend modes
  * @returns {Array<string>} Array of blend mode names
  */
-function getKritaBlendModes() {
-    return Object.keys(kritaBlendModes);
+function getProfessionalBlendModes() {
+    return Object.keys(professionalBlendModes);
 }
 
 /**
- * Check if a blend mode is a Krita blend mode
+ * Check if a blend mode is a professional blend mode
  * @param {string} blendMode - Blend mode name to check
- * @returns {boolean} True if it's a Krita blend mode
+ * @returns {boolean} True if it's a professional blend mode
  */
-function isKritaBlendMode(blendMode) {
-    return kritaBlendModes.hasOwnProperty(blendMode);
+function isProfessionalBlendMode(blendMode) {
+    return professionalBlendModes.hasOwnProperty(blendMode);
 }
 
 // ============================================================================
@@ -247,9 +247,9 @@ function isKritaBlendMode(blendMode) {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        kritaBlendModes,
-        applyKritaBlendMode,
-        getKritaBlendModes,
-        isKritaBlendMode
+        professionalBlendModes,
+        applyProfessionalBlendMode,
+        getProfessionalBlendModes,
+        isProfessionalBlendMode
     };
 }
