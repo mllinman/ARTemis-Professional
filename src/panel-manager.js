@@ -7,11 +7,13 @@ class PanelManager {
     constructor() {
         this.panels = new Map(); // id -> panel config
         this.dockZones = new Map(); // zone id -> zone element
-        this.snapThreshold = 15; // pixels
+        this.snapThreshold = 30; // pixels - increased for easier snapping
         this.draggedPanel = null;
         this.panelGroups = new Map(); // group id -> panel ids[]
         this.layouts = new Map();
         this.currentLayout = 'default';
+        this.isResizing = false;
+        this.isDragging = false;
         
         this.init();
     }
@@ -153,7 +155,7 @@ class PanelManager {
     }
     
     /**
-     * Make panel draggable for docking
+     * Make panel draggable for docking with smooth motion
      */
     makePanelDraggable(panel, config) {
         const header = panel.querySelector('.panel-header');
@@ -161,6 +163,7 @@ class PanelManager {
         
         let dragStartX, dragStartY, panelStartX, panelStartY;
         let isDragging = false;
+        let animationFrame = null;
         
         header.style.cursor = 'move';
         
@@ -168,6 +171,7 @@ class PanelManager {
             if (e.target.closest('.panel-controls')) return;
             
             isDragging = true;
+            this.isDragging = true;
             this.draggedPanel = config;
             
             dragStartX = e.clientX;
@@ -178,52 +182,89 @@ class PanelManager {
             panelStartY = rect.top;
             
             panel.classList.add('dragging');
-            this.showSnapZones();
+            document.body.style.userSelect = 'none';
+            
+            // Slight delay before showing zones to avoid flicker
+            setTimeout(() => {
+                if (isDragging) {
+                    this.showSnapZones();
+                }
+            }, 100);
             
             e.preventDefault();
+            e.stopPropagation();
         });
         
         document.addEventListener('mousemove', (e) => {
             if (!isDragging || this.draggedPanel !== config) return;
             
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-            
-            // Make panel floating if it was docked
-            if (config.docked) {
-                panel.style.position = 'fixed';
-                config.docked = false;
+            // Use requestAnimationFrame for smooth dragging
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
             }
             
-            const newX = panelStartX + deltaX;
-            const newY = panelStartY + deltaY;
-            
-            // Check for snap zones
-            const snapResult = this.checkSnapZones(newX, newY, panel);
-            if (snapResult) {
-                this.highlightSnapZone(snapResult);
-            } else {
-                this.clearSnapZoneHighlights();
-                panel.style.left = newX + 'px';
-                panel.style.top = newY + 'px';
-            }
+            animationFrame = requestAnimationFrame(() => {
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                
+                // Make panel floating if it was docked
+                if (config.docked) {
+                    panel.style.position = 'fixed';
+                    panel.classList.add('floating');
+                    config.docked = false;
+                }
+                
+                const newX = panelStartX + deltaX;
+                const newY = panelStartY + deltaY;
+                
+                // Keep panel within viewport bounds
+                const maxX = window.innerWidth - panel.offsetWidth;
+                const maxY = window.innerHeight - panel.offsetHeight;
+                const constrainedX = Math.max(0, Math.min(newX, maxX));
+                const constrainedY = Math.max(0, Math.min(newY, maxY));
+                
+                // Check for snap zones
+                const snapResult = this.checkSnapZones(constrainedX, constrainedY, panel);
+                if (snapResult) {
+                    this.highlightSnapZone(snapResult);
+                    // Show preview of where panel will dock
+                    this.showDockPreview(snapResult, panel);
+                } else {
+                    this.clearSnapZoneHighlights();
+                    this.hideDockPreview();
+                    panel.style.left = constrainedX + 'px';
+                    panel.style.top = constrainedY + 'px';
+                }
+            });
         });
         
         document.addEventListener('mouseup', (e) => {
             if (!isDragging || this.draggedPanel !== config) return;
             
             isDragging = false;
+            this.isDragging = false;
             panel.classList.remove('dragging');
+            document.body.style.userSelect = '';
+            
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
             
             // Check if dropped on a snap zone
             const rect = panel.getBoundingClientRect();
             const snapResult = this.checkSnapZones(rect.left, rect.top, panel);
             if (snapResult) {
                 this.dockPanel(config, snapResult);
+            } else {
+                // Panel is now floating
+                panel.classList.add('floating');
+                panel.classList.remove('docked');
             }
             
             this.hideSnapZones();
             this.clearSnapZoneHighlights();
+            this.hideDockPreview();
             this.draggedPanel = null;
             
             this.savePanelStates();
@@ -231,7 +272,7 @@ class PanelManager {
     }
     
     /**
-     * Make panel resizable
+     * Make panel resizable with smooth constraints
      */
     makePanelResizable(panel, config) {
         const resizer = document.createElement('div');
@@ -240,45 +281,73 @@ class PanelManager {
         
         let isResizing = false;
         let startX, startY, startWidth, startHeight;
+        let animationFrame = null;
         
         resizer.addEventListener('mousedown', (e) => {
             isResizing = true;
+            this.isResizing = true;
             startX = e.clientX;
             startY = e.clientY;
             startWidth = panel.offsetWidth;
             startHeight = panel.offsetHeight;
             
+            panel.classList.add('resizing');
+            document.body.style.cursor = 'nwse-resize';
+            document.body.style.userSelect = 'none';
+            
             e.preventDefault();
+            e.stopPropagation();
         });
         
         document.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
             
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
-            
-            let newWidth = startWidth + deltaX;
-            let newHeight = startHeight + deltaY;
-            
-            // Apply constraints
-            if (config.minSize) {
-                newWidth = Math.max(newWidth, config.minSize.width);
-                newHeight = Math.max(newHeight, config.minSize.height);
-            }
-            if (config.maxSize) {
-                newWidth = Math.min(newWidth, config.maxSize.width);
-                newHeight = Math.min(newHeight, config.maxSize.height);
+            // Use requestAnimationFrame for smooth resizing
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
             }
             
-            panel.style.width = newWidth + 'px';
-            if (config.minSize.height !== 'auto') {
-                panel.style.height = newHeight + 'px';
-            }
+            animationFrame = requestAnimationFrame(() => {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                let newWidth = startWidth + deltaX;
+                let newHeight = startHeight + deltaY;
+                
+                // Apply constraints with snap to multiples of 20px for smoother feel
+                if (config.minSize) {
+                    newWidth = Math.max(newWidth, config.minSize.width);
+                    newHeight = Math.max(newHeight, config.minSize.height);
+                }
+                if (config.maxSize) {
+                    newWidth = Math.min(newWidth, config.maxSize.width);
+                    newHeight = Math.min(newHeight, config.maxSize.height);
+                }
+                
+                // Snap to 10px increments for cleaner sizing
+                newWidth = Math.round(newWidth / 10) * 10;
+                newHeight = Math.round(newHeight / 10) * 10;
+                
+                panel.style.width = newWidth + 'px';
+                if (config.minSize.height !== 'auto') {
+                    panel.style.height = newHeight + 'px';
+                }
+            });
         });
         
         document.addEventListener('mouseup', () => {
             if (isResizing) {
                 isResizing = false;
+                this.isResizing = false;
+                panel.classList.remove('resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+                
                 this.savePanelStates();
             }
         });
@@ -357,11 +426,18 @@ class PanelManager {
      * Create snap zones for docking
      */
     createDockZones() {
+        // Get menu bar and toolbar heights for proper positioning
+        const menuBar = document.getElementById('menu-bar');
+        const toolbar = document.getElementById('toolbar');
+        const contextBar = document.getElementById('contextual-taskbar');
+        
+        const topOffset = (menuBar?.offsetHeight || 0) + (toolbar?.offsetHeight || 0) + (contextBar?.offsetHeight || 0);
+        
         const zones = [
-            { id: 'top', position: 'top', width: '100%', height: '60px', top: '0', left: '0' },
-            { id: 'bottom', position: 'bottom', width: '100%', height: '60px', bottom: '0', left: '0' },
-            { id: 'left', position: 'left', width: '60px', height: '100%', top: '0', left: '0' },
-            { id: 'right', position: 'right', width: '60px', height: '100%', top: '0', right: '0' }
+            { id: 'top', position: 'top', width: '100%', height: '80px', top: topOffset + 'px', left: '0' },
+            { id: 'bottom', position: 'bottom', width: '100%', height: '80px', bottom: '0', left: '0' },
+            { id: 'left', position: 'left', width: '80px', height: 'calc(100% - ' + topOffset + 'px)', top: topOffset + 'px', left: '0' },
+            { id: 'right', position: 'right', width: '80px', height: 'calc(100% - ' + topOffset + 'px)', top: topOffset + 'px', right: '0' }
         ];
         
         zones.forEach(zone => {
@@ -370,12 +446,13 @@ class PanelManager {
             element.dataset.position = zone.position;
             element.style.cssText = `
                 position: fixed;
-                background: rgba(0, 122, 204, 0.2);
-                border: 2px dashed rgba(0, 122, 204, 0.5);
+                background: rgba(0, 122, 204, 0.15);
+                border: 3px dashed rgba(0, 122, 204, 0.6);
                 display: none;
-                z-index: 10000;
+                z-index: 9998;
                 pointer-events: none;
-                transition: all 0.2s;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                border-radius: 8px;
                 width: ${zone.width};
                 height: ${zone.height};
                 ${zone.top !== undefined ? 'top: ' + zone.top + ';' : ''}
@@ -387,6 +464,21 @@ class PanelManager {
             document.body.appendChild(element);
             this.dockZones.set(zone.id, { element, config: zone });
         });
+        
+        // Create dock preview element
+        this.dockPreview = document.createElement('div');
+        this.dockPreview.className = 'dock-preview';
+        this.dockPreview.style.cssText = `
+            position: fixed;
+            background: rgba(0, 122, 204, 0.2);
+            border: 2px solid rgba(0, 122, 204, 0.8);
+            display: none;
+            z-index: 9997;
+            pointer-events: none;
+            border-radius: 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
+        document.body.appendChild(this.dockPreview);
     }
     
     /**
@@ -443,8 +535,63 @@ class PanelManager {
         this.clearSnapZoneHighlights();
         const zone = this.dockZones.get(snapResult.zoneId);
         if (zone) {
-            zone.element.style.background = 'rgba(0, 122, 204, 0.5)';
-            zone.element.style.borderColor = 'rgba(0, 122, 204, 0.8)';
+            zone.element.classList.add('highlight');
+        }
+    }
+    
+    /**
+     * Show dock preview
+     */
+    showDockPreview(snapResult, panel) {
+        if (!this.dockPreview) return;
+        
+        const zone = this.dockZones.get(snapResult.zoneId);
+        if (!zone) return;
+        
+        const zoneRect = zone.element.getBoundingClientRect();
+        const panelWidth = panel.offsetWidth;
+        const panelHeight = panel.offsetHeight;
+        
+        let previewStyle = {
+            display: 'block'
+        };
+        
+        switch (snapResult.position) {
+            case 'top':
+                previewStyle.left = '0px';
+                previewStyle.top = zoneRect.top + 'px';
+                previewStyle.width = '100%';
+                previewStyle.height = Math.min(panelHeight, 300) + 'px';
+                break;
+            case 'bottom':
+                previewStyle.left = '0px';
+                previewStyle.bottom = '0px';
+                previewStyle.width = '100%';
+                previewStyle.height = Math.min(panelHeight, 300) + 'px';
+                break;
+            case 'left':
+                previewStyle.left = '0px';
+                previewStyle.top = zoneRect.top + 'px';
+                previewStyle.width = Math.min(panelWidth, 400) + 'px';
+                previewStyle.height = 'calc(100% - ' + zoneRect.top + 'px)';
+                break;
+            case 'right':
+                previewStyle.right = '0px';
+                previewStyle.top = zoneRect.top + 'px';
+                previewStyle.width = Math.min(panelWidth, 400) + 'px';
+                previewStyle.height = 'calc(100% - ' + zoneRect.top + 'px)';
+                break;
+        }
+        
+        Object.assign(this.dockPreview.style, previewStyle);
+    }
+    
+    /**
+     * Hide dock preview
+     */
+    hideDockPreview() {
+        if (this.dockPreview) {
+            this.dockPreview.style.display = 'none';
         }
     }
     
@@ -725,6 +872,171 @@ class PanelManager {
         
         this.savePanelStates();
         this.updateWindowsMenu();
+    }
+    
+    /**
+     * Create panel group with tabs
+     */
+    createPanelGroup(panelIds, containerId) {
+        const groupId = 'group-' + Date.now();
+        const container = document.getElementById(containerId);
+        if (!container) return null;
+        
+        const groupElement = document.createElement('div');
+        groupElement.className = 'panel-group';
+        groupElement.dataset.groupId = groupId;
+        
+        // Create tab bar
+        const tabBar = document.createElement('div');
+        tabBar.className = 'panel-tabs';
+        groupElement.appendChild(tabBar);
+        
+        // Create content container
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'panel-group-content';
+        groupElement.appendChild(contentContainer);
+        
+        // Add panels to group
+        panelIds.forEach((panelId, index) => {
+            const config = this.panels.get(panelId);
+            if (!config) return;
+            
+            // Create tab
+            const tab = document.createElement('button');
+            tab.className = 'panel-tab' + (index === 0 ? ' active' : '');
+            tab.dataset.panelId = panelId;
+            tab.innerHTML = `
+                ${config.title}
+                <span class="panel-tab-close">✕</span>
+            `;
+            
+            tab.addEventListener('click', (e) => {
+                if (e.target.classList.contains('panel-tab-close')) {
+                    this.removeFromGroup(groupId, panelId);
+                } else {
+                    this.switchGroupTab(groupId, panelId);
+                }
+            });
+            
+            tabBar.appendChild(tab);
+            
+            // Add panel to content
+            const panel = config.element;
+            panel.classList.add(index === 0 ? 'active' : '');
+            contentContainer.appendChild(panel);
+        });
+        
+        container.appendChild(groupElement);
+        this.panelGroups.set(groupId, { panelIds, element: groupElement });
+        
+        return groupId;
+    }
+    
+    /**
+     * Switch active tab in a panel group
+     */
+    switchGroupTab(groupId, panelId) {
+        const group = this.panelGroups.get(groupId);
+        if (!group) return;
+        
+        const tabs = group.element.querySelectorAll('.panel-tab');
+        const panels = group.element.querySelectorAll('.modular-panel');
+        
+        tabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.panelId === panelId);
+        });
+        
+        panels.forEach(panel => {
+            panel.classList.toggle('active', panel.dataset.panelId === panelId);
+        });
+    }
+    
+    /**
+     * Remove panel from group
+     */
+    removeFromGroup(groupId, panelId) {
+        const group = this.panelGroups.get(groupId);
+        if (!group) return;
+        
+        const index = group.panelIds.indexOf(panelId);
+        if (index > -1) {
+            group.panelIds.splice(index, 1);
+        }
+        
+        // Remove tab
+        const tab = group.element.querySelector(`.panel-tab[data-panel-id="${panelId}"]`);
+        if (tab) tab.remove();
+        
+        // Remove panel from content
+        const config = this.panels.get(panelId);
+        if (config) {
+            const panel = config.element;
+            panel.classList.remove('active');
+            
+            // Make panel floating
+            panel.style.position = 'fixed';
+            panel.style.left = '50%';
+            panel.style.top = '50%';
+            panel.style.transform = 'translate(-50%, -50%)';
+            panel.classList.add('floating');
+            document.body.appendChild(panel);
+            
+            config.docked = false;
+        }
+        
+        // If only one panel left, dissolve group
+        if (group.panelIds.length === 1) {
+            const lastPanelId = group.panelIds[0];
+            const lastConfig = this.panels.get(lastPanelId);
+            if (lastConfig) {
+                const lastPanel = lastConfig.element;
+                lastPanel.classList.remove('active');
+                group.element.parentNode.appendChild(lastPanel);
+            }
+            group.element.remove();
+            this.panelGroups.delete(groupId);
+        }
+        
+        this.savePanelStates();
+    }
+    
+    /**
+     * Add panel to existing group
+     */
+    addToGroup(groupId, panelId) {
+        const group = this.panelGroups.get(groupId);
+        const config = this.panels.get(panelId);
+        
+        if (!group || !config) return;
+        
+        group.panelIds.push(panelId);
+        
+        // Create tab
+        const tabBar = group.element.querySelector('.panel-tabs');
+        const tab = document.createElement('button');
+        tab.className = 'panel-tab';
+        tab.dataset.panelId = panelId;
+        tab.innerHTML = `
+            ${config.title}
+            <span class="panel-tab-close">✕</span>
+        `;
+        
+        tab.addEventListener('click', (e) => {
+            if (e.target.classList.contains('panel-tab-close')) {
+                this.removeFromGroup(groupId, panelId);
+            } else {
+                this.switchGroupTab(groupId, panelId);
+            }
+        });
+        
+        tabBar.appendChild(tab);
+        
+        // Add panel to content
+        const contentContainer = group.element.querySelector('.panel-group-content');
+        const panel = config.element;
+        contentContainer.appendChild(panel);
+        
+        this.savePanelStates();
     }
 }
 

@@ -27,7 +27,8 @@ body {
     align-items: center;
     padding: 0;
     height: 32px;
-    z-index: 101;
+    z-index: 1000;
+    position: relative;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -61,7 +62,7 @@ body {
     border-radius: 4px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     min-width: 220px;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 .menu-item:hover .menu-dropdown {
@@ -95,7 +96,8 @@ body {
     gap: 12px;
     height: 56px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 100;
+    z-index: 999;
+    position: relative;
 }
 
 .toolbar-section {
@@ -201,7 +203,8 @@ body {
     display: flex;
     align-items: center;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-    z-index: 90;
+    z-index: 998;
+    position: relative;
     transition: all 0.2s ease;
 }
 
@@ -394,7 +397,7 @@ body {
     width: 48px;
 }
 
-/* Panel Styles */
+/* Panel Styles - Enhanced with modular system */
 .panel {
     background: #252526;
     border-right: 1px solid #3e3e42;
@@ -404,9 +407,10 @@ body {
     min-width: 200px;
     max-width: 600px;
     position: relative;
-    transition: width 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-    z-index: 10;
+    z-index: 95;
+    contain: layout style;
 }
 
 .panel.collapsed {
@@ -424,6 +428,7 @@ body {
     border-right: none;
     border-left: 1px solid #3e3e42;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+    z-index: 95;
 }
 
 #color-panel {
@@ -431,7 +436,7 @@ body {
     background: #1e1e1e;
     border: 1px solid #3e3e42;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-    z-index: 100;
+    z-index: 96;
 }
 
 #color-panel .resize-handle {
@@ -556,6 +561,8 @@ body {
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    z-index: 1;
+    contain: layout size style;
 }
 
 #canvas-wrapper {
@@ -572,6 +579,7 @@ body {
         linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    isolation: isolate;
 }
 
 #main-canvas {
@@ -582,6 +590,7 @@ body {
     /* Hardware acceleration for better performance */
     will-change: transform;
     transform: translateZ(0);
+    pointer-events: auto;
 }
 
 #draw-canvas {
