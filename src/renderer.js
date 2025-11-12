@@ -3876,6 +3876,140 @@ function setupNewFeatures() {
     
     // Setup Advanced Features
     setupAdvancedFeatures();
+    
+    // Setup Krita Features
+    setupKritaFeatures();
+}
+
+// Setup Krita-Inspired Features (Multibrush, Assistant, etc.)
+function setupKritaFeatures() {
+    // Check if Krita modules are loaded
+    if (typeof kritaTools === 'undefined') {
+        console.warn('Krita tools not loaded');
+        return;
+    }
+    
+    // Krita Multibrush Tool
+    const multibrushEnabled = document.getElementById('krita-multibrush-enabled');
+    if (multibrushEnabled) {
+        multibrushEnabled.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ enabled: e.target.checked });
+            if (e.target.checked) {
+                // Set center to canvas center
+                kritaTools.multibrush.setCenter(state.canvas.width / 2, state.canvas.height / 2);
+            }
+            // Show/hide settings
+            const settings = document.getElementById('krita-multibrush-settings');
+            if (settings) {
+                settings.classList.toggle('hidden', !e.target.checked);
+            }
+            renderCanvas();
+        });
+    }
+    
+    const multibrushMode = document.getElementById('krita-multibrush-mode');
+    if (multibrushMode) {
+        multibrushMode.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ mode: e.target.value });
+            renderCanvas();
+        });
+    }
+    
+    const multibrushAxes = document.getElementById('krita-multibrush-axes');
+    const multibrushAxesValue = document.getElementById('krita-multibrush-axes-value');
+    if (multibrushAxes && multibrushAxesValue) {
+        multibrushAxes.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            multibrushAxesValue.textContent = value;
+            kritaTools.multibrush.updateSettings({ axes: value, copies: value });
+            renderCanvas();
+        });
+    }
+    
+    const multibrushShowAxes = document.getElementById('krita-multibrush-show-axes');
+    if (multibrushShowAxes) {
+        multibrushShowAxes.addEventListener('change', (e) => {
+            kritaTools.multibrush.updateSettings({ showAxes: e.target.checked });
+            renderCanvas();
+        });
+    }
+    
+    // Krita Assistant Tool
+    const assistantEnabled = document.getElementById('krita-assistant-enabled');
+    if (assistantEnabled) {
+        assistantEnabled.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ showAssistants: e.target.checked });
+            // Show/hide settings
+            const settings = document.getElementById('krita-assistant-settings');
+            if (settings) {
+                settings.classList.toggle('hidden', !e.target.checked);
+            }
+            renderCanvas();
+        });
+    }
+    
+    const assistantSnap = document.getElementById('krita-assistant-snap');
+    if (assistantSnap) {
+        assistantSnap.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ snapToAssistant: e.target.checked });
+        });
+    }
+    
+    const assistantSnapDistance = document.getElementById('krita-assistant-snap-distance');
+    if (assistantSnapDistance) {
+        assistantSnapDistance.addEventListener('change', (e) => {
+            kritaTools.assistant.updateSettings({ snapDistance: parseInt(e.target.value) });
+        });
+    }
+    
+    // Assistant creation buttons
+    const perspectiveBtn = document.getElementById('krita-assistant-perspective');
+    if (perspectiveBtn) {
+        perspectiveBtn.addEventListener('click', () => {
+            // Create perspective assistant at canvas center
+            const centerX = state.canvas.width / 2;
+            const centerY = state.canvas.height / 2;
+            kritaTools.assistant.createPerspectiveAssistant(
+                { x: centerX - 200, y: centerY },
+                { x: centerX + 200, y: centerY }
+            );
+            renderCanvas();
+            showNotification('✓ Perspective assistant added', 'success');
+        });
+    }
+    
+    const parallelBtn = document.getElementById('krita-assistant-parallel');
+    if (parallelBtn) {
+        parallelBtn.addEventListener('click', () => {
+            // Create parallel ruler at canvas center
+            const centerX = state.canvas.width / 2;
+            const centerY = state.canvas.height / 2;
+            kritaTools.assistant.createParallelAssistant(
+                { x: centerX - 100, y: centerY - 100 },
+                { x: centerX + 100, y: centerY + 100 }
+            );
+            renderCanvas();
+            showNotification('✓ Parallel ruler added', 'success');
+        });
+    }
+    
+    const gridBtn = document.getElementById('krita-assistant-grid');
+    if (gridBtn) {
+        gridBtn.addEventListener('click', () => {
+            kritaTools.assistant.createGridAssistant(50, 5);
+            renderCanvas();
+            showNotification('✓ Grid assistant added', 'success');
+        });
+    }
+    
+    const clearBtn = document.getElementById('krita-assistant-clear');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            kritaTools.assistant.clearAssistants();
+            renderCanvas();
+            showNotification('✓ Assistants cleared', 'success');
+        });
+    }
 }
 
 // Setup Advanced Features (Wrap-around, Symmetry, etc.)
@@ -7230,8 +7364,16 @@ function continueStroke(x, y, pressure) {
 }
 
 function drawDot(x, y, pressure, angle = 0) {
-    // Draw the main dot
-    drawDotInternal(x, y, pressure, angle);
+    // KRITA: Apply Multibrush transformations if enabled
+    if (typeof kritaTools !== 'undefined' && kritaTools.multibrush.settings.enabled) {
+        const transformedPoints = kritaTools.multibrush.calculateTransforms(x, y);
+        transformedPoints.forEach(point => {
+            drawDotInternal(point.x, point.y, pressure, angle);
+        });
+    } else {
+        // Draw the main dot
+        drawDotInternal(x, y, pressure, angle);
+    }
     
     // Apply symmetry if enabled
     if (state.symmetry.enabled) {
