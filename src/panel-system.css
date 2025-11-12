@@ -11,26 +11,29 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-    z-index: 10;
+    z-index: 95;
     overflow: hidden;
     border-radius: 4px;
+    contain: layout style;
 }
 
 .modular-panel.dragging {
-    opacity: 0.9;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-    z-index: 10001;
+    opacity: 0.85;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 0 2px #007acc;
+    z-index: 9999;
     cursor: move !important;
-    transform: scale(1.02);
+    transform: scale(1.01);
     border-color: #007acc;
+    transition: opacity 0.1s, box-shadow 0.1s;
 }
 
 .modular-panel.floating {
     position: fixed;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
+    z-index: 96;
 }
 
 .modular-panel.docked {
@@ -241,18 +244,21 @@
 /* Dock Zones (for drag and drop) */
 .dock-zone {
     position: fixed;
-    background: rgba(0, 122, 204, 0.2);
-    border: 2px dashed rgba(0, 122, 204, 0.5);
+    background: rgba(0, 122, 204, 0.15);
+    border: 3px dashed rgba(0, 122, 204, 0.6);
     display: none;
-    z-index: 10000;
+    z-index: 9998;
     pointer-events: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
 }
 
 .dock-zone.highlight {
-    background: rgba(0, 122, 204, 0.5);
-    border-color: rgba(0, 122, 204, 0.8);
-    border-width: 3px;
+    background: rgba(0, 122, 204, 0.35);
+    border-color: rgba(0, 122, 204, 1);
+    border-width: 4px;
+    border-style: solid;
+    box-shadow: 0 0 20px rgba(0, 122, 204, 0.6), inset 0 0 20px rgba(0, 122, 204, 0.2);
 }
 
 /* Panel Groups / Tabs */
@@ -571,16 +577,57 @@
     }
 }
 
+/* Resizing State */
+.modular-panel.resizing {
+    transition: none;
+    user-select: none;
+}
+
+.modular-panel.resizing * {
+    pointer-events: none;
+}
+
+/* Dock Preview */
+.dock-preview {
+    position: fixed;
+    background: rgba(0, 122, 204, 0.25);
+    border: 3px solid rgba(0, 122, 204, 0.9);
+    display: none;
+    z-index: 9997;
+    pointer-events: none;
+    border-radius: 6px;
+    box-shadow: 0 0 30px rgba(0, 122, 204, 0.5), inset 0 0 30px rgba(0, 122, 204, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Improved Panel Animations */
+@keyframes panelSnapIn {
+    from {
+        transform: scale(0.98);
+        opacity: 0.8;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modular-panel.snap-animation {
+    animation: panelSnapIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
     .modular-panel,
     .panel-controls button,
     .dock-zone,
-    .panel-tab {
+    .panel-tab,
+    .dock-preview {
         transition: none;
     }
     
-    .modular-panel.animating {
+    .modular-panel.animating,
+    .modular-panel.snap-animation {
         animation: none;
     }
 }
