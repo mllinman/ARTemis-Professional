@@ -1,8 +1,7 @@
 /**
- * Krita-Inspired Blend Modes for ARTemis
+ * Advanced Blend Modes for ARTemis
  * 
- * This module implements additional blend modes inspired by Krita's compositing system
- * Originally based on Krita's KoCompositeOp implementation
+ * This module implements additional blend modes for advanced compositing
  * 
  * Blend Modes Implemented:
  * - Grain Extract: Extracts texture/grain from images

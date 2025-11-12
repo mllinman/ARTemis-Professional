@@ -1,7 +1,6 @@
 /**
  * ARTemis Professional - Panel Management System
  * Advanced modular panel system with docking, snapping, and combining
- * Similar to Photoshop's panel management
  */
 
 class PanelManager {

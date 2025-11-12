@@ -1309,7 +1309,7 @@
                                     <option value="metallic">✨ Metallic & Special (10)</option>
                                     <option value="mixer">🎨 Mixer & Blending (10)</option>
                                     <option value="texture">🖼️ Texture Brushes (10)</option>
-                                    <option value="krita">🖌️ Krita-Inspired (15)</option>
+                                    <option value="krita">🖌️ Advanced Brushes (15)</option>
                                     <option value="imported">Imported Brushes</option>
                                 </select>
                             </div>
@@ -1423,11 +1423,11 @@
                             </div>
                         </div>
                         
-                        <!-- Krita Multibrush Tool -->
+                        <!-- Multibrush Tool -->
                         <div class="setting-group">
                             <label>
                                 <input type="checkbox" id="krita-multibrush-enabled">
-                                🖌️ Krita Multibrush
+                                🖌️ Multibrush Tool
                             </label>
                             <div id="krita-multibrush-settings" class="sub-settings hidden">
                                 <label>Mode:</label>
@@ -1447,11 +1447,11 @@
                             </div>
                         </div>
                         
-                        <!-- Krita Assistant Tool -->
+                        <!-- Drawing Assistant Tool -->
                         <div class="setting-group">
                             <label>
                                 <input type="checkbox" id="krita-assistant-enabled">
-                                📐 Krita Assistant
+                                📐 Drawing Assistant
                             </label>
                             <div id="krita-assistant-settings" class="sub-settings hidden">
                                 <button class="secondary-btn" id="krita-assistant-perspective">Add Perspective</button>
@@ -2650,6 +2650,10 @@
     </script>
     <script src="advanced-colorwheel.js"></script>
     
+    <!-- Performance & Memory Management -->
+    <script src="memory-manager.js"></script>
+    <script src="performance-manager.js"></script>
+    
     <!-- Phase 15 Enhancement Modules -->
     <script src="psd-exporter.js"></script>
     <script src="tiff-exporter.js"></script>
@@ -2695,7 +2699,7 @@
     <script src="v3-features/v3-config.js"></script>
     <script src="v3-features/v3-init.js" type="module"></script>
     
-    <!-- Krita-Inspired Features -->
+    <!-- Advanced Brush Features -->
     <script src="krita-brush-engines.js"></script>
     <script src="krita-blend-modes.js"></script>
     <script src="krita-tools.js"></script>
