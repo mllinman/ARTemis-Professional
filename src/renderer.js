@@ -64,7 +64,12 @@ async function browserFileOperations(channel, ...args) {
                     const accept = options.filters.flatMap(f => f.extensions.map(e => '.' + e)).join(',');
                     input.accept = accept;
                 }
+                
+                // Handle file selection
                 input.onchange = async (e) => {
+                    // Clean up event listeners
+                    window.removeEventListener('focus', focusHandler);
+                    
                     const file = e.target.files[0];
                     if (file) {
                         // Check if it's likely a binary file (image) or text file (project)
@@ -88,6 +93,21 @@ async function browserFileOperations(channel, ...args) {
                         resolve({ canceled: true });
                     }
                 };
+                
+                // Handle dialog cancellation - when user closes the file picker without selecting
+                const focusHandler = () => {
+                    // Use a timeout to check if a file was selected
+                    setTimeout(() => {
+                        if (!input.files || input.files.length === 0) {
+                            window.removeEventListener('focus', focusHandler);
+                            resolve({ canceled: true });
+                        }
+                    }, 300);
+                };
+                
+                // Listen for window focus to detect when file picker is closed
+                window.addEventListener('focus', focusHandler, { once: true });
+                
                 input.click();
             });
         }
