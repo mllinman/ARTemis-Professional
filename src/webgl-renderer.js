@@ -12,6 +12,9 @@ class WebGLRenderer {
         this.brushTexture = null;
         this.canvasTexture = null;
         this.framebuffer = null;
+        this._positionBuffer = null;
+        this._texCoordBuffer = null;
+        this._contextLost = false;
     }
     
     /**
@@ -36,12 +39,32 @@ class WebGLRenderer {
             // Set up geometry
             this.setupGeometry();
             
+            // Handle context lost/restored (GPU crashes)
+            this.canvas.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                this._contextLost = true;
+                this.initialized = false;
+                console.warn('[WebGL] Context lost — GPU resources invalidated');
+                if (window.toast) {
+                    window.toast.warning('GPU context lost. Attempting recovery...', 'WebGL');
+                }
+            });
+            
+            this.canvas.addEventListener('webglcontextrestored', () => {
+                console.log('[WebGL] Context restored — reinitializing');
+                this._contextLost = false;
+                this.init();
+                if (window.toast) {
+                    window.toast.success('GPU context recovered.', 'WebGL');
+                }
+            });
+            
             this.initialized = true;
-            console.log('WebGL renderer initialized successfully');
+            console.log('[WebGL] Renderer initialized successfully');
             return true;
             
         } catch (error) {
-            console.error('Failed to initialize WebGL:', error);
+            console.error('[WebGL] Failed to initialize:', error);
             return false;
         }
     }
@@ -275,12 +298,68 @@ class WebGLRenderer {
     }
     
     /**
+     * Destroy WebGL resources and clean up
+     */
+    destroy() {
+        if (!this.gl) return;
+        
+        // Delete textures
+        if (this.brushTexture) {
+            this.gl.deleteTexture(this.brushTexture);
+            this.brushTexture = null;
+        }
+        if (this.canvasTexture) {
+            this.gl.deleteTexture(this.canvasTexture);
+            this.canvasTexture = null;
+        }
+        
+        // Delete buffers
+        if (this._positionBuffer) {
+            this.gl.deleteBuffer(this._positionBuffer);
+            this._positionBuffer = null;
+        }
+        if (this._texCoordBuffer) {
+            this.gl.deleteBuffer(this._texCoordBuffer);
+            this._texCoordBuffer = null;
+        }
+        
+        // Delete framebuffer
+        if (this.framebuffer) {
+            this.gl.deleteFramebuffer(this.framebuffer);
+            this.framebuffer = null;
+        }
+        
+        // Delete shader program
+        if (this.program) {
+            this.gl.deleteProgram(this.program);
+            this.program = null;
+        }
+        
+        this.initialized = false;
+        this.gl = null;
+        console.log('[WebGL] Resources cleaned up');
+    }
+    
+    /**
      * Check if WebGL is available
      */
     static isWebGLAvailable() {
         try {
             const canvas = document.createElement('canvas');
             return !!(canvas.getContext('webgl') || canvas.getContext('webgl2'));
+        } catch (e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Check if WebGPU is available (future-proofing)
+     */
+    static async isWebGPUAvailable() {
+        if (!('gpu' in navigator)) return false;
+        try {
+            const adapter = await navigator.gpu.requestAdapter();
+            return !!adapter;
         } catch (e) {
             return false;
         }

@@ -1,0 +1,40 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-undef": "warn",
+    "no-console": "off",
+    "eqeqeq": ["error", "always"],
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-alert": "warn",
+    "prefer-const": "warn",
+    "no-var": "warn",
+    "no-throw-literal": "error"
+  },
+  "globals": {
+    "state": "writable",
+    "ipcRenderer": "writable",
+    "browserMenuSystem": "writable",
+    "isElectron": "readonly",
+    "authManager": "readonly",
+    "Stripe": "readonly",
+    "google": "readonly"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "website/",
+    "examples/",
+    "screenshots/",
+    "test-*.html"
+  ]
+}

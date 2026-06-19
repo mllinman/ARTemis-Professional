@@ -12,15 +12,36 @@ package-lock.json
 
 # Logs
 *.log
+npm-debug.log*
 
 # OS files
 Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes
 
 # Temporary files
 *.tmp
 *.temp
 *.autosave
 
-# Build/distribution (if applicable)
+# Build/distribution
 dist/
 build/
+out/
+
+# Environment variables — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# ESLint/Prettier caches
+.eslintcache
+.prettiercache
+
+# Coverage reports
+coverage/
+
+# Electron build artifacts
+release/
+*.asar

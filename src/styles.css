@@ -1,3 +1,115 @@
+/* ============================================
+   ARTemis Professional — Design Tokens
+   ============================================ */
+:root {
+    /* Surface colors */
+    --color-bg-primary: #1e1e1e;
+    --color-bg-secondary: #252526;
+    --color-bg-tertiary: #2d2d30;
+    --color-bg-elevated: #3e3e42;
+    --color-bg-hover: #4e4e52;
+
+    /* Text colors */
+    --color-text-primary: #cccccc;
+    --color-text-secondary: #858585;
+    --color-text-accent: #ffffff;
+    --color-text-muted: #6e6e6e;
+
+    /* Accent / Brand */
+    --color-accent: #0e639c;
+    --color-accent-hover: #1177bb;
+    --color-accent-active: #0b4a7a;
+    --color-accent-glow: rgba(14, 99, 156, 0.8);
+
+    /* Borders */
+    --color-border: #3e3e42;
+    --color-border-active: #0e639c;
+
+    /* Feedback colors */
+    --color-success: #4ade80;
+    --color-warning: #ffaa00;
+    --color-error: #ff3366;
+    --color-info: #00aaff;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-accent: 0 0 12px var(--color-accent-glow);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
+
+    /* Radii */
+    --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-full: 50%;
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Courier New', monospace;
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+    --font-size-md: 13px;
+    --font-size-lg: 14px;
+
+    /* Animation */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Panel dimensions */
+    --panel-width: 280px;
+    --panel-min-width: 200px;
+    --panel-max-width: 600px;
+    --panel-collapsed-width: 48px;
+    --toolbar-height: 56px;
+    --menubar-height: 32px;
+}
+
+/* ============================================
+   Accessibility: Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-fast: 0.01ms !important;
+        --transition-normal: 0.01ms !important;
+        --transition-smooth: 0.01ms !important;
+        --transition-spring: 0.01ms !important;
+    }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ============================================
+   Accessibility: High Contrast
+   ============================================ */
+@media (prefers-contrast: high) {
+    :root {
+        --color-border: #888;
+        --color-text-primary: #fff;
+        --color-text-secondary: #ddd;
+        --color-bg-primary: #000;
+        --color-bg-secondary: #111;
+        --color-accent: #4da6ff;
+    }
+}
+
+/* ============================================
+   Base Reset
+   ============================================ */
 * {
     margin: 0;
     padding: 0;
@@ -5,9 +117,9 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #1e1e1e;
-    color: #cccccc;
+    font-family: var(--font-family);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
     overflow: hidden;
     user-select: none;
 }
@@ -669,6 +781,7 @@ body {
     background: #3e3e42;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
     transition: background 0.2s;
 }
 

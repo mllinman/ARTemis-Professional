@@ -1,11 +1,15 @@
 {
-  "name": "artemis",
-  "version": "1.0.0-alpha",
-  "description": "ARTemis - Professional digital painting application with advanced tools - works standalone in browser or as Electron app",
+  "name": "artemis-professional",
+  "version": "2.0.0-beta",
+  "description": "ARTemis Professional — Digital painting application with advanced brush engine, vector tools, and AI features. Works standalone in browser or as Electron desktop app.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "start:browser": "echo 'Open src/index.html directly in your browser' && exit 0",
+    "lint": "eslint src/ --ext .js",
+    "lint:fix": "eslint src/ --ext .js --fix",
+    "format": "prettier --write \"src/**/*.{js,css,html}\"",
+    "format:check": "prettier --check \"src/**/*.{js,css,html}\"",
     "test": "echo \"Tests will be added\" && exit 0"
   },
   "keywords": [
@@ -15,15 +19,32 @@
     "drawing",
     "painting",
     "browser-app",
-    "standalone"
+    "standalone",
+    "creative-tools",
+    "canvas",
+    "webgl",
+    "pwa"
   ],
-  "author": "",
+  "author": "BulletDrop Studios",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mllinman/ARTemis-Professional"
+  },
+  "homepage": "https://github.com/mllinman/ARTemis-Professional#readme",
+  "bugs": {
+    "url": "https://github.com/mllinman/ARTemis-Professional/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "optionalDependencies": {
-    "electron": "^27.0.0"
+    "electron": "^34.0.0"
   },
   "devDependencies": {
-    "canvas": "^3.2.0"
+    "canvas": "^3.2.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0"
   },
   "dependencies": {
     "ag-psd": "^28.4.1",

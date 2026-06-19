@@ -5,7 +5,11 @@
 const AUTH_CONFIG = {
     GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID', // Replace with actual client ID
     STRIPE_PUBLISHABLE_KEY: 'pk_test_YOUR_STRIPE_KEY', // Replace with actual Stripe key
-    ADMIN_PASSWORD_HASH: 'Detroit1977!!' // In production, use proper password hashing
+    // SECURITY: Admin password is verified via SHA-256 hash comparison.
+    // In production, use server-side authentication — NEVER store credentials client-side.
+    ADMIN_PASSWORD_HASH: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', // SHA-256 hash
+    ADMIN_LOGIN_MAX_ATTEMPTS: 5,
+    ADMIN_LOGIN_LOCKOUT_MS: 5 * 60 * 1000, // 5-minute lockout after max attempts
 };
 
 const SUBSCRIPTION_TIERS = {
@@ -116,8 +120,25 @@ class AuthManager {
     }
 
     async signInAsAdmin(password) {
-        // In production, verify with backend
-        if (password === AUTH_CONFIG.ADMIN_PASSWORD_HASH) {
+        // Rate limiting check
+        if (!this._adminLoginState) {
+            this._adminLoginState = { attempts: 0, lockedUntil: 0 };
+        }
+        
+        const now = Date.now();
+        if (now < this._adminLoginState.lockedUntil) {
+            const remainingSec = Math.ceil((this._adminLoginState.lockedUntil - now) / 1000);
+            console.warn(`Admin login locked out for ${remainingSec}s`);
+            return false;
+        }
+        
+        // Hash the input password with SHA-256 and compare
+        const passwordHash = await this._hashPassword(password);
+        
+        if (passwordHash === AUTH_CONFIG.ADMIN_PASSWORD_HASH) {
+            // Reset rate limiting on successful login
+            this._adminLoginState = { attempts: 0, lockedUntil: 0 };
+            
             const adminUser = {
                 id: 'admin',
                 email: 'admin@artemis.app',
@@ -132,7 +153,29 @@ class AuthManager {
             localStorage.setItem('artemis_is_admin', 'true');
             return true;
         }
+        
+        // Track failed attempt
+        this._adminLoginState.attempts++;
+        if (this._adminLoginState.attempts >= AUTH_CONFIG.ADMIN_LOGIN_MAX_ATTEMPTS) {
+            this._adminLoginState.lockedUntil = now + AUTH_CONFIG.ADMIN_LOGIN_LOCKOUT_MS;
+            this._adminLoginState.attempts = 0;
+            console.warn('Admin login locked out due to too many failed attempts');
+        }
+        
         return false;
+    }
+
+    async _hashPassword(password) {
+        try {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch (error) {
+            console.error('Password hashing failed:', error);
+            return '';
+        }
     }
 
     async signInWithEmail(email, password) {

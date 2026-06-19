@@ -1,28 +1,26 @@
 // Browser compatibility layer - works standalone without Electron
+// Uses contextBridge API (preload.js) when in Electron, browser APIs otherwise
+const isElectron = !!(window.electronAPI && window.electronAPI.isElectron);
+
 const ipcRenderer = {
     invoke: async (channel, ...args) => {
-        // Polyfill for Electron IPC in browser environment
-        if (typeof require !== 'undefined') {
-            // Running in Electron
-            const { ipcRenderer: electronIpc } = require('electron');
-            return electronIpc.invoke(channel, ...args);
+        if (isElectron) {
+            return window.electronAPI.invoke(channel, ...args);
         }
         // Running in browser - use browser APIs
         return browserFileOperations(channel, ...args);
     },
     on: (channel, callback) => {
-        if (typeof require !== 'undefined') {
-            const { ipcRenderer: electronIpc } = require('electron');
-            electronIpc.on(channel, callback);
+        if (isElectron) {
+            window.electronAPI.on(channel, callback);
         } else {
             // In browser, register event listeners for menu simulation
             browserMenuSystem.on(channel, callback);
         }
     },
     send: (channel, ...args) => {
-        if (typeof require !== 'undefined') {
-            const { ipcRenderer: electronIpc } = require('electron');
-            electronIpc.send(channel, ...args);
+        if (isElectron) {
+            window.electronAPI.send(channel, ...args);
         }
         // In browser, no-op or handle differently
     }

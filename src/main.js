@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -9,12 +9,31 @@ function createWindow() {
     width: 1400,
     height: 900,
     backgroundColor: '#1e1e1e',
-    title: 'ARTemis - Professional Digital Painting (Alpha)',
+    title: 'ARTemis - Professional Digital Painting',
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
     show: false
+  });
+
+  // Content Security Policy
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; " +
+          "script-src 'self' 'unsafe-inline' https://accounts.google.com https://js.stripe.com; " +
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+          "font-src 'self' https://fonts.gstatic.com; " +
+          "img-src 'self' data: blob:; " +
+          "connect-src 'self' https://accounts.google.com https://api.stripe.com;"
+        ]
+      }
+    });
   });
 
   mainWindow.loadFile('src/index.html');
@@ -274,7 +293,7 @@ function createWindow() {
         },
         {
           label: 'Sponge (Saturation)',
-          accelerator: 'P',
+          accelerator: 'J',
           click: () => { mainWindow.webContents.send('tool-sponge'); }
         }
       ]

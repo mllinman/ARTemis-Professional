@@ -1,4 +1,8 @@
-# ARTemis
+# ARTemis Professional
+
+[![Version](https://img.shields.io/badge/version-2.0.0--beta-blue.svg)](package.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Browser%20%7C%20Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#)
 
 Professional Digital Painting Application
 
